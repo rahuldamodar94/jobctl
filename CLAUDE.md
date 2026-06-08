@@ -13,8 +13,8 @@ data-dense triage page. **AI is model-flexible** (Claude `claude -p` / any
 OpenAI-compatible API / local Ollama — no coding-CLI lock-in) and sits *on top*
 to judge fit and tailor resumes; the scrape→match→triage core runs fully offline
 with no model. Ships with a committed, domain-tagged registry of 320+
-live-verified company boards across all 12 domains. Single user, local-first,
-Dockerised.
+live-verified company boards across all 12 domains. Single user, local-first
+(`npm start`; reproducibility via `.nvmrc` + `package-lock.json`).
 Tagline: "The self-hosted job copilot for the software industry. Your machine,
 your model, your data."
 
@@ -189,16 +189,17 @@ CONFIG (yaml)                  SCRAPE PIPELINE (src/scraper/run.ts)
 - lock heartbeat — 60min TTL is 15× observed run time
 - merging new-vs-new geo-distinct duplicates — they're usually real distinct roles
 - `is_match=false` on 0 score — penalized jobs stay visible at score 0
-- dist-compiled CLI in Docker — tsx-in-prod is the chosen tradeoff
+- compiling the server to dist/ — `tsx`-in-prod (server + CLI both run from src)
+  is the chosen tradeoff; only the UI is bundled (Vite). `tsc --noEmit` typechecks.
+- Docker — removed (v3): the resume-gen + judge features need the host `claude`
+  CLI and can't run in a container; reproducibility comes from `.nvmrc` +
+  `package-lock.json`. May return for a NAS/headless-only build later.
 - index tuning / composite list indexes — SQLite scans 50k rows in ms; single user
   (incl. the new `OR status <> 'new'` refinement clauses + `/api/stats` GROUP BY
   + role-csv LIKE ORs — all unindexed, all sub-10ms at 50k, accepted)
 - streaming/paginating the rescore loop — rescore-all is the design
 - making DEFAULT_FILTERS (score≥30/14d/new) configurable — product defaults,
   changeable in the UI with reset
-- claude CLI in Docker via `claude setup-token` — host `npm start` already
-  gives the full app + resume gen with Keychain auth; a long-lived token in
-  .env isn't worth it for a single-user tool
 
 ### Resume generation (optional, host-only)
 

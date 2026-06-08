@@ -25,12 +25,20 @@
 #   - exclude_if_primary: language/stack terms that, when PRIMARY in a JD,
 #     exclude it (forgiven on polyglot titles that also name a must-have term).
 #
+# CONTRADICTION RULE (enforced by role-templates.test.ts + the audit script):
+#   must_have_stack ∩ exclude_if_primary = ∅, and title_keywords ∩ title_exclude
+#   = ∅. A term you REQUIRE can never also be a term you EXCLUDE. Pick a stance:
+#   GENERIC roles take many languages → broad must_have_stack, empty/minimal
+#   exclude_if_primary (only genuinely off-target signals). SPECIALIZED roles
+#   (e.g. a TypeScript/Node backend) → narrow must_have_stack + the OTHER
+#   languages in exclude_if_primary.
+#
 # Refining a template = a PR (shared value). Your personal edits live in
 # profile/roles.yaml, never here.
 
 templates:
 
-  # ============================ Engineering (16) ============================
+  # ============================ Engineering (15) ============================
   - id: backend_engineer
     label: Backend Engineer
     group: Engineering
@@ -61,6 +69,8 @@ templates:
       - product engineer
       - founding engineer
       - member of technical staff
+    # GENERIC backend role: accepts many languages, so language terms must NOT
+    # live here (they're in must_have_stack). Exclude only off-target lanes.
     title_exclude:
       - junior
       - intern
@@ -83,10 +93,6 @@ templates:
       - research
       - solutions
       - sales engineer
-      - rust
-      - golang
-      - scala
-      - c++
     must_have_stack:
       - python
       - java
@@ -122,6 +128,8 @@ templates:
       "frontend engineer": -10
       "on-site only": -10
       "relocation required": -5
+    # Generic role — no language excluded (any of the must-haves is welcome).
+    exclude_if_primary: []
 
   - id: frontend_engineer
     label: Frontend Engineer
@@ -184,7 +192,6 @@ templates:
       webpack: 2
       css: 3
       responsive design: 3
-      typescript: 4
       storybook: 2
       ssr: 3
       web vitals: 3
@@ -192,6 +199,13 @@ templates:
       "backend engineer": -8
       "on-site only": -10
       "wordpress": -5
+    # Web-focused role; backend-only languages dominating = wrong fit.
+    exclude_if_primary:
+      - golang
+      - rust
+      - python
+      - java
+      - c++
 
   - id: fullstack_engineer
     label: Full-Stack Engineer
@@ -248,9 +262,15 @@ templates:
       tailwind: 2
       kubernetes: 2
       ci/cd: 3
-      typescript: 4
       "on-site only": -10
       "manager": -8
+    # JS/TS/Python web stack; JVM/systems-language-dominated JDs are off-target.
+    exclude_if_primary:
+      - golang
+      - rust
+      - java
+      - scala
+      - c++
 
   - id: mobile_engineer
     label: Mobile Engineer
@@ -310,6 +330,7 @@ templates:
       accessibility: 2
       "on-site only": -10
       "manager": -8
+    exclude_if_primary: []
 
   - id: devops_sre
     label: DevOps / SRE / Platform Engineer
@@ -373,6 +394,7 @@ templates:
       datadog: 3
       "on-site only": -10
       "manager": -8
+    exclude_if_primary: []
 
   - id: data_engineer
     label: Data Engineer
@@ -426,6 +448,7 @@ templates:
       pipeline: 3
       "manager": -8
       "on-site only": -10
+    exclude_if_primary: []
 
   - id: ml_engineer
     label: Machine Learning Engineer
@@ -472,7 +495,6 @@ templates:
       model serving: 4
       feature engineering: 3
       distributed training: 4
-      llm: 4
       inference: 3
       cuda: 3
       sagemaker: 2
@@ -481,6 +503,7 @@ templates:
       fine-tuning: 3
       "manager": -8
       "on-site only": -10
+    exclude_if_primary: []
 
   - id: security_engineer
     label: Security Engineer
@@ -533,6 +556,7 @@ templates:
       red team: 3
       "manager": -8
       "on-site only": -10
+    exclude_if_primary: []
 
   - id: qa_engineer
     label: QA / Test Engineer
@@ -583,6 +607,7 @@ templates:
       "manager": -8
       "manual only": -8
       "on-site only": -10
+    exclude_if_primary: []
 
   - id: blockchain_engineer
     label: Blockchain / Smart Contract Engineer
@@ -639,6 +664,7 @@ templates:
       audit: 2
       "marketing": -10
       "on-site only": -10
+    exclude_if_primary: []
 
   - id: game_engineer
     label: Game / Gameplay Engineer
@@ -687,6 +713,7 @@ templates:
       optimization: 3
       "manager": -8
       "on-site only": -10
+    exclude_if_primary: []
 
   - id: ai_research_engineer
     label: AI Research Engineer
@@ -726,10 +753,8 @@ templates:
       distributed training: 5
       cuda: 4
       reinforcement learning: 4
-      jax: 3
       research: 3
       publications: 3
-      llm: 4
       diffusion: 3
       evaluation: 3
       pretraining: 4
@@ -737,6 +762,7 @@ templates:
       gpu: 3
       "manager": -8
       "on-site only": -10
+    exclude_if_primary: []
 
   - id: embedded_engineer
     label: Embedded / Firmware Engineer
@@ -785,6 +811,7 @@ templates:
       bootloader: 2
       "manager": -8
       "on-site only": -8
+    exclude_if_primary: []
 
   - id: api_platform_engineer
     label: API / Developer Platform Engineer
@@ -839,6 +866,7 @@ templates:
       versioning: 2
       "on-site only": -10
       "manager": -8
+    exclude_if_primary: []
 
   - id: distributed_systems_engineer
     label: Distributed Systems Engineer
@@ -890,8 +918,9 @@ templates:
       fault tolerance: 4
       "manager": -8
       "on-site only": -10
+    exclude_if_primary: []
 
-  # ============================ Data & Science (4) ============================
+  # ============================ Data & Science (8) ============================
   - id: data_scientist
     label: Data Scientist
     group: Data & Science
@@ -935,9 +964,9 @@ templates:
       scikit-learn: 3
       bayesian: 3
       regression: 2
-      python: 3
       "manager": -8
       "on-site only": -10
+    exclude_if_primary: []
 
   - id: data_analyst
     label: Data / Business Analyst
@@ -981,10 +1010,10 @@ templates:
       data visualization: 4
       reporting: 3
       a/b testing: 3
-      sql: 4
       kpi: 2
       "manager": -8
       "on-site only": -10
+    exclude_if_primary: []
 
   - id: analytics_engineer
     label: Analytics Engineer
@@ -1018,7 +1047,6 @@ templates:
       - looker
     nice_to_have:
       data modeling: 5
-      looker: 4
       airflow: 3
       warehouse: 4
       dimensional modeling: 4
@@ -1027,6 +1055,7 @@ templates:
       testing: 2
       "manager": -8
       "on-site only": -10
+    exclude_if_primary: []
 
   - id: research_scientist
     label: Research Scientist (ML/AI)
@@ -1073,8 +1102,198 @@ templates:
       evaluation: 3
       "manager": -8
       "on-site only": -10
+    exclude_if_primary: []
 
-  # ============================ Product (5) ============================
+  - id: ml_ops_engineer
+    label: ML Ops Engineer
+    group: Data & Science
+    description: Productionize ML — pipelines, serving, monitoring.
+    title_keywords:
+      - mlops engineer
+      - ml ops engineer
+      - machine learning operations engineer
+      - ml platform engineer
+      - ml infrastructure engineer
+      - senior mlops engineer
+      - staff mlops engineer
+      - ai platform engineer
+      - model operations engineer
+    title_exclude:
+      - junior
+      - intern
+      - graduate
+      - working student
+      - entry level
+      - manager
+      - director
+      - head of
+      - data analyst
+      - data scientist
+      - product manager
+    must_have_stack:
+      - mlops
+      - machine learning
+      - kubernetes
+      - python
+      - model serving
+      - docker
+    nice_to_have:
+      mlflow: 4
+      kubeflow: 4
+      feature store: 4
+      model monitoring: 4
+      ci/cd: 3
+      airflow: 3
+      sagemaker: 3
+      vertex ai: 3
+      gpu: 3
+      inference: 4
+      vector database: 2
+      observability: 3
+      "manager": -8
+      "on-site only": -10
+    exclude_if_primary: []
+
+  - id: bi_developer
+    label: BI Developer
+    group: Data & Science
+    description: Dashboards, semantic models, self-serve analytics.
+    title_keywords:
+      - bi developer
+      - business intelligence developer
+      - bi analyst developer
+      - reporting developer
+      - tableau developer
+      - power bi developer
+      - looker developer
+      - data visualization developer
+      - senior bi developer
+    title_exclude:
+      - junior
+      - intern
+      - graduate
+      - working student
+      - entry level
+      - manager
+      - director
+      - head of
+      - data scientist
+      - data engineer
+      - machine learning
+    must_have_stack:
+      - sql
+      - power bi
+      - tableau
+      - looker
+      - dax
+      - data visualization
+    nice_to_have:
+      semantic layer: 4
+      dashboards: 4
+      data modeling: 4
+      etl: 3
+      reporting: 3
+      self-service analytics: 3
+      ssrs: 2
+      kpi: 2
+      stakeholder: 3
+      "manager": -8
+      "on-site only": -10
+    exclude_if_primary: []
+
+  - id: data_architect
+    label: Data Architect
+    group: Data & Science
+    description: Data platform architecture, modeling, governance.
+    title_keywords:
+      - data architect
+      - principal data architect
+      - senior data architect
+      - lead data architect
+      - enterprise data architect
+      - analytics architect
+      - data platform architect
+      - cloud data architect
+    title_exclude:
+      - junior
+      - intern
+      - graduate
+      - working student
+      - entry level
+      - manager
+      - director
+      - head of
+      - solutions architect
+      - security architect
+    must_have_stack:
+      - data architecture
+      - data modeling
+      - sql
+      - data warehouse
+      - snowflake
+      - data governance
+    nice_to_have:
+      dimensional modeling: 4
+      databricks: 4
+      data mesh: 4
+      lakehouse: 4
+      etl: 3
+      master data management: 3
+      data lineage: 3
+      bigquery: 3
+      redshift: 3
+      streaming: 2
+      "manager": -8
+      "on-site only": -10
+    exclude_if_primary: []
+
+  - id: decision_scientist
+    label: Decision Scientist / Quant
+    group: Data & Science
+    description: Causal inference, experimentation, quantitative modeling.
+    title_keywords:
+      - decision scientist
+      - quantitative researcher
+      - quantitative analyst
+      - quant researcher
+      - product data scientist
+      - experimentation scientist
+      - causal inference scientist
+      - senior decision scientist
+      - staff decision scientist
+    title_exclude:
+      - junior
+      - intern
+      - graduate
+      - working student
+      - entry level
+      - manager
+      - director
+      - head of
+      - data engineer
+      - data analyst
+    must_have_stack:
+      - statistics
+      - causal inference
+      - experimentation
+      - python
+      - sql
+      - econometrics
+    nice_to_have:
+      a/b testing: 5
+      bayesian: 4
+      causal inference: 4
+      forecasting: 3
+      statistical modeling: 4
+      regression: 3
+      experimentation: 4
+      product analytics: 3
+      r programming: 2
+      "manager": -8
+      "on-site only": -10
+    exclude_if_primary: []
+
+  # ============================ Product (9) ============================
   - id: product_manager
     label: Product Manager
     group: Product
@@ -1119,6 +1338,7 @@ templates:
       api: 2
       "intern": -10
       "on-site only": -8
+    exclude_if_primary: []
 
   - id: technical_program_manager
     label: Technical Program Manager
@@ -1159,6 +1379,7 @@ templates:
       jira: 2
       "intern": -10
       "on-site only": -8
+    exclude_if_primary: []
 
   - id: ai_product_manager
     label: AI Product Manager
@@ -1192,13 +1413,13 @@ templates:
       data: 3
       platform: 3
       developer: 3
-      llm: 4
       generative ai: 4
       analytics: 3
       go-to-market: 2
       api: 2
       "intern": -10
       "on-site only": -8
+    exclude_if_primary: []
 
   - id: product_operations_manager
     label: Product Operations Manager
@@ -1234,6 +1455,7 @@ templates:
       reporting: 3
       "intern": -10
       "on-site only": -8
+    exclude_if_primary: []
 
   - id: group_product_manager
     label: Group / Director of Product
@@ -1274,8 +1496,170 @@ templates:
       go-to-market: 2
       "intern": -10
       "on-site only": -8
+    exclude_if_primary: []
 
-  # ============================ Design (4) ============================
+  - id: growth_product_manager
+    label: Growth Product Manager
+    group: Product
+    description: Activation, retention, monetization — growth loops.
+    title_keywords:
+      - growth product manager
+      - product manager, growth
+      - senior growth product manager
+      - principal growth product manager
+      - monetization product manager
+      - retention product manager
+      - lifecycle product manager
+      - head of growth product
+    title_exclude:
+      - intern
+      - graduate
+      - working student
+      - product marketing
+      - project manager
+      - program manager
+      - growth marketing
+    must_have_stack:
+      - product
+      - growth
+      - experimentation
+      - roadmap
+      - analytics
+    nice_to_have:
+      a/b testing: 5
+      funnel: 4
+      activation: 4
+      retention: 4
+      monetization: 4
+      product-led: 4
+      conversion: 3
+      cohort analysis: 3
+      sql: 2
+      "intern": -10
+      "on-site only": -8
+    exclude_if_primary: []
+
+  - id: platform_product_manager
+    label: Platform / API Product Manager
+    group: Product
+    description: Product for internal platforms, APIs, and developer tooling.
+    title_keywords:
+      - platform product manager
+      - api product manager
+      - product manager, platform
+      - product manager, api
+      - infrastructure product manager
+      - developer platform product manager
+      - senior platform product manager
+      - technical product manager, platform
+    title_exclude:
+      - intern
+      - graduate
+      - working student
+      - product marketing
+      - project manager
+      - program manager
+    must_have_stack:
+      - product
+      - platform
+      - api
+      - roadmap
+      - stakeholder
+    nice_to_have:
+      developer experience: 5
+      api design: 4
+      infrastructure: 4
+      sdk: 3
+      microservices: 3
+      technical: 3
+      b2b: 3
+      saas: 2
+      "intern": -10
+      "on-site only": -8
+    exclude_if_primary: []
+
+  - id: principal_product_manager
+    label: Principal Product Manager
+    group: Product
+    description: Senior IC PM driving complex / ambiguous product areas.
+    title_keywords:
+      - principal product manager
+      - lead product manager
+      - staff product manager
+      - principal pm
+      - distinguished product manager
+      - senior principal product manager
+      - principal technical product manager
+    title_exclude:
+      - intern
+      - graduate
+      - working student
+      - product marketing
+      - project manager
+      - program manager
+      - product designer
+    must_have_stack:
+      - product
+      - product strategy
+      - roadmap
+      - stakeholder
+      - discovery
+    nice_to_have:
+      product vision: 4
+      experimentation: 4
+      cross-functional: 3
+      b2b: 3
+      saas: 3
+      platform: 3
+      data-driven: 3
+      go-to-market: 2
+      "intern": -10
+      "on-site only": -8
+    exclude_if_primary: []
+
+  - id: product_analyst
+    label: Product Analyst
+    group: Product
+    description: Product analytics, funnels, experiment readouts.
+    title_keywords:
+      - product analyst
+      - product data analyst
+      - senior product analyst
+      - growth analyst
+      - product insights analyst
+      - lead product analyst
+      - digital product analyst
+    title_exclude:
+      - intern
+      - graduate
+      - working student
+      - manager
+      - director
+      - head of
+      - data scientist
+      - data engineer
+      - financial analyst
+    must_have_stack:
+      - product analytics
+      - sql
+      - analytics
+      - experimentation
+      - dashboards
+    nice_to_have:
+      a/b testing: 5
+      funnel: 4
+      amplitude: 3
+      mixpanel: 3
+      cohort analysis: 4
+      retention: 3
+      data visualization: 3
+      python: 2
+      stakeholder: 3
+      "intern": -10
+      "on-site only": -8
+    exclude_if_primary: []
+
+  # ============================ Design (8) ============================
   - id: product_designer
     label: Product Designer
     group: Design
@@ -1310,16 +1694,15 @@ templates:
       - interaction design
     nice_to_have:
       design systems: 5
-      interaction design: 4
       accessibility: 3
       design tokens: 3
-      user research: 4
       wireframing: 3
       usability: 3
       b2b: 2
       saas: 2
       "intern": -10
       "on-site only": -8
+    exclude_if_primary: []
 
   - id: ux_researcher
     label: UX Researcher
@@ -1360,6 +1743,7 @@ templates:
       personas: 2
       "intern": -10
       "on-site only": -8
+    exclude_if_primary: []
 
   - id: design_engineer
     label: Design Engineer (UX Engineer)
@@ -1404,6 +1788,7 @@ templates:
       storybook: 2
       "on-site only": -8
       "manager": -8
+    exclude_if_primary: []
 
   - id: brand_designer
     label: Brand / Visual Designer
@@ -1444,8 +1829,173 @@ templates:
       after effects: 2
       "intern": -10
       "on-site only": -8
+    exclude_if_primary: []
 
-  # ============================ Growth & Marketing (4) ============================
+  - id: design_systems_designer
+    label: Design Systems Designer
+    group: Design
+    description: Own the component library, tokens, and UI standards.
+    title_keywords:
+      - design systems designer
+      - design system designer
+      - senior design systems designer
+      - staff design systems designer
+      - design systems lead
+      - ui systems designer
+      - product designer, design systems
+      - design ops designer
+    title_exclude:
+      - intern
+      - graduate
+      - working student
+      - graphic designer
+      - brand designer
+      - marketing
+      - motion designer
+    must_have_stack:
+      - design systems
+      - figma
+      - design tokens
+      - components
+      - ui
+    nice_to_have:
+      accessibility: 5
+      component library: 5
+      design tokens: 4
+      documentation: 3
+      governance: 3
+      theming: 3
+      storybook: 2
+      interaction design: 3
+      "intern": -10
+      "on-site only": -8
+    exclude_if_primary: []
+
+  - id: content_designer
+    label: Content Designer / UX Writer
+    group: Design
+    description: UX writing, content design, in-product language.
+    title_keywords:
+      - content designer
+      - ux writer
+      - ux content designer
+      - content strategist, product
+      - senior content designer
+      - staff content designer
+      - principal content designer
+      - product content designer
+      - ux content strategist
+    title_exclude:
+      - intern
+      - graduate
+      - working student
+      - content marketing
+      - marketing
+      - seo
+      - copywriter, marketing
+    must_have_stack:
+      - content design
+      - ux writing
+      - content strategy
+      - product
+      - microcopy
+    nice_to_have:
+      information architecture: 4
+      figma: 3
+      design systems: 3
+      accessibility: 3
+      localization: 3
+      voice and tone: 3
+      user research: 3
+      taxonomy: 2
+      "intern": -10
+      "on-site only": -8
+    exclude_if_primary: []
+
+  - id: interaction_designer
+    label: Interaction / Motion Designer
+    group: Design
+    description: Interaction patterns, prototyping, motion and micro-UX.
+    title_keywords:
+      - interaction designer
+      - motion designer
+      - senior interaction designer
+      - ux interaction designer
+      - prototyping designer
+      - ui motion designer
+      - micro-interaction designer
+      - experience designer
+    title_exclude:
+      - intern
+      - graduate
+      - working student
+      - graphic designer
+      - brand designer
+      - marketing
+      - data scientist
+    must_have_stack:
+      - interaction design
+      - prototyping
+      - figma
+      - motion
+      - ux
+    nice_to_have:
+      animation: 5
+      after effects: 4
+      design systems: 3
+      micro-interactions: 4
+      framer: 3
+      usability: 3
+      accessibility: 3
+      principle: 2
+      "intern": -10
+      "on-site only": -8
+    exclude_if_primary: []
+
+  - id: design_manager
+    label: Design Manager / Head of Design
+    group: Design
+    description: Lead and people-manage a product design team.
+    lane: em
+    title_keywords:
+      - design manager
+      - head of design
+      - director of design
+      - vp of design
+      - vp design
+      - senior design manager
+      - design lead
+      - ux manager
+      - head of product design
+      - chief design officer
+    title_exclude:
+      - intern
+      - graduate
+      - working student
+      - graphic designer
+      - brand designer
+      - marketing
+      - engineering manager
+    must_have_stack:
+      - design
+      - leadership
+      - product design
+      - team
+      - ux
+    nice_to_have:
+      hiring: 4
+      design systems: 3
+      mentoring: 4
+      design strategy: 4
+      cross-functional: 3
+      user research: 3
+      stakeholder: 3
+      design ops: 2
+      "intern": -10
+      "on-site only": -8
+    exclude_if_primary: []
+
+  # ============================ Growth & Marketing (8) ============================
   - id: growth_marketing
     label: Growth / Marketing Manager
     group: Growth & Marketing
@@ -1488,6 +2038,7 @@ templates:
       saas: 2
       "intern": -10
       "on-site only": -8
+    exclude_if_primary: []
 
   - id: product_marketing
     label: Product Marketing Manager
@@ -1526,6 +2077,7 @@ templates:
       analyst relations: 2
       "intern": -10
       "on-site only": -8
+    exclude_if_primary: []
 
   - id: content_marketing_manager
     label: Content Marketing Manager
@@ -1549,6 +2101,7 @@ templates:
       - engineer
       - product marketing
       - social media intern
+      - content designer
     must_have_stack:
       - content
       - marketing
@@ -1566,6 +2119,7 @@ templates:
       saas: 2
       "intern": -10
       "on-site only": -8
+    exclude_if_primary: []
 
   - id: performance_marketing_manager
     label: Performance Marketing Manager
@@ -1605,8 +2159,170 @@ templates:
       saas: 2
       "intern": -10
       "on-site only": -8
+    exclude_if_primary: []
 
-  # ============================ Sales & Success (4) ============================
+  - id: lifecycle_marketing_manager
+    label: Lifecycle / CRM Marketing Manager
+    group: Growth & Marketing
+    description: Email, lifecycle journeys, retention, CRM automation.
+    title_keywords:
+      - lifecycle marketing manager
+      - crm marketing manager
+      - email marketing manager
+      - retention marketing manager
+      - lifecycle manager
+      - crm manager
+      - senior lifecycle marketing manager
+      - marketing automation manager
+    title_exclude:
+      - intern
+      - graduate
+      - working student
+      - engineer
+      - product marketing
+      - content marketing
+      - sales
+    must_have_stack:
+      - lifecycle marketing
+      - crm
+      - email marketing
+      - retention
+      - segmentation
+    nice_to_have:
+      marketing automation: 5
+      braze: 3
+      hubspot: 3
+      customer.io: 3
+      a/b testing: 4
+      churn: 3
+      personalization: 3
+      onboarding: 3
+      analytics: 3
+      "intern": -10
+      "on-site only": -8
+    exclude_if_primary: []
+
+  - id: seo_manager
+    label: SEO Manager
+    group: Growth & Marketing
+    description: Organic search strategy, technical SEO, content optimization.
+    title_keywords:
+      - seo manager
+      - seo specialist
+      - seo lead
+      - organic growth manager
+      - technical seo manager
+      - head of seo
+      - senior seo manager
+      - search marketing manager
+    title_exclude:
+      - intern
+      - graduate
+      - working student
+      - engineer
+      - product marketing
+      - paid search
+      - ppc
+    must_have_stack:
+      - seo
+      - organic search
+      - keyword research
+      - content optimization
+      - search engine optimization
+    nice_to_have:
+      technical seo: 5
+      link building: 3
+      google search console: 3
+      ahrefs: 3
+      semrush: 3
+      content strategy: 3
+      analytics: 3
+      site architecture: 3
+      "intern": -10
+      "on-site only": -8
+    exclude_if_primary: []
+
+  - id: community_manager
+    label: Community / Social Manager
+    group: Growth & Marketing
+    description: Community building, social channels, engagement.
+    title_keywords:
+      - community manager
+      - social media manager
+      - community lead
+      - head of community
+      - social media marketing manager
+      - developer community manager
+      - senior community manager
+      - community marketing manager
+    title_exclude:
+      - intern
+      - graduate
+      - working student
+      - engineer
+      - product marketing
+      - content marketing
+      - sales
+    must_have_stack:
+      - community
+      - social media
+      - engagement
+      - content
+      - marketing
+    nice_to_have:
+      discord: 3
+      twitter: 3
+      community building: 5
+      events: 3
+      moderation: 3
+      ambassador program: 3
+      developer relations: 3
+      analytics: 2
+      "intern": -10
+      "on-site only": -8
+    exclude_if_primary: []
+
+  - id: marketing_operations_manager
+    label: Marketing Operations Manager
+    group: Growth & Marketing
+    description: Martech stack, attribution, campaign operations, reporting.
+    title_keywords:
+      - marketing operations manager
+      - marketing ops manager
+      - marketing operations
+      - revenue marketing manager
+      - marketing technology manager
+      - senior marketing operations manager
+      - martech manager
+      - demand operations manager
+    title_exclude:
+      - intern
+      - graduate
+      - working student
+      - engineer
+      - product marketing
+      - content marketing
+      - sales operations
+    must_have_stack:
+      - marketing operations
+      - martech
+      - attribution
+      - analytics
+      - automation
+    nice_to_have:
+      marketo: 3
+      hubspot: 3
+      salesforce: 3
+      lead scoring: 3
+      reporting: 3
+      campaign management: 3
+      data hygiene: 2
+      sql: 2
+      "intern": -10
+      "on-site only": -8
+    exclude_if_primary: []
+
+  # ============================ Sales & Success (8) ============================
   - id: account_executive
     label: Account Executive (Sales)
     group: Sales & Success
@@ -1617,7 +2333,6 @@ templates:
       - enterprise account executive
       - enterprise sales
       - sales representative
-      - account manager
       - senior account executive
       - mid-market account executive
       - commercial account executive
@@ -1631,6 +2346,7 @@ templates:
       - sales development representative
       - sdr
       - customer success
+      - account manager
     must_have_stack:
       - sales
       - quota
@@ -1647,6 +2363,7 @@ templates:
       revenue: 2
       "intern": -10
       "on-site only": -8
+    exclude_if_primary: []
 
   - id: customer_success
     label: Customer Success Manager
@@ -1685,6 +2402,7 @@ templates:
       relationship management: 2
       "intern": -10
       "on-site only": -8
+    exclude_if_primary: []
 
   - id: solutions_engineer
     label: Solutions / Sales Engineer
@@ -1727,6 +2445,7 @@ templates:
       technical sales: 3
       "intern": -10
       "on-site only": -8
+    exclude_if_primary: []
 
   - id: sales_development_rep
     label: Sales Development Rep (SDR/BDR)
@@ -1766,8 +2485,171 @@ templates:
       quota: 2
       "intern": -10
       "on-site only": -8
+    exclude_if_primary: []
 
-  # ============================ People & Ops (4) ============================
+  - id: account_manager
+    label: Account Manager
+    group: Sales & Success
+    description: Grow and retain existing accounts — renewals, expansion.
+    title_keywords:
+      - account manager
+      - strategic account manager
+      - enterprise account manager
+      - senior account manager
+      - key account manager
+      - client account manager
+      - partner account manager
+      - relationship manager
+    title_exclude:
+      - intern
+      - graduate
+      - working student
+      - engineer
+      - account executive
+      - sales development
+      - technical account manager
+    must_have_stack:
+      - account management
+      - relationship management
+      - renewals
+      - upsell
+      - revenue
+    nice_to_have:
+      saas: 4
+      expansion: 4
+      cross-sell: 3
+      salesforce: 3
+      b2b: 3
+      quota: 3
+      negotiation: 2
+      retention: 3
+      "intern": -10
+      "on-site only": -8
+    exclude_if_primary: []
+
+  - id: customer_success_engineer
+    label: Customer Success / Support Engineer
+    group: Sales & Success
+    description: Technical post-sales — onboarding, integrations, escalations.
+    title_keywords:
+      - customer success engineer
+      - support engineer
+      - technical support engineer
+      - implementation engineer
+      - onboarding engineer
+      - senior support engineer
+      - customer engineer
+      - integration support engineer
+    title_exclude:
+      - intern
+      - graduate
+      - working student
+      - manager
+      - director
+      - head of
+      - account executive
+      - sales development
+      - software engineer
+    must_have_stack:
+      - technical support
+      - troubleshooting
+      - api
+      - customer
+      - integrations
+    nice_to_have:
+      saas: 4
+      sql: 3
+      debugging: 4
+      onboarding: 3
+      escalations: 3
+      documentation: 3
+      python: 2
+      zendesk: 2
+      "intern": -10
+      "on-site only": -8
+    exclude_if_primary: []
+
+  - id: sales_operations_manager
+    label: Sales / Revenue Operations Manager
+    group: Sales & Success
+    description: Sales process, forecasting, CRM, GTM analytics.
+    title_keywords:
+      - sales operations manager
+      - revenue operations manager
+      - sales ops manager
+      - revops manager
+      - gtm operations manager
+      - senior sales operations manager
+      - sales operations analyst
+      - deal desk manager
+    title_exclude:
+      - intern
+      - graduate
+      - working student
+      - engineer
+      - account executive
+      - sales development
+      - marketing operations
+    must_have_stack:
+      - sales operations
+      - forecasting
+      - crm
+      - analytics
+      - pipeline
+    nice_to_have:
+      salesforce: 4
+      revenue operations: 4
+      sql: 3
+      territory planning: 3
+      quota: 3
+      reporting: 3
+      deal desk: 2
+      compensation: 2
+      "intern": -10
+      "on-site only": -8
+    exclude_if_primary: []
+
+  - id: partnerships_manager
+    label: Partnerships / BD Manager
+    group: Sales & Success
+    description: Strategic partnerships, alliances, channel and BD.
+    title_keywords:
+      - partnerships manager
+      - business development manager
+      - strategic partnerships manager
+      - channel partnerships manager
+      - alliances manager
+      - head of partnerships
+      - senior partnerships manager
+      - partner manager
+    title_exclude:
+      - intern
+      - graduate
+      - working student
+      - engineer
+      - sales development representative
+      - account executive
+      - recruiting
+    must_have_stack:
+      - partnerships
+      - business development
+      - alliances
+      - revenue
+      - negotiation
+    nice_to_have:
+      saas: 4
+      channel: 4
+      go-to-market: 3
+      ecosystem: 3
+      contracts: 3
+      b2b: 3
+      strategic: 3
+      co-selling: 2
+      "intern": -10
+      "on-site only": -8
+    exclude_if_primary: []
+
+  # ============================ People & Ops (9) ============================
   - id: technical_recruiter
     label: Technical Recruiter
     group: People & Ops
@@ -1777,7 +2659,6 @@ templates:
       - recruiter
       - talent acquisition specialist
       - talent acquisition partner
-      - sourcer
       - recruiting manager
       - senior technical recruiter
       - talent partner
@@ -1790,6 +2671,7 @@ templates:
       - recruiting coordinator
       - hr generalist
       - sales
+      - sourcer
     must_have_stack:
       - recruiting
       - sourcing
@@ -1805,6 +2687,128 @@ templates:
       linkedin recruiter: 2
       "intern": -10
       "on-site only": -8
+    exclude_if_primary: []
+
+  - id: talent_sourcer
+    label: Talent Sourcer
+    group: People & Ops
+    description: Top-of-funnel sourcing and pipeline generation for hiring.
+    title_keywords:
+      - talent sourcer
+      - sourcer
+      - sourcing specialist
+      - talent sourcing specialist
+      - senior sourcer
+      - technical sourcer
+      - sourcing recruiter
+      - research recruiter
+    title_exclude:
+      - intern
+      - graduate
+      - working student
+      - recruiting coordinator
+      - hr generalist
+      - sales
+      - account executive
+    must_have_stack:
+      - sourcing
+      - talent acquisition
+      - recruiting
+      - pipeline
+      - candidate research
+    nice_to_have:
+      boolean search: 4
+      linkedin recruiter: 4
+      technical sourcing: 4
+      outreach: 3
+      ats: 3
+      employer branding: 2
+      market mapping: 3
+      diversity sourcing: 3
+      "intern": -10
+      "on-site only": -8
+    exclude_if_primary: []
+
+  - id: people_operations
+    label: People Operations Specialist
+    group: People & Ops
+    description: HR programs, onboarding, HRIS, employee experience.
+    title_keywords:
+      - people operations specialist
+      - people operations
+      - people ops
+      - hr operations specialist
+      - people experience specialist
+      - senior people operations
+      - people operations coordinator
+      - hr operations manager
+    title_exclude:
+      - intern
+      - graduate
+      - working student
+      - recruiter
+      - talent acquisition
+      - sales
+      - engineer
+    must_have_stack:
+      - people operations
+      - hris
+      - onboarding
+      - employee experience
+      - human resources
+    nice_to_have:
+      workday: 3
+      benefits administration: 3
+      compliance: 3
+      offboarding: 3
+      employee engagement: 3
+      process improvement: 3
+      payroll: 2
+      policy: 2
+      "intern": -10
+      "on-site only": -8
+    exclude_if_primary: []
+
+  - id: hr_generalist
+    label: HR Generalist
+    group: People & Ops
+    description: Broad HR — employee relations, policy, compliance, programs.
+    title_keywords:
+      - hr generalist
+      - human resources generalist
+      - people generalist
+      - hr coordinator
+      - hr specialist
+      - senior hr generalist
+      - human resources specialist
+      - hr associate
+    title_exclude:
+      - intern
+      - graduate
+      - working student
+      - recruiter
+      - talent acquisition
+      - sales
+      - engineer
+      - hr business partner
+    must_have_stack:
+      - human resources
+      - employee relations
+      - hr policy
+      - compliance
+      - benefits
+    nice_to_have:
+      hris: 4
+      onboarding: 3
+      employee engagement: 3
+      performance management: 3
+      payroll: 2
+      labor law: 3
+      conflict resolution: 2
+      workday: 2
+      "intern": -10
+      "on-site only": -8
+    exclude_if_primary: []
 
   - id: business_operations_manager
     label: Business Operations Manager
@@ -1845,6 +2849,7 @@ templates:
       financial modeling: 2
       "intern": -10
       "on-site only": -8
+    exclude_if_primary: []
 
   - id: people_partner
     label: People / HR Business Partner
@@ -1882,6 +2887,126 @@ templates:
       compensation: 2
       "intern": -10
       "on-site only": -8
+    exclude_if_primary: []
+
+  - id: finance_bizops_analyst
+    label: Finance / BizOps Analyst
+    group: People & Ops
+    description: Financial planning, modeling, and business analysis.
+    title_keywords:
+      - finance analyst
+      - financial analyst
+      - fp&a analyst
+      - business operations analyst
+      - finance business partner
+      - senior financial analyst
+      - strategic finance analyst
+      - revenue analyst
+    title_exclude:
+      - intern
+      - graduate
+      - working student
+      - data scientist
+      - data engineer
+      - accounting clerk
+      - bookkeeper
+    must_have_stack:
+      - financial modeling
+      - fp&a
+      - forecasting
+      - excel
+      - sql
+    nice_to_have:
+      financial planning: 4
+      variance analysis: 4
+      budgeting: 3
+      saas metrics: 4
+      scenario modeling: 3
+      board reporting: 3
+      tableau: 2
+      "intern": -10
+      "on-site only": -8
+    exclude_if_primary: []
+
+  - id: it_workplace_manager
+    label: IT / Workplace Manager
+    group: People & Ops
+    description: Corporate IT, workplace experience, internal systems.
+    title_keywords:
+      - it manager
+      - workplace manager
+      - workplace experience manager
+      - it support manager
+      - corporate it manager
+      - office manager
+      - facilities manager
+      - senior it manager
+    title_exclude:
+      - intern
+      - graduate
+      - working student
+      - software engineer
+      - security engineer
+      - data engineer
+      - devops
+    must_have_stack:
+      - it operations
+      - workplace
+      - help desk
+      - systems administration
+      - vendor management
+    nice_to_have:
+      saas administration: 3
+      okta: 3
+      mdm: 3
+      onboarding: 3
+      asset management: 3
+      networking: 2
+      ticketing: 2
+      security compliance: 2
+      "intern": -10
+      "on-site only": -8
+    exclude_if_primary: []
+
+  - id: chief_of_staff
+    label: Chief of Staff / Exec Operations
+    group: People & Ops
+    description: Drive priorities, comms, and special projects for leadership.
+    title_keywords:
+      - chief of staff
+      - executive operations manager
+      - chief of staff to the ceo
+      - business chief of staff
+      - office of the ceo
+      - strategic projects manager
+      - senior chief of staff
+      - executive business partner
+    title_exclude:
+      - intern
+      - graduate
+      - working student
+      - executive assistant
+      - administrative assistant
+      - warehouse
+      - logistics
+    must_have_stack:
+      - chief of staff
+      - strategy
+      - operations
+      - cross-functional
+      - stakeholder
+    nice_to_have:
+      special projects: 4
+      board prep: 3
+      okrs: 4
+      communications: 3
+      project management: 3
+      executive: 3
+      data-driven: 3
+      planning: 3
+      "intern": -10
+      "on-site only": -8
+    exclude_if_primary: []
 
   - id: engineering_manager
     label: Engineering Manager
@@ -1931,3 +3056,4 @@ templates:
       "player-coach": 4
       "intern": -10
       "on-site only": -8
+    exclude_if_primary: []
