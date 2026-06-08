@@ -130,19 +130,18 @@ export default function App() {
       });
   }, [filters]);
 
-  // Reload on filter change. Debounce ONLY free-text search typing (250ms, so we
-  // don't fire a request per keystroke); discrete controls — status pills,
-  // dropdowns, location chips — apply immediately so they feel instant (the old
-  // blanket 250ms made every pill click feel laggy).
+  // Reload on filter change. Debounce ONLY the free-text inputs (search + location,
+  // 250ms, so we don't fire a request per keystroke); discrete controls — status
+  // pills, dropdowns — apply immediately so they feel instant (the old blanket
+  // 250ms made every pill click feel laggy).
   const prevFiltersRef = useRef(filters);
   useEffect(() => {
     const prev = prevFiltersRef.current;
     prevFiltersRef.current = filters;
-    // "only the search box changed" → debounce; anything else → fire now
-    const onlyQChanged =
-      filters.q !== prev.q &&
-      (Object.keys(filters) as (keyof Filters)[]).every((k) => k === 'q' || filters[k] === prev[k]);
-    const t = setTimeout(reload, onlyQChanged ? 250 : 0);
+    // only free-text fields changed → debounce; any discrete control → fire now
+    const changed = (Object.keys(filters) as (keyof Filters)[]).filter((k) => filters[k] !== prev[k]);
+    const onlyTyping = changed.length > 0 && changed.every((k) => k === 'q' || k === 'location');
+    const t = setTimeout(reload, onlyTyping ? 250 : 0);
     return () => clearTimeout(t);
   }, [reload, filters]);
 
