@@ -1,189 +1,197 @@
 # jobctl
 
-Self-hosted job-search hunter & tracker for engineers. Scrapes public job boards and
-company ATS APIs on command, scores every listing against **your** role profile
-with a deterministic keyword matcher — no LLM, no API keys, zero running cost —
-and gives you one data-dense page to triage: open the JD, set a status, never
-see the same job twice.
+**A self-hosted job hunter for engineers.** It scrapes public job boards and
+company career pages, scores every listing against *your* rules, and gives you
+one fast page to review them — so you check **one place instead of ten**, and
+**never see the same job twice**.
 
-**Ships with a curated, live-verified registry of 110+ company job boards**
-across web3, DeFi, fintech/payments, exchanges, and AI/dev-infra (with strong
-MENA & India representation) — pick the domains you care about and go.
+No LLM, no API keys, no running cost. Your data stays on your machine.
 
+```mermaid
+flowchart LR
+    A["Job boards<br/>(jobstash, web3.career, remotive…)"] --> C
+    B["Company career pages<br/>(Greenhouse, Lever, Ashby)"] --> C
+    C["Dedupe<br/>(keep each job once)"] --> D["Score<br/>(against your rules)"]
+    D --> E[("SQLite<br/>one local file")]
+    E --> F["Triage page<br/>localhost:3000"]
+    P["Your config<br/>roles.yaml · profile.yaml"] -. drives .-> D
 ```
-job boards (jobstash, web3.career, remotive, …) ─┐
-                                                  ├─▶ dedupe ▶ score ▶ SQLite ▶ triage UI
-company ATS boards (registry × your domains)    ─┘                              :3000
-```
 
-## Why
+Ships with a curated, live-verified registry of **110+ company job boards**
+(web3, DeFi, fintech/payments, exchanges, AI/dev-infra, with strong MENA & India
+coverage). Pick the areas you care about and go.
 
-- **One inbox** instead of checking ten job boards every morning
-- **Your rules**: title keywords, must-have stack, weighted boosts, hard
-  exclusions, geo tiers — all YAML; every scrape rescores everything, so tuning
-  takes effect immediately
-- **Anti-re-suggest**: jobs you applied to or dismissed never resurface, even
-  reposted on another board with a slightly different title
-- **Community registry**: 110+ ATS boards verified against their live APIs,
-  tagged by domain — plus a researched list of ~120 companies we *can't* reach
-  yet and the same-name traps to avoid (`config/companies-unsupported.md`)
-- **Local-first**: your data is one SQLite file; personal config is gitignored
+## Why use it
+
+- **One inbox.** Stop checking ten job boards every morning.
+- **Your rules, instantly applied.** Title keywords, must-have skills, weighted
+  boosts, hard exclusions, location tiers — all in plain YAML. Every scrape
+  re-scores everything, so a tweak takes effect on the next run.
+- **No repeats.** Once you mark a job applied or dismissed, it never comes back —
+  even if it's reposted on another board with a slightly different title.
+- **Local-first & private.** Everything lives in one SQLite file; your personal
+  config is gitignored and never leaves your laptop.
+- **Community registry.** 110+ company boards verified against their live APIs
+  and tagged by domain.
 
 ## Quickstart
 
-**Prerequisites:** Node 20+ and npm, git. (Optional: the `claude` CLI for resume
-generation / the LLM fit-judge — see below.)
+**You'll need:** Node 20+, npm, and git.
 
 ```bash
 git clone https://github.com/rahuldamodar94/jobctl.git && cd jobctl
 npm install
-npm run build && npm start    # → http://localhost:3000
+npm run build && npm start     # → http://localhost:3000
 ```
 
-On first launch the app shows a **setup wizard** (name → sources → your role →
-optional resume) and writes your `profile/` for you — no file editing needed.
-Everything is editable later under **Settings** in the app. Then click
-**Run scrape** (or `npm run scrape`).
+On first launch a **setup wizard** walks you through name → sources → your role →
+(optional) resume, and writes your config for you — no file editing required.
+You can change everything later under **Settings** in the app.
 
-Prefer files? You can still `cp -r profile.example profile` and hand-edit
-`profile.yaml` / `roles.yaml` instead of using the wizard.
+Then click **Run scrape** and start triaging.
 
-Dev mode (hot reload): `npm run dev` → UI on :5173 proxying the API on :3000.
+> **Already job-hunting?** Jobs you've already applied to will show up as `new`
+> on the first scrape. Mark them `applied` or `dismissed` once, and they're
+> hidden for good — even when reposted elsewhere.
 
-Already mid-job-hunt? Jobs you've applied to will appear as `new` on the first
-scrape — mark them `applied`/`dismissed` once and they're suppressed forever,
-even when reposted elsewhere with different wording.
+**Prefer editing files?** Copy the templates instead of using the wizard:
+`cp -r profile.example profile`, then edit `profile.yaml` and `roles.yaml`.
 
-### Docker
+**Developing?** `npm run dev` runs the UI with hot reload (port 5173, proxying
+the API on 3000).
+
+### Run with Docker
 
 ```bash
-cp -r profile.example profile   # edit, then:
-docker compose up -d --build    # → http://localhost:3000
+cp -r profile.example profile    # edit it, then:
+docker compose up -d --build     # → http://localhost:3000
 docker compose exec jobctl npm run scrape   # or use the UI button
 ```
 
-`./data` (SQLite) and `./profile` (your config) are bind-mounted — the
-container is stateless. **Linux note:** if SQLite reports read-only, set
-`user: "<your-uid>:<your-gid>"` in docker-compose.yml (the bind mount is owned
-by your host user).
+`./data` (the database) and `./profile` (your config) are bind-mounted, so the
+container stays stateless. **Linux note:** if SQLite reports read-only, set
+`user: "<your-uid>:<your-gid>"` in `docker-compose.yml` — the bind mount is
+owned by your host user.
+
+## How a day looks
+
+```mermaid
+flowchart LR
+    R["Run scrape"] --> N["New matches<br/>(score ≥ 30, ≤ 14 days)"]
+    N --> T{"Review each"}
+    T -->|"worth it"| I["Interested / Applied"]
+    T -->|"not for me"| X["Rejected / Dismissed"]
+    I --> H["Hidden from New"]
+    X --> H
+```
+
+1. Open the UI and click **Run scrape** (or schedule `npm run scrape` with cron).
+2. The status bar shows the result, e.g. `38 new · 5/5 sources OK`. Broken
+   sources are named, never hidden.
+3. Work the default view (`new`, score ≥ 30, posted ≤ 14 days): expand a row,
+   open the JD, set a status.
+4. You're done. Tomorrow, only genuinely new jobs show up.
 
 ## Configure
 
-Easiest: the in-app **Settings** page (and first-run wizard) edits all of the
-personal files below — validated, no terminal. The files are still the source
-of truth if you'd rather edit them directly:
+The easiest way is the in-app **Settings** page (and the first-run wizard) — it
+edits every file below, validates your input, and never touches a terminal. The
+files remain the source of truth if you'd rather edit them directly:
 
-| File | Owner | What |
+| File | Owner | What it holds |
 |---|---|---|
-| `profile/profile.yaml` | you (gitignored) | domains to scrape, boards, max job age, resumes, ui_prefs |
-| `profile/roles.yaml` | you (gitignored) | role searches: titles, stack, weighted keywords, exclusions, geo, IC/EM lane |
-| `config/companies.yaml` | committed | community company registry, domain-tagged |
+| `profile/profile.yaml` | you *(gitignored)* | which domains/boards to scrape, max job age, resumes, UI prefs |
+| `profile/roles.yaml` | you *(gitignored)* | your role searches: titles, skills, weighted keywords, exclusions, location, IC/EM lane |
+| `config/companies.yaml` | committed | the community company registry, tagged by domain |
 | `config/sources.yaml` | committed | job-board definitions |
-| `config/categories.yaml` | committed | category keyword rules (overridable per profile) |
+| `config/categories.yaml` | committed | category rules (you can override per profile) |
 
-## Sources
+## Where jobs come from
 
-| Source | Method |
+| Source | How it's fetched |
 |---|---|
 | Greenhouse / Lever / Ashby company boards | public board APIs (full JDs), driven by the registry |
 | jobstash.xyz | public JSON API (full JDs) |
 | web3.career, cryptocurrencyjobs.co, blockchainheadhunter.com | static HTML |
 | remotive.com, remoteok.com | public JSON APIs (general remote boards) |
 
-Scraping is polite by construction: identifiable UA, sequential sources,
-per-host delays, retry with backoff, a few hundred requests per run.
+Scraping is polite by design: an identifiable user-agent, sources fetched one at
+a time, per-host delays, and retries with backoff — a few hundred requests per run.
 
-**Add a company**: paste its board URL into `profile/profile.yaml →
-companies.include` (provider auto-detected) — or PR it into the registry with
-domain tags so everyone benefits.
-**Add a board**: one adapter file in `src/sources/boards/` implementing
-`{ id, fetch(ctx): RawJob[] }` + one entry in `config/sources.yaml`.
-
-## Daily workflow
-
-1. Open the UI → **Run scrape** (or cron `npm run scrape`)
-2. The status strip reports `38 new · 5/5 sources OK` — failures are named, never silent
-3. Triage the default view (`new`, score ≥ 30, ≤ 14 days): expand row →
-   **Open JD →** → set status (`interested / applied / rejected / dismissed`)
-4. Done. Tomorrow only genuinely new jobs appear.
+- **Add a company:** paste its careers URL into `companies.include` in your
+  `profile.yaml` (the provider is auto-detected), or open a PR to add it to the
+  shared registry so everyone benefits.
+- **Add a board:** drop one adapter file in `src/sources/boards/` implementing
+  `{ id, fetch(ctx) }` and add an entry to `config/sources.yaml`. See
+  [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Commands
 
 ```bash
 npm run scrape                 # scrape all enabled sources
-npm run scrape -- --source X   # one source (debugging)
+npm run scrape -- --source X   # scrape one source (handy for debugging)
 npm run judge                  # run the optional fit-judge over matched jobs
-npm run dev / build / start    # UI + server
-npm test                       # vitest
+npm run dev                    # UI + API with hot reload
+npm run build && npm start     # production build + serve
+npm test                       # run the test suite
 ```
 
-## Optional: per-job resume generation (no API key)
+## Optional: tailor a resume per job (no API key)
 
 If you have the [Claude Code](https://claude.com/claude-code) CLI installed and
-logged in, add a `RESUME_GENERATION_SKILL.md` to `profile/` (template in
-`profile.example/`) with your tailoring rules, and a **Generate resume** button
-appears on every job. Your local `claude` does the tailoring (billed to your
-existing subscription — no API key, no extra cost) and the app renders a
-one-page PDF matching your template into `profile/generated/<date>-<company>/`.
+logged in, add a `RESUME_GENERATION_SKILL.md` to `profile/` (there's a template
+in `profile.example/`) describing how you want resumes written. A **Generate
+resume** button then appears on every job. Your local `claude` writes the
+content — billed to your existing subscription, no API key — and jobctl renders
+a one-page PDF into `profile/generated/`.
 
-Design split: the LLM writes the *content* (following your rules); deterministic
-code renders the *layout* — same input, same PDF. The feature auto-hides when
-the CLI isn't present (e.g. inside the Docker container — it's host-only).
+The split is deliberate: **the model writes the words, the code controls the
+layout**, so the same input always produces the same PDF. The button hides
+itself when the CLI isn't available (e.g. inside Docker — this feature is
+host-only).
 
-**Docker users:** when you want resume generation, run the app on the host
-instead: `npm run build && npm start` (same production server as the
-container, plus your local CLI auth). A token-in-env Docker setup
-(`claude setup-token` → `CLAUDE_CODE_OAUTH_TOKEN`) was considered and
-rejected: parking a long-lived credential in a `.env` file isn't worth it
-for a single-user tool when the host path already works.
+## Optional: fit-judge (advisory)
 
-## Optional: LLM fit-judge (advisory)
+A second opinion on top of the keyword score. For matched jobs, it reads the JD
+against a rubric you write and returns a verdict — **STRONG / DECENT / WEAK /
+SKIP** — with reasons and any dealbreakers, shown as a chip you can sort and
+filter by. It's **advisory only: it never hides or blocks a job.**
 
-A second-stage precision layer over the keyword matcher. For matched jobs it
-reads the JD against **your** rubric and returns a 4-level verdict
-(**STRONG / DECENT / WEAK / SKIP**) plus reasons and hard-blocker flags, shown
-as a chip you can sort/filter by. **Advisory only — it never hides or gates a
-job** (same spirit as the unmatched audit view).
+Turn it on with `llm.judge.enabled: true` in `profile.yaml` and add a
+`profile/judge-rubric.md` (template in `profile.example/`). It runs on either:
 
-Enable it in `profile/profile.yaml` under `llm.judge.enabled: true`, and write a
-`profile/judge-rubric.md` describing you (template in `profile.example/`). It
-runs on either:
+- your local **`claude` CLI** (free, on your subscription — no API key), or
+- any **OpenAI-compatible API** (OpenAI, Gemini, DeepSeek, OpenRouter, Ollama) —
+  the key goes in an environment variable, never in YAML.
 
-- the local **`claude` CLI** (free, billed to your subscription — no API key), or
-- any **OpenAI-compatible backend** (OpenAI / Gemini / DeepSeek / OpenRouter /
-  Ollama) — the API key lives in an env var via `api_key_env`, never in YAML.
+> **Privacy:** free LLM tiers may train on what you send. That's fine for
+> semi-public job descriptions, but resume generation should use a paid or local
+> backend that doesn't train on your data.
 
-Run it from the UI's **Re-judge** button, automatically during a scrape, or
-`npm run judge [-- --all | --id N]`. Verdicts are frozen per JD hash (a changed
-JD re-judges). **Privacy:** free judge tiers may train on input — fine for
-semi-public job descriptions, but resume generation must use a non-training
-(paid/local) backend.
+## Design decisions
 
-## Design decisions (read before filing "missing X" issues)
+A few deliberate choices, so they don't read as gaps:
 
-- **No auth, no helmet, no rate limiting** — this binds to localhost for a
-  single user. Don't expose it to the internet; put auth in front if you must.
-- **No LLM** — scoring is deterministic keyword matching you can debug and tune.
-  An LLM pass may come as an optional v2 layer.
-- **No headless browser** — every supported source is plain-HTTP. Sources that
-  require JS rendering are documented in `config/companies-unsupported.md`.
-- **SQLite, one file** — dedupe is a UNIQUE index, status updates are
-  transactions, backup is `cp`. WAL mode lets the CLI and server write
-  concurrently.
-- **CLI runs via tsx in the container** (server runs compiled `dist/`) — one
-  image that can scrape, seed, and serve without a second build pipeline.
-- **Old-but-open ATS postings are kept** — a job returned by the company's own
-  board API is open by definition; only aggregator-board listings are
-  age-filtered (`max_age_days`).
+- **No login, runs on localhost.** It's a single-user tool. Don't expose it to
+  the internet without putting your own authentication in front — see
+  [SECURITY.md](SECURITY.md).
+- **No LLM in the core.** Scoring is plain keyword matching you can read, debug,
+  and tune. The optional LLM features above sit *on top*, never in the critical path.
+- **No headless browser.** Every supported source is plain HTTP. Sites that need
+  a real browser are listed in `config/companies-unsupported.md`.
+- **One SQLite file.** Dedup is a unique index, updates are transactions, and
+  backup is a file copy.
+- **Open ATS jobs are kept.** A job still returned by a company's own board is
+  open by definition, so only aggregator listings are filtered by age.
 
 ## Architecture
 
-See [CLAUDE.md](CLAUDE.md): data model, dedup invariants, scoring formula,
-reliability rules, ATS endpoint patterns for future adapters, and the v2 roadmap.
+For the full picture — data model, dedup and scoring rules, reliability
+guarantees, and ATS endpoint patterns — see [CLAUDE.md](CLAUDE.md).
 
 ## The name
 
-`jobctl` = "job control" — a `kubectl` / `systemctl`-style CLI for running your
+`jobctl` = "job control" — a `kubectl` / `systemctl`-style tool for running your
 own job search, locally. Lowercase, self-hosted, yours.
 
 ## License
