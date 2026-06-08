@@ -1,8 +1,9 @@
 import type Database from 'better-sqlite3';
 
 /**
- * Schema is idempotent (CREATE IF NOT EXISTS) — no migration framework in v1.
- * If the schema changes pre-1.0: delete data/jobs.db and re-scrape.
+ * The v1 baseline schema — idempotent (CREATE IF NOT EXISTS + guarded ALTERs),
+ * safe to run on a fresh or an existing database. Frozen: future schema changes
+ * go through the versioned `migrate()` runner below, NOT by editing this.
  */
 export function initSchema(db: Database.Database): void {
   db.exec(`
@@ -99,4 +100,31 @@ export function initSchema(db: Database.Database): void {
       /* column already exists */
     }
   }
+}
+
+/**
+ * Versioned migration runner (PRAGMA user_version). `initSchema` is the FROZEN
+ * v1 baseline — idempotent, safe on fresh and pre-versioning databases. Append
+ * v2, v3, … below for ANY future schema change. Crucially this lets a future
+ * NON-additive change (rename/backfill/type-change — which the guarded-ALTER
+ * pattern can't express) run against an EXISTING database instead of forcing
+ * "delete data/jobs.db and re-scrape", which would throw away the user's
+ * irreplaceable triage history (statuses + notes).
+ *
+ * Each migration runs exactly once, in order, for any database whose
+ * user_version is below it. v1 (initSchema) must stay frozen so a fresh DB builds
+ * up through every migration in sequence and reaches the same state as a
+ * long-lived one (never seeing a "future" column before the migration adds it).
+ * A migration that needs atomicity should wrap its own body in db.transaction()
+ * (the runner doesn't, so v1's self-guarded ALTERs can't poison a transaction).
+ */
+const MIGRATIONS: Array<(db: Database.Database) => void> = [
+  initSchema, // v1 — baseline (DO NOT edit for new changes; add a v2 below instead)
+  // v2: (db) => db.transaction(() => db.exec('ALTER TABLE jobs ADD COLUMN foo TEXT'))(),
+];
+
+export function migrate(db: Database.Database): void {
+  let version = db.pragma('user_version', { simple: true }) as number;
+  for (; version < MIGRATIONS.length; version++) MIGRATIONS[version]!(db);
+  db.pragma(`user_version = ${MIGRATIONS.length}`);
 }

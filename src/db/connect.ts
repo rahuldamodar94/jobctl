@@ -1,7 +1,7 @@
 import Database from 'better-sqlite3';
 import { mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { initSchema } from './schema.js';
+import { migrate } from './schema.js';
 
 const DEFAULT_DB_PATH = join(process.cwd(), 'data', 'jobs.db');
 
@@ -15,6 +15,6 @@ export function connect(dbPath: string = process.env.DB_PATH ?? DEFAULT_DB_PATH)
   const db = new Database(dbPath);
   db.pragma('journal_mode = WAL');
   db.pragma('busy_timeout = 5000');
-  initSchema(db);
+  migrate(db); // versioned schema runner (v1 = the baseline) — see db/schema.ts
   return db;
 }
