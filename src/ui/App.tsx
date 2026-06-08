@@ -130,12 +130,21 @@ export default function App() {
       });
   }, [filters]);
 
-  // Debounced reload: typing in the search box shouldn't fire one request per
-  // keystroke. 250ms is imperceptible for dropdown changes too.
+  // Reload on filter change. Debounce ONLY free-text search typing (250ms, so we
+  // don't fire a request per keystroke); discrete controls — status pills,
+  // dropdowns, location chips — apply immediately so they feel instant (the old
+  // blanket 250ms made every pill click feel laggy).
+  const prevFiltersRef = useRef(filters);
   useEffect(() => {
-    const t = setTimeout(reload, 250);
+    const prev = prevFiltersRef.current;
+    prevFiltersRef.current = filters;
+    // "only the search box changed" → debounce; anything else → fire now
+    const onlyQChanged =
+      filters.q !== prev.q &&
+      (Object.keys(filters) as (keyof Filters)[]).every((k) => k === 'q' || filters[k] === prev[k]);
+    const t = setTimeout(reload, onlyQChanged ? 250 : 0);
     return () => clearTimeout(t);
-  }, [reload]);
+  }, [reload, filters]);
 
   // When the list is empty ONLY because of the Score/Posted refinements, find out
   // how many rows a cleared view would show — powers the "Show them" rescue so a
