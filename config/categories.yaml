@@ -5,7 +5,10 @@
 # audits 2026-06). Anything unmatched falls back to `saas` (general software).
 # Override per-user by placing a categories.yaml in your profile/ dir.
 
-order: [crypto, gaming, healthtech, security, data, ai-ml, devtools, cloud-infra, fintech, ecommerce, consumer]
+# `saas` is last (most-general) and has no keyword list — jobs reach it only via
+# the fallback below. It MUST appear in `order` because fallback ∈ order is a
+# loader invariant (categoriesSchema).
+order: [crypto, gaming, healthtech, security, data, ai-ml, devtools, cloud-infra, fintech, ecommerce, consumer, saas]
 
 fallback: saas
 

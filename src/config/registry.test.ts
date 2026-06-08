@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parse } from 'yaml';
+import { categoriesSchema } from './load.js';
 
 /**
  * Integrity guards over the committed config DATA (not the loaders): the company
@@ -35,5 +36,17 @@ describe('domain vocabulary integrity', () => {
     const cats = read('config/categories.yaml');
     const ids = [...cats.order, cats.fallback];
     expect(ids.filter((c: string) => !vocab.has(c))).toEqual([]);
+  });
+
+  // Guard the LOADER invariant, not just vocabulary membership: the committed
+  // categories.yaml must pass the same schema loadCategories() uses, or every
+  // fresh-checkout scrape throws. (Regression: fallback 'saas' was once missing
+  // from `order` — vocab-only checks didn't catch it; this does.)
+  test('committed categories.yaml passes the loader schema (fallback ∈ order)', () => {
+    const result = categoriesSchema.safeParse(read('config/categories.yaml'));
+    if (!result.success) {
+      throw new Error(result.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('\n'));
+    }
+    expect(result.success).toBe(true);
   });
 });
