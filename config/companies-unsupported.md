@@ -74,3 +74,28 @@ anything here is still unavailable — boards move.
 | `lever/safe`, `ashby/safe` | Safe Software (GIS) | Safe (Gnosis) — they're on Personio |
 | `greenhouse/sei` | education nonprofit | Sei Labs — use `ashby/sei-labs` |
 | `greenhouse/binance`, `ashby/binance` | empty boards | live board is `lever/binance` |
+| `greenhouse/slice` | US/N.Macedonia/Mexico co | slice (Indian fintech) — on custom ATS |
+| `ashby/navi` | SF founding-team startup | Navi (Sachin Bansal's Indian fintech) — custom ATS |
+
+## Famous names on unsupported ATSes (v3 pass, 2026-06-09)
+
+Globally-famous tech companies the owner asked us to consider. Almost all run on
+**Workday / iCIMS / Eightfold / Darwinbox / custom portals** — outside the four
+public ATS APIs we support — so they can't be scraped today. Re-probe if we add a
+Workday/SmartRecruiters adapter (v2+ roadmap). (Net-new famous companies that DO
+expose a supported ATS were added to companies.yaml in the same pass: OpenAI,
+Anthropic, Snowflake, Palantir, Coinbase, Block, Toast, Affirm, Robinhood, Plaid,
+SoFi, Nubank, Monzo, N26, Spotify, Airbnb, Discord, Paytm, Unity, and more.)
+
+**Global giants — Workday / custom / iCIMS / Eightfold:** Google, Microsoft,
+Amazon, Apple, Meta, Netflix, Uber, Salesforce, Adobe, Atlassian, Snap, PayPal,
+Slack, Zoom, DoorDash, ServiceNow, HashiCorp, Canva, Miro, Grammarly,
+Hugging Face, NVIDIA, Tesla, Oracle, IBM, SAP, VMware, Cisco, Dell, HP, Intel,
+Samsung, Shopify, Rippling, Wix, Etsy, Wayfair, Chewy, TikTok/ByteDance, Grab,
+Gojek, Sea/Shopee, Klarna, Wise, Revolut, Gong, Outreach, Segment.
+
+**India — Workday / Darwinbox / custom portals:** Swiggy, Zomato, Flipkart, Ola,
+Nykaa, Zerodha, Unacademy, Dream11, ShareChat, Urban Company, Zepto, Freshworks,
+Zoho, BrowserStack, Chargebee, Hasura, Pine Labs, Cashfree, slice, Navi,
+PharmEasy, Practo, Delhivery, Lenskart, PolicyBazaar, MakeMyTrip, Oyo, CarDekho,
+upGrad, Vedantu. (Only Paytm — Lever — was scrapeable and was added.)
