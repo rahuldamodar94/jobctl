@@ -12,8 +12,9 @@ profiles (deterministic core, **no model required**), and serves a single
 data-dense triage page. **AI is model-flexible** (Claude `claude -p` / any
 OpenAI-compatible API / local Ollama — no coding-CLI lock-in) and sits *on top*
 to judge fit and tailor resumes; the scrape→match→triage core runs fully offline
-with no model. Ships with a committed, domain-tagged registry of 110+
-live-verified company boards. Single user, local-first, Dockerised.
+with no model. Ships with a committed, domain-tagged registry of 320+
+live-verified company boards across all 12 domains. Single user, local-first,
+Dockerised.
 Tagline: "The self-hosted job copilot for the software industry. Your machine,
 your model, your data."
 
@@ -248,7 +249,7 @@ guide: `docs/model-tradeoffs.md`.
 npm run scrape [-- --source X]   # scrape (lock-guarded; UI button same path)
 npm run judge [-- --all|--id N]  # optional fit-judge over matched jobs
 npm run dev | build | start      # UI dev / production
-npm test                         # vitest — 251 tests
+npm test                         # vitest — 252 tests
 ```
 
 ## Status
@@ -266,6 +267,22 @@ multi-dimension fit-judge with JD evidence citations; AI-first reframe +
 picker, location, model setup); in-app sample data (`/api/demo`). (A user-driven
 LinkedIn/Indeed import was built then removed in v3 as incomplete — deferred to a
 future version.)
+
+**v3 — post-fresh-run remediation (2026-06-09), per-phase review + checks, local
+commits (unpushed):** fixed the headline scoring bug (the onboarding wizard
+dropped the role template's `nice_to_have`/excludes → every job capped at 60/100;
+now carried via a unit-tested `buildRoleEntry`, browser-validated); expanded the
+registry **113 → 328 companies** across all 12 domains (was 7 empty), global +
+India/MENA, incl. famous names (OpenAI, Anthropic, Snowflake, Coinbase, …) with
+unscrapeable giants documented in `companies-unsupported.md`; **role templates
+21 → 37** grouped by function; registry + role-templates restructured by
+domain/function with clean comments; onboarding reworked (two-level role picker,
+location chips, AI step dropped — judge/resume OFF by default); removed the v2
+import feature; snappier filters (debounce only search typing). **Validation
+scrape (13.6k jobs):** max match score now **85** (was capped at 60); matched
+jobs **diverse** (crypto 12%, ai-ml 23%, devtools 16%, data 14% … all 12 domains
+— was 57% crypto). REMAINING (deferred): opt-in LLM-assisted AI setup (judge
+rubric + resume skill), friendlier Settings forms.
 
 ## v2+ roadmap (architecture accommodates, zero code today)
 

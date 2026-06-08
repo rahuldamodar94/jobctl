@@ -35,8 +35,8 @@ you care about and go.
   even if it's reposted on another board with a slightly different title.
 - **Local-first & private.** Everything lives in one SQLite file; your personal
   config is gitignored and never leaves your laptop.
-- **Community registry.** 110+ company boards verified against their live APIs
-  and tagged by domain.
+- **Community registry.** 320+ company boards across all 12 domains, verified
+  against their live APIs and tagged by domain.
 
 ## Quickstart
 
