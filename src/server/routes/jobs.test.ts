@@ -157,6 +157,16 @@ describe('GET /api/jobs WHERE builder', () => {
     expect(r.body.total).toBe(4);
   });
 
+  test('a corrupt JSON cell degrades to its default — never 500s the whole list', async () => {
+    // simulate a corrupt row (e.g. an older bug / partial write)
+    db.prepare(`UPDATE jobs SET tags = 'not json', llm_dimensions = '{bad' WHERE company = 'Acme'`).run();
+    const r = await get(app, '/api/jobs?status=all');
+    expect(r.status).toBe(200);
+    const acme = r.body.jobs.find((j: any) => j.company === 'Acme');
+    expect(acme.tags).toEqual([]); // degraded, not thrown
+    expect(acme.llm_dimensions).toEqual([]);
+  });
+
   test('refinements apply to New only: a low-score Interested job still shows', async () => {
     // LowCo (score 10) marked interested → must survive a minScore=30 filter
     db.prepare(`UPDATE jobs SET status='interested' WHERE company='LowCo'`).run();

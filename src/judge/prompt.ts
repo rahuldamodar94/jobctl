@@ -1,4 +1,11 @@
-import type { DimensionKey, DimensionRating, JudgeVerdict, Verdict, VerdictDimension } from '../shared/types.js';
+import {
+  DIMENSION_KEYS,
+  DIMENSION_RATINGS,
+  JUDGE_VERDICTS,
+  type DimensionKey,
+  type Verdict,
+  type VerdictDimension,
+} from '../shared/types.js';
 
 /**
  * Fit-judge prompt assembly + output parsing. The LLM applies the user's
@@ -15,9 +22,6 @@ export interface JudgeJobInput {
   description: string | null;
 }
 
-const VERDICTS: JudgeVerdict[] = ['STRONG', 'DECENT', 'WEAK', 'SKIP'];
-const DIMENSION_KEYS: DimensionKey[] = ['skills', 'seniority', 'domain', 'location', 'red_flags'];
-const DIMENSION_RATINGS: DimensionRating[] = ['strong', 'ok', 'weak', 'unknown'];
 const MAX_EVIDENCE = 2;
 const EVIDENCE_MAX_LEN = 280;
 
@@ -74,8 +78,8 @@ export function parseVerdict(raw: string): Verdict {
   }
 
   const v = String(obj.verdict ?? '').toUpperCase().trim();
-  const verdict = VERDICTS.find((x) => x === v);
-  if (!verdict) throw new Error(`judge verdict "${obj.verdict}" is not one of ${VERDICTS.join('/')}`);
+  const verdict = JUDGE_VERDICTS.find((x) => x === v);
+  if (!verdict) throw new Error(`judge verdict "${obj.verdict}" is not one of ${JUDGE_VERDICTS.join('/')}`);
 
   return {
     verdict,

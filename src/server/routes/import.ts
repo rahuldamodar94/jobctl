@@ -73,7 +73,7 @@ export function importJobs(db: Database.Database, body: unknown): { status: numb
   // configured profile + roles (geo injected from the profile, as in a scrape).
   let roles: ReturnType<typeof loadRoles>;
   let categories: ReturnType<typeof loadCategories>;
-  let excludeCategories: string[];
+  let excludeCategories: string[] = [];
   try {
     const profile = loadProfile();
     roles = loadRoles().map((r) => ({

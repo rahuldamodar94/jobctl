@@ -30,6 +30,20 @@ describe('parseWwrFeed', () => {
     expect(designer.workMode).toBe('remote');
   });
 
+  test('missing or unparseable pubDate → postedDate null (no crash)', () => {
+    const feed = `<?xml version="1.0"?><rss><channel>
+      <item><title>NoDate Co: Engineer</title><region>Anywhere in the World</region>
+        <description>x</description><link>https://weworkremotely.com/remote-jobs/nodate</link></item>
+      <item><title>Garbage Co: Engineer</title><region>Anywhere in the World</region>
+        <description>x</description><pubDate>not a date</pubDate>
+        <link>https://weworkremotely.com/remote-jobs/garbage</link></item>
+    </channel></rss>`;
+    const parsed = parseWwrFeed(feed, NOW);
+    expect(parsed).toHaveLength(2);
+    expect(parsed[0]!.postedDate).toBeNull();
+    expect(parsed[1]!.postedDate).toBeNull();
+  });
+
   test('full JD inline, HTML-stripped; RFC-822 pubDate → ISO date', () => {
     const nomad = jobs[0]!;
     expect(nomad.description).toContain('About Nomad');

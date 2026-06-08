@@ -57,7 +57,7 @@ interface JobRow {
  * JSON.parse that can't take the app down: users WILL hand-edit the SQLite
  * file, and one corrupt cell must not brick the whole list/rescore path.
  */
-function safeJsonParse<T>(raw: string | null, fallback: T, rowId: number, col: string): T {
+export function safeJsonParse<T>(raw: string | null, fallback: T, rowId: number, col: string): T {
   if (raw === null) return fallback;
   try {
     return JSON.parse(raw) as T;

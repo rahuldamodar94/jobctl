@@ -51,7 +51,10 @@ export function parseRecruiteeJobs(payload: { offers?: RecruiteeOffer[] }, compa
 }
 
 export async function fetchRecruitee(http: PoliteHttp, slug: string, companyName: string): Promise<RawJob[]> {
-  const host = `${slug}.recruitee.com`; // host derived from the validated slug → SSRF-safe
+  // The detect regex is case-insensitive, so a pasted "ACME.recruitee.com" yields
+  // slug "ACME"; lowercase it (the subdomain is DNS-case-insensitive — safe, unlike
+  // Ashby slugs which ARE case-sensitive and must NOT be touched).
+  const host = `${slug.toLowerCase()}.recruitee.com`; // host derived from the validated slug → SSRF-safe
   const payload = await http.getJson<{ offers?: RecruiteeOffer[] }>(`https://${host}/api/offers/`, {
     allowHosts: [host],
     redirect: 'error',

@@ -89,14 +89,20 @@ export interface Job extends RawJob {
   llmJudgedHash: string | null;
 }
 
+// Single source of truth for the judge enums — the prompt, the JSON schema, the
+// parser, and the SQL verdict-rank all derive from these (no drift). Verdict
+// order is best→worst (drives the "fit" sort).
 /** 4-level fit verdict from the LLM judge (matches profile/judge-rubric.md). */
-export type JudgeVerdict = 'STRONG' | 'DECENT' | 'WEAK' | 'SKIP';
+export const JUDGE_VERDICTS = ['STRONG', 'DECENT', 'WEAK', 'SKIP'] as const;
+export type JudgeVerdict = (typeof JUDGE_VERDICTS)[number];
 
 /** The advisory fit dimensions the judge scores, each backed by JD evidence. */
-export type DimensionKey = 'skills' | 'seniority' | 'domain' | 'location' | 'red_flags';
+export const DIMENSION_KEYS = ['skills', 'seniority', 'domain', 'location', 'red_flags'] as const;
+export type DimensionKey = (typeof DIMENSION_KEYS)[number];
 /** Per-dimension fit: strong = great fit / no concerns, weak = poor / concerning,
  *  unknown = the JD doesn't say. (For red_flags: strong = none found.) */
-export type DimensionRating = 'strong' | 'ok' | 'weak' | 'unknown';
+export const DIMENSION_RATINGS = ['strong', 'ok', 'weak', 'unknown'] as const;
+export type DimensionRating = (typeof DIMENSION_RATINGS)[number];
 
 export interface VerdictDimension {
   key: DimensionKey;

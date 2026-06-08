@@ -1,4 +1,4 @@
-import type { LlmBackendConfig } from '../shared/types.js';
+import { DIMENSION_KEYS, DIMENSION_RATINGS, JUDGE_VERDICTS, type LlmBackendConfig } from '../shared/types.js';
 import { runClaudeCli } from '../llm/claude-cli.js';
 
 /** A backend runner: prompt in, raw model text out. */
@@ -11,7 +11,7 @@ const VERDICT_SCHEMA = {
   additionalProperties: false,
   required: ['verdict', 'summary', 'reasons', 'blockers', 'dimensions'],
   properties: {
-    verdict: { type: 'string', enum: ['STRONG', 'DECENT', 'WEAK', 'SKIP'] },
+    verdict: { type: 'string', enum: [...JUDGE_VERDICTS] },
     summary: { type: 'string' },
     reasons: { type: 'array', items: { type: 'string' } },
     blockers: { type: 'array', items: { type: 'string' } },
@@ -22,8 +22,8 @@ const VERDICT_SCHEMA = {
         additionalProperties: false,
         required: ['key', 'rating', 'note', 'evidence'],
         properties: {
-          key: { type: 'string', enum: ['skills', 'seniority', 'domain', 'location', 'red_flags'] },
-          rating: { type: 'string', enum: ['strong', 'ok', 'weak', 'unknown'] },
+          key: { type: 'string', enum: [...DIMENSION_KEYS] },
+          rating: { type: 'string', enum: [...DIMENSION_RATINGS] },
           note: { type: 'string' },
           evidence: { type: 'array', items: { type: 'string' } },
         },

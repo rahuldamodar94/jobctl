@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import type Database from 'better-sqlite3';
-import type { Repo } from '../../db/repo.js';
+import { safeJsonParse, type Repo } from '../../db/repo.js';
 import { localDateISO } from '../../matcher/dates.js';
+import { JUDGE_VERDICTS } from '../../shared/types.js';
 
 const STATUSES = ['new', 'interested', 'applied', 'rejected', 'dismissed'];
 
@@ -126,8 +127,9 @@ export function jobsRouter(db: Database.Database, repo: Repo): Router {
     const { where, params } = buildJobsFilter(req.query as Record<string, string>);
 
     // sort=date → newest first; sort=verdict → best fit first; default → score
-    const verdictRank =
-      "CASE llm_verdict WHEN 'STRONG' THEN 0 WHEN 'DECENT' THEN 1 WHEN 'WEAK' THEN 2 WHEN 'SKIP' THEN 3 ELSE 4 END";
+    // derived from the single-source JUDGE_VERDICTS order (best→worst); values are
+    // controlled constants, never user input — safe to interpolate.
+    const verdictRank = `CASE llm_verdict ${JUDGE_VERDICTS.map((v, i) => `WHEN '${v}' THEN ${i}`).join(' ')} ELSE ${JUDGE_VERDICTS.length} END`;
     const orderBy =
       sort === 'date'
         ? 'COALESCE(posted_date, first_seen) DESC, match_score DESC'
@@ -151,15 +153,20 @@ export function jobsRouter(db: Database.Database, repo: Repo): Router {
     const countParams = [...params];
     params.push(Math.min(Number(limit) || 200, 500), Number(offset) || 0);
 
-    const rows = (db.prepare(sql).all(...params) as Record<string, unknown>[]).map((row) => ({
-      ...row,
-      tags: JSON.parse(String(row.tags ?? '[]')),
-      matched_role_ids: JSON.parse(String(row.matched_role_ids ?? '[]')),
-      match_reasons: row.match_reasons ? JSON.parse(String(row.match_reasons)) : null,
-      llm_reasons: row.llm_reasons ? JSON.parse(String(row.llm_reasons)) : [],
-      llm_blockers: row.llm_blockers ? JSON.parse(String(row.llm_blockers)) : [],
-      llm_dimensions: row.llm_dimensions ? JSON.parse(String(row.llm_dimensions)) : [],
-    }));
+    // Degrade a corrupt JSON cell to its default rather than 500-ing the whole
+    // list (mirrors repo.safeJsonParse — the documented "never throws" invariant).
+    const rows = (db.prepare(sql).all(...params) as Record<string, unknown>[]).map((row) => {
+      const id = Number(row.id);
+      return {
+        ...row,
+        tags: safeJsonParse<string[]>((row.tags as string) ?? null, [], id, 'tags'),
+        matched_role_ids: safeJsonParse<string[]>((row.matched_role_ids as string) ?? null, [], id, 'matched_role_ids'),
+        match_reasons: safeJsonParse<unknown>((row.match_reasons as string) ?? null, null, id, 'match_reasons'),
+        llm_reasons: safeJsonParse<string[]>((row.llm_reasons as string) ?? null, [], id, 'llm_reasons'),
+        llm_blockers: safeJsonParse<string[]>((row.llm_blockers as string) ?? null, [], id, 'llm_blockers'),
+        llm_dimensions: safeJsonParse<unknown[]>((row.llm_dimensions as string) ?? null, [], id, 'llm_dimensions'),
+      };
+    });
 
     const countSql = `SELECT COUNT(*) AS n FROM jobs WHERE ${where.join(' AND ')}`;
     const { n } = db.prepare(countSql).get(...countParams) as { n: number };

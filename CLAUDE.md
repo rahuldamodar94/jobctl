@@ -62,10 +62,11 @@ profile/                         # GITIGNORED — personal
 └── archive/                     # original source documents
 ```
 
-Domain vocabulary for the registry: `web3 defi exchange infra fintech payments
-ai devtools` (industry/function only — geography is matched via roles' geo, not
-company domains). `loadCompanies()` = registry ∩ profile.domains −
-exclude + include (src/config/load.ts).
+Domain vocabulary for the registry lives in `config/domains.yaml` (12 canonical
+software-industry domains: `ai-ml fintech crypto cloud-infra devtools security
+data saas gaming consumer ecommerce healthtech` — industry/function only;
+geography is matched via roles' geo, not company domains). `loadCompanies()` =
+registry ∩ profile.domains − exclude + include (src/config/load.ts).
 
 **Setup is in-app**: a fresh install boots with `configured:false` (no/invalid
 profile+roles) → the React onboarding wizard writes profile.yaml + roles.yaml
