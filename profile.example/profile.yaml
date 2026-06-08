@@ -13,11 +13,10 @@ max_age_days: 30
 inactive_after_days: 14
 
 # Job boards to scrape (ids from config/sources.yaml) + `ats` to enable the
-# company registry below.
-#   Web3-focused boards: jobstash, web3career, cryptocurrencyjobs, blockchainheadhunter
-#   General remote boards: remotive, remoteok
+# company registry below (Greenhouse/Lever/Ashby/… across the software industry).
+#   General boards: remotive, remoteok
+#   Domain-specific (opt-in): jobstash, web3career, cryptocurrencyjobs, blockchainheadhunter (web3)
 enabled_sources:
-  - jobstash
   - remotive
   - remoteok
   - ats

@@ -1,24 +1,29 @@
 # jobctl
 
-**A self-hosted job hunter for engineers.** It scrapes public job boards and
-company career pages, scores every listing against *your* rules, and gives you
-one fast page to review them — so you check **one place instead of ten**, and
-**never see the same job twice**.
+**The self-hosted job copilot for the software industry.** It scrapes company
+career pages and tech job boards, scores every listing against *your* profile,
+and gives you one fast page to review them — so you check **one place instead of
+ten**, and **never see the same job twice**.
 
-No LLM, no API keys, no running cost. Your data stays on your machine.
+**Your machine, your model, your data.** Free, private, and local. Bring your own
+AI — Claude, any OpenAI-compatible API, or a local model via Ollama — to judge
+how well a job fits and to tailor your resume. The core scrape-and-match runs
+with no model at all, even fully offline.
 
 ```
-  job boards   (jobstash, web3.career, remotive, …)    ─┐
-                                                         ├─▶  dedupe ─▶ score ─▶ SQLite ─▶ triage page
-  company ATS  (Greenhouse · Lever · Ashby — registry) ─┘                                 (localhost:3000)
+  company career pages  (Greenhouse · Lever · Ashby · Workday …)  ─┐
+                                                                    ├─▶  dedupe ─▶ score ─▶ SQLite ─▶ triage page
+  tech job boards       (remoteok · remotive · HN · …)            ─┘            (+ your AI)   (localhost:3000)
 ```
 
-*Dedup keeps each job once · scoring is keyword-based against your `roles.yaml` ·
-everything lands in one local SQLite file you triage in the browser.*
+*Dedup keeps each job once · scoring is keyword-based against your profile · an
+optional AI pass judges fit & tailors resumes · everything lands in one local
+SQLite file you triage in the browser.*
 
-Ships with a curated, live-verified registry of **110+ company job boards**
-(web3, DeFi, fintech/payments, exchanges, AI/dev-infra, with strong MENA & India
-coverage). Pick the areas you care about and go.
+Ships with a curated, live-verified registry of company career boards across the
+software industry — AI, fintech & payments, crypto/web3, cloud & infra, dev
+tools, security, data, gaming, and more. Pick the domains, roles, and locations
+you care about and go.
 
 ## Why use it
 
@@ -168,8 +173,11 @@ A few deliberate choices, so they don't read as gaps:
 - **No login, runs on localhost.** It's a single-user tool. Don't expose it to
   the internet without putting your own authentication in front — see
   [SECURITY.md](SECURITY.md).
-- **No LLM in the core.** Scoring is plain keyword matching you can read, debug,
-  and tune. The optional LLM features above sit *on top*, never in the critical path.
+- **AI your way, not locked in.** The scrape-and-match core is plain keyword
+  matching you can read, debug, and run with *no model at all* (even fully
+  offline). AI sits *on top* — to judge fit and tailor resumes — and you choose
+  the model: Claude, any OpenAI-compatible API, or a local Ollama model. No
+  coding-CLI dependency, no single-vendor lock-in.
 - **No headless browser.** Every supported source is plain HTTP. Sites that need
   a real browser are listed in `config/companies-unsupported.md`.
 - **One SQLite file.** Dedup is a unique index, updates are transactions, and

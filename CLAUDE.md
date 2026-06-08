@@ -5,11 +5,17 @@ Single source of truth for architecture, conventions, and invariants.
 
 ## What this is
 
-jobctl is a self-hosted job-search hunter & tracker for engineers. Scrapes public job boards and
-company ATS APIs on command, keyword-scores listings against configurable role
-profiles (no LLM, no API keys), serves a single data-dense triage page. Ships
-with a committed, domain-tagged registry of 110+ live-verified company boards.
-Single user, local-first, Dockerised.
+jobctl is a self-hosted job copilot for the **software industry — all roles**
+(eng + design/PM/marketing/HR/sales at tech companies). Scrapes company ATS APIs
+and tech job boards on command, keyword-scores listings against configurable role
+profiles (deterministic core, **no model required**), and serves a single
+data-dense triage page. **AI is model-flexible** (Claude `claude -p` / any
+OpenAI-compatible API / local Ollama — no coding-CLI lock-in) and sits *on top*
+to judge fit and tailor resumes; the scrape→match→triage core runs fully offline
+with no model. Ships with a committed, domain-tagged registry of 110+
+live-verified company boards. Single user, local-first, Dockerised.
+Tagline: "The self-hosted job copilot for the software industry. Your machine,
+your model, your data."
 
 Daily workflow: open UI → Run scrape → triage `new, score≥30` list → done.
 
@@ -160,6 +166,16 @@ CONFIG (yaml)                  SCRAPE PIPELINE (src/scraper/run.ts)
 
 ### Reviewed-and-REJECTED ideas (don't re-propose without new evidence)
 
+- **hosted SaaS / serving non-technical users** — breaks all four wedges at once
+  (free · keyless · private · un-bannable distributed scraping); the local-first
+  delivery model IS the value. Deep PM research 2026-06-08; a different product.
+- **scraping LinkedIn / Indeed / Naukri / X** — account bans, active LinkedIn
+  litigation, killed/paid APIs, anti-bot maintenance treadmill; breaks the
+  no-headless-browser design. Coverage of these comes via a user-driven local
+  *import* endpoint (the user's own session), not server-side scraping.
+- **going generic across ALL industries** — scope is the *software industry*
+  (any role). Non-tech industries need different boards + non-self-host-capable
+  users; out of scope.
 - helmet/auth/rate-limiting — localhost single-user by design
 - lock heartbeat — 60min TTL is 15× observed run time
 - merging new-vs-new geo-distinct duplicates — they're usually real distinct roles

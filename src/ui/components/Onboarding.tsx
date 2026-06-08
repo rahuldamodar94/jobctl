@@ -162,9 +162,9 @@ export function Onboarding({ config, onDone }: { config: AppConfig; onDone: () =
               </div>
               {sources.has('ats') && (
                 <label className="mt-3 block">
-                  <span className={lbl}>Industry domains to include <span className="font-normal text-faint">(comma-separated)</span></span>
-                  <input className={input} value={domains} onChange={(e) => setDomains(e.target.value)} placeholder="web3, fintech, ai, devtools" />
-                  <span className="mt-1.5 block text-xs text-faint">Available: web3 defi exchange infra fintech payments ai devtools</span>
+                  <span className={lbl}>Tech domains to include <span className="font-normal text-faint">(comma-separated)</span></span>
+                  <input className={input} value={domains} onChange={(e) => setDomains(e.target.value)} placeholder="ai, fintech, devtools, security" />
+                  <span className="mt-1.5 block text-xs text-faint">e.g. ai · fintech · payments · crypto/web3 · cloud · devtools · security · data · gaming</span>
                 </label>
               )}
             </div>
