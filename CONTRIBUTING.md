@@ -30,12 +30,12 @@ surrounding code style (TypeScript strict, 2-space indent — see `.editorconfig
 `config/companies.yaml` is a community-maintained list of company ATS boards.
 To add one:
 
-1. Confirm the board is one of the supported providers (Greenhouse, Lever, Ashby)
-   and that its public API returns real jobs — see the endpoint patterns in
-   [CLAUDE.md](CLAUDE.md) ("Current ATS endpoints").
-2. Add an entry with `name`, `careers_url`, and `domains` tags (vocabulary:
-   `web3 defi exchange infra fintech payments ai devtools` — see the header
-   comment in the file).
+1. Confirm the board is one of the supported providers (Greenhouse, Lever,
+   Ashby, Recruitee) and that its public API returns real jobs — see the
+   endpoint patterns in [CLAUDE.md](CLAUDE.md) ("Current ATS endpoints").
+2. Add an entry with `name`, `careers_url`, and `domains` tags (vocabulary: the
+   12 ids in `config/domains.yaml` — `ai-ml fintech crypto cloud-infra devtools
+   security data saas gaming consumer ecommerce healthtech`).
 3. If a company *can't* be supported yet (custom portal, other ATS), note it in
    `config/companies-unsupported.md` instead.
 

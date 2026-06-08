@@ -256,7 +256,8 @@ npm test                         # vitest — 252 tests
 
 v1 complete + post-review hardening (2026-06-06): 7 build phases, dual
 line-by-line review (50 findings triaged), community-registry restructure.
-Live: ~2,900 active jobs from 5 source families and 112 company boards.
+Live (v1 snapshot): ~2,900 active jobs. Current registry: 328 company boards
+across 12 domains + 8 job-board adapters (see the v3 note below).
 
 **v2 — software-industry pivot (2026-06-08), 7 phases, per-phase review +
 security-review, all pushed:** repositioned to the software industry / all roles
@@ -275,7 +276,8 @@ now carried via a unit-tested `buildRoleEntry`, browser-validated); expanded the
 registry **113 → 328 companies** across all 12 domains (was 7 empty), global +
 India/MENA, incl. famous names (OpenAI, Anthropic, Snowflake, Coinbase, …) with
 unscrapeable giants documented in `companies-unsupported.md`; **role templates
-21 → 37** grouped by function; registry + role-templates restructured by
+21 → 40** grouped by function (with deepened keyword coverage); registry +
+role-templates restructured by
 domain/function with clean comments; onboarding reworked (two-level role picker,
 location chips, AI step dropped — judge/resume OFF by default); removed the v2
 import feature; snappier filters (debounce only search typing). **Validation

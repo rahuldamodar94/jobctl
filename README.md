@@ -115,7 +115,7 @@ files remain the source of truth if you'd rather edit them directly:
 | Recruitee company boards | public JSON API (full JDs), driven by the registry |
 | web3.career, cryptocurrencyjobs.co, blockchainheadhunter.com | static HTML |
 | remotive.com, remoteok.com, weworkremotely.com, himalayas.app | public JSON/RSS feeds (general remote boards) |
-| LinkedIn / Indeed / … | **not scraped** (anti-bot/ToS); a user-driven import flow is planned for a future version |
+| LinkedIn / Indeed / … | **not scraped** (anti-bot/ToS); coverage would need a user-driven import of your own session, not server-side scraping |
 
 Scraping is polite by design: an identifiable user-agent, sources fetched one at
 a time, per-host delays, and retries with backoff — a few hundred requests per run.
