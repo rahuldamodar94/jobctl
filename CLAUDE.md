@@ -216,18 +216,27 @@ subscription session and demands an API key (verified 2026-06-08).
 
 Second-stage precision layer over the keyword matcher's recall. For matched
 jobs, an LLM applies the user's `profile/judge-rubric.md` to the JD and returns
-a **4-level verdict** (STRONG/DECENT/WEAK/SKIP) + reasons + hard-blocker flags
-(`prompt.ts` build/parse; `backends.ts` claude-cli | openai-compatible — one
-fetch covers OpenAI/Gemini/DeepSeek/OpenRouter/Ollama, JSON schema all-required
-to dodge Gemini's compat optional-field bug, one JSON-repair retry). **Invariants:**
-advisory ONLY — never gates/hides (chip + sort, like the unmatched audit);
-verdict frozen per JD hash (`llm_judged_hash`; re-judged on JD change or the
-Re-judge button); `judgePending` is **best-effort** — a per-job/backend failure
-is logged and skipped, NEVER fails the scrape or touches match/status. Config:
-profile `llm.{backends,judge,resume}`; enabled via `llm.judge.enabled`. Keys in
-ENV (`api_key_env`), never in yaml. CLI: `npm run judge [-- --all|--id N]`.
-**Privacy:** resume gen must use a non-training backend (paid/local); free
-judge tiers (train on input) are fine for semi-public job data only.
+a **4-level overall verdict** (STRONG/DECENT/WEAK/SKIP) + reasons + hard-blocker
+flags **+ a per-dimension breakdown** (`dimensions[]`: skills · seniority ·
+domain · location · red_flags, each rated strong/ok/weak/unknown with a note and
+1-2 JD evidence citations; stored as `llm_dimensions` JSON, guarded ALTER).
+`parseDimensions` is defensive — drops unknown/duplicate keys, coerces bad
+ratings to `unknown`, caps evidence (2×≤280ch), degrades junk/missing to `[]`
+(so old verdicts and back-compat just work). (`prompt.ts` build/parse;
+`backends.ts` claude-cli | openai-compatible — one fetch covers
+OpenAI/Gemini/DeepSeek/OpenRouter/Ollama, JSON schema all-required to dodge
+Gemini's compat optional-field bug, one JSON-repair retry). **Invariants:**
+advisory ONLY — never gates/hides (chip + sort + sub-scores, like the unmatched
+audit); verdict frozen per JD hash (`llm_judged_hash`; re-judged on JD change or
+the Re-judge button — switching backends/shape does NOT auto-refresh); the
+overall verdict/summary/reasons/blockers are unchanged so the chip+sort keep
+working; `judgePending` is **best-effort** — a per-job/backend failure is logged
+and skipped, NEVER fails the scrape or touches match/status. Config: profile
+`llm.{backends,judge,resume}`; enabled via `llm.judge.enabled`. Keys in ENV
+(`api_key_env`), never in yaml. CLI: `npm run judge [-- --all|--id N]`.
+**Privacy:** resume gen must use a non-training backend (paid/local); free judge
+tiers (train on input) are fine for semi-public job data only. Model-choice
+guide: `docs/model-tradeoffs.md`.
 
 ## Commands
 

@@ -134,7 +134,31 @@ npm run build && npm start     # production build + serve
 npm test                       # run the test suite
 ```
 
-## Optional: tailor a resume per job (no API key)
+## AI: judge fit & tailor resumes
+
+The keyword core gets you a clean, de-duped shortlist with no model at all. Then
+**your** AI does the reading-intensive work on top — deciding how well each job
+actually fits, and writing a resume tailored to it. You bring the model (Claude,
+any OpenAI-compatible API, or a local Ollama); jobctl owns the prompts, the
+parsing, and the layout. See [**Choosing a model**](#choosing-a-model) below.
+
+### Fit-judge — a structured second opinion
+
+For matched jobs, the judge reads the JD against a rubric *you* write and returns
+an overall verdict — **STRONG / DECENT / WEAK / SKIP** — plus a **per-dimension
+breakdown** scoring **skills · seniority · domain · location · red flags**, each
+rated and **backed by 1–2 short quotes pulled straight from the JD** so you can
+see *why*. It's a sortable, filterable chip on each row, and it's **advisory
+only: it never hides or blocks a job.**
+
+Turn it on with `llm.judge.enabled: true` in `profile.yaml` and add a
+`profile/judge-rubric.md` (template in `profile.example/`). It runs on either:
+
+- your local **`claude` CLI** (free, on your subscription — no API key), or
+- any **OpenAI-compatible API** (OpenAI, Gemini, DeepSeek, OpenRouter, Ollama) —
+  the key goes in an environment variable, never in YAML.
+
+### Resume tailoring — one-page PDF per job
 
 If you have the [Claude Code](https://claude.com/claude-code) CLI installed and
 logged in, add a `RESUME_GENERATION_SKILL.md` to `profile/` (there's a template
@@ -148,23 +172,14 @@ layout**, so the same input always produces the same PDF. The button hides
 itself when the CLI isn't available (e.g. inside Docker — this feature is
 host-only).
 
-## Optional: fit-judge (advisory)
+### Choosing a model
 
-A second opinion on top of the keyword score. For matched jobs, it reads the JD
-against a rubric you write and returns a verdict — **STRONG / DECENT / WEAK /
-SKIP** — with reasons and any dealbreakers, shown as a chip you can sort and
-filter by. It's **advisory only: it never hides or blocks a job.**
-
-Turn it on with `llm.judge.enabled: true` in `profile.yaml` and add a
-`profile/judge-rubric.md` (template in `profile.example/`). It runs on either:
-
-- your local **`claude` CLI** (free, on your subscription — no API key), or
-- any **OpenAI-compatible API** (OpenAI, Gemini, DeepSeek, OpenRouter, Ollama) —
-  the key goes in an environment variable, never in YAML.
+Which backend for which job — and the one privacy rule that matters — is laid
+out in **[docs/model-tradeoffs.md](docs/model-tradeoffs.md)**. The short version:
 
 > **Privacy:** free LLM tiers may train on what you send. That's fine for
-> semi-public job descriptions, but resume generation should use a paid or local
-> backend that doesn't train on your data.
+> semi-public job descriptions (the judge), but **resume generation should use a
+> paid or local backend that doesn't train on your data** — your resume is *you*.
 
 ## Design decisions
 
