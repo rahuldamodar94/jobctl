@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import type Database from 'better-sqlite3';
 import { Repo } from '../../db/repo.js';
 import { judgePending } from '../../judge/index.js';
 
@@ -9,7 +8,7 @@ import { judgePending } from '../../judge/index.js';
  * (best-effort, never throws) with all:true so it re-runs even if the JD is
  * unchanged.
  */
-export function judgeRouter(db: Database.Database): Router {
+export function judgeRouter(repo: Repo): Router {
   const r = Router();
 
   r.post('/jobs/:id/judge', async (req, res) => {
@@ -17,7 +16,6 @@ export function judgeRouter(db: Database.Database): Router {
     // becomes a JSON 500, not an unhandled rejection / hung connection.
     try {
       const id = Number(req.params.id);
-      const repo = new Repo(db);
       if (!repo.findById(id)) return res.status(404).json({ error: 'not found' });
       const out = await judgePending(repo, (m) => console.log(`[judge] ${m}`), { all: true, ids: [id] });
       if (out.skipped) return res.status(503).json({ error: out.skipped });

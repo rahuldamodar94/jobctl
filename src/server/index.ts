@@ -68,8 +68,8 @@ app.use('/api/config', configRouter());
 app.use('/api/settings', settingsRouter());
 
 app.use('/api', resumeGenRouter(db));
-app.use('/api', judgeRouter(db));
-app.use('/api', demoRouter(db));
+app.use('/api', judgeRouter(repo));
+app.use('/api', demoRouter(repo));
 
 // Static UI (production build). In dev, Vite serves the UI with a proxy.
 const uiDist = join(process.cwd(), 'dist', 'ui');

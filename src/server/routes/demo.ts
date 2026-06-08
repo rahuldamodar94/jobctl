@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import type Database from 'better-sqlite3';
 import { Repo } from '../../db/repo.js';
 import { dedupeKey } from '../../matcher/dedupe.js';
 import { normCompany, normTitle } from '../../matcher/normalize.js';
@@ -55,24 +54,23 @@ export function loadDemo(repo: Repo, now: Date = new Date()): number {
   return loaded;
 }
 
-export function demoRouter(db: Database.Database): Router {
+export function demoRouter(repo: Repo): Router {
   const r = Router();
 
   r.get('/demo', (_req, res) => {
-    res.json({ count: new Repo(db).countBySource(DEMO_SOURCE) });
+    res.json({ count: repo.countBySource(DEMO_SOURCE) });
   });
 
   r.post('/demo', (_req, res) => {
     try {
-      const loaded = loadDemo(new Repo(db));
-      res.json({ loaded });
+      res.json({ loaded: loadDemo(repo) });
     } catch (e) {
       res.status(500).json({ error: (e as Error).message });
     }
   });
 
   r.delete('/demo', (_req, res) => {
-    res.json({ cleared: new Repo(db).deleteBySource(DEMO_SOURCE) });
+    res.json({ cleared: repo.deleteBySource(DEMO_SOURCE) });
   });
 
   return r;
