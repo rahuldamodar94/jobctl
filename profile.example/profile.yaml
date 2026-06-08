@@ -29,10 +29,11 @@ geo_priority:
 geo_relocation_ok: []
 
 # Which slices of the committed company registry (config/companies.yaml) to
-# pull jobs from. Available domains:
-#   web3 defi exchange infra fintech payments ai devtools
+# pull jobs from. Available domains (the 12 in config/domains.yaml):
+#   ai-ml fintech crypto cloud-infra devtools security
+#   data saas gaming consumer ecommerce healthtech
 companies:
-  domains: [ai, devtools]
+  domains: [ai-ml, devtools]
   # Personal additions — paste the job-board URL from any company's careers
   # page (Greenhouse / Lever / Ashby are auto-detected):
   include: []
@@ -42,7 +43,7 @@ companies:
   exclude: []
   #  - Binance
 
-# Categories you never want matched, e.g. [ai] — excluded jobs stay
+# Categories you never want matched, e.g. [crypto] — excluded jobs stay
 # auditable under Match=unmatched with the reason shown.
 exclude_categories: []
 

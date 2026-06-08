@@ -49,4 +49,13 @@ describe('domain vocabulary integrity', () => {
     }
     expect(result.success).toBe(true);
   });
+
+  // The committed example profile must reference REAL domain ids — otherwise a
+  // new user who copies it scrapes nothing for an invalid domain. (Regression:
+  // it shipped `ai` instead of `ai-ml`, silently matching zero AI companies.)
+  test('profile.example domains are all in the vocabulary', () => {
+    const exampleDomains = (read('profile.example/profile.yaml').companies?.domains ?? []) as string[];
+    expect(exampleDomains.length).toBeGreaterThan(0);
+    expect(exampleDomains.filter((d) => !vocab.has(d))).toEqual([]);
+  });
 });
