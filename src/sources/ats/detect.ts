@@ -1,6 +1,6 @@
 /** Auto-detect ATS provider + slug from a pasted careers URL. */
 
-export type AtsProvider = 'greenhouse' | 'lever' | 'ashby';
+export type AtsProvider = 'greenhouse' | 'lever' | 'ashby' | 'recruitee';
 
 export interface AtsDetection {
   provider: AtsProvider;
@@ -14,6 +14,8 @@ const PATTERNS: { provider: AtsProvider; re: RegExp }[] = [
   { provider: 'greenhouse', re: /(?:job-boards|boards)(?:\.eu)?\.greenhouse\.io\/([^/?#]+)/ },
   { provider: 'lever', re: /jobs\.lever\.co\/([^/?#]+)/ },
   { provider: 'ashby', re: /jobs\.ashbyhq\.com\/([^/?#]+)/ },
+  // Recruitee: the slug is the SUBDOMAIN (https://{slug}.recruitee.com/…)
+  { provider: 'recruitee', re: /(?:https?:\/\/)?([a-z0-9][a-z0-9-]*)\.recruitee\.com/i },
 ];
 
 export function detectAts(careersUrl: string): AtsDetection | null {

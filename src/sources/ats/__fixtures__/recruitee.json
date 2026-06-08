@@ -1,0 +1,46 @@
+{
+  "offers": [
+    {
+      "id": 2627754,
+      "title": "Senior Product Manager, AI & Agents",
+      "slug": "senior-product-manager-ai-agents",
+      "description": "<p>As our Senior PM you will <strong>own</strong> the agentic roadmap.</p><ul><li>TypeScript</li><li>Node.js</li></ul>",
+      "location": "Remote job",
+      "city": "Amsterdam",
+      "country": "Netherlands",
+      "remote": true,
+      "hybrid": true,
+      "on_site": false,
+      "careers_url": "https://careers.tellent.com/o/senior-product-manager-ai-agents",
+      "careers_apply_url": "https://careers.tellent.com/o/senior-product-manager-ai-agents/c/new",
+      "status": "published",
+      "published_at": "2026-06-04 08:56:27 UTC",
+      "created_at": "2026-06-04 08:41:29 UTC",
+      "tags": ["product"]
+    },
+    {
+      "id": 111,
+      "title": "Backend Engineer",
+      "slug": "backend-engineer",
+      "description": "<p>Build APIs in Go.</p>",
+      "location": "Berlin",
+      "city": "Berlin",
+      "country": "Germany",
+      "remote": false,
+      "hybrid": false,
+      "on_site": true,
+      "careers_url": "https://careers.example.com/o/backend-engineer",
+      "status": "published",
+      "published_at": "2026-06-01 10:00:00 UTC",
+      "tags": []
+    },
+    {
+      "id": 999,
+      "title": "Draft Role (should be skipped)",
+      "description": "<p>not live yet</p>",
+      "careers_url": "https://careers.example.com/o/draft",
+      "status": "draft",
+      "published_at": null
+    }
+  ]
+}

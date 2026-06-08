@@ -38,7 +38,7 @@ const BOARD_ADAPTERS: Record<string, BoardAdapter> = {
 
 /** Per-provider source ids the aggregate `ats` source expands to — the decay
  *  loop and the UI source filter both depend on exactly this list. */
-export const ATS_SOURCE_IDS = ['ats:greenhouse', 'ats:lever', 'ats:ashby'];
+export const ATS_SOURCE_IDS = ['ats:greenhouse', 'ats:lever', 'ats:ashby', 'ats:recruitee'];
 
 export interface ScrapeOptions {
   /** Limit to a single source id (debugging). */

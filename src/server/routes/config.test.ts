@@ -51,7 +51,7 @@ test('payload reflects the user config: roles, ats-expanded sources, category or
 
   const payload = (await freshBuild())();
   expect(payload.roles).toEqual([{ id: 'gameplay_programmer', label: 'Gameplay Programmer', lane: 'ic' }]);
-  expect(payload.sources).toEqual(['jobstash', 'ats:greenhouse', 'ats:lever', 'ats:ashby']);
+  expect(payload.sources).toEqual(['jobstash', 'ats:greenhouse', 'ats:lever', 'ats:ashby', 'ats:recruitee']);
   expect(payload.categories).toEqual(['gaming', 'web2', 'other']);
   expect(typeof payload.resumeGeneration).toBe('boolean');
 });

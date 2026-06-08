@@ -4,11 +4,13 @@ import { detectAts, type AtsProvider } from './detect.js';
 import { fetchGreenhouse } from './greenhouse.js';
 import { fetchLever } from './lever.js';
 import { fetchAshby } from './ashby.js';
+import { fetchRecruitee } from './recruitee.js';
 
 const FETCHERS: Record<AtsProvider, (http: PoliteHttp, slug: string, company: string) => Promise<RawJob[]>> = {
   greenhouse: fetchGreenhouse,
   lever: fetchLever,
   ashby: fetchAshby,
+  recruitee: fetchRecruitee,
 };
 
 export interface AtsCompanyResult {
@@ -34,7 +36,7 @@ export async function fetchAtsCompanies(
         company: c.name,
         provider: null,
         jobs: [],
-        error: `cannot detect ATS from ${c.careersUrl} — supported: greenhouse/lever/ashby board URLs`,
+        error: `cannot detect ATS from ${c.careersUrl} — supported: greenhouse/lever/ashby/recruitee board URLs`,
       });
       continue;
     }
