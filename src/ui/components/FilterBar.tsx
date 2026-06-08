@@ -123,13 +123,23 @@ export function FilterBar({
         </label>
 
         <label className="flex items-center gap-1.5">
-          <Label>Cat</Label>
+          <Label>Domain</Label>
           <select value={filters.category} onChange={set('category')} className={CTRL}>
             <option value="">all</option>
             {cats.map((c) => (
               <option key={c} value={c}>{c}</option>
             ))}
           </select>
+        </label>
+
+        <label className="flex items-center gap-1.5">
+          <Label>Location</Label>
+          <input
+            value={filters.location}
+            onChange={set('location')}
+            placeholder="e.g. remote, london"
+            className={cn(CTRL, 'w-36 placeholder-faint')}
+          />
         </label>
 
         <label className="flex items-center gap-1.5">

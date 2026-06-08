@@ -159,8 +159,47 @@ export interface AppConfig {
   categories: string[];
   /** canonical software-industry domain vocabulary (for the domain picker) */
   domains: { id: string; label: string; description: string }[];
+  /** curated role-search templates (for the onboarding role picker) */
+  roleTemplates: RoleTemplate[];
   uiPrefs: { defaultMinScore?: number; defaultPostedWithin?: number };
   judgeEnabled: boolean;
+}
+
+/** A curated role-search template the picker prefills into an editable role. */
+export interface RoleTemplate {
+  id: string;
+  label: string;
+  group: string;
+  description: string;
+  lane: 'ic' | 'em';
+  titleKeywords: string[];
+  titleExclude: string[];
+  mustHaveStack: string[];
+  niceToHave: Record<string, number>;
+  excludeIfPrimary: string[];
+}
+
+export interface ImportResult {
+  imported: number;
+  received: number;
+  merged: number;
+  source: string;
+}
+
+/** Import jobs from a site jobctl doesn't scrape (LinkedIn/Indeed) — see
+ *  docs/importing-jobs.md. The body is validated server-side. */
+export async function importJobs(site: string, jobs: unknown[]): Promise<ImportResult> {
+  const res = await fetch('/api/import', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ site, jobs }),
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const detail = body.issues?.length ? `: ${body.issues.join('; ')}` : '';
+    throw new Error((body.error ?? `HTTP ${res.status}`) + detail);
+  }
+  return body;
 }
 
 /** The verdict fields the judge endpoint returns — merged into a row client-side. */
