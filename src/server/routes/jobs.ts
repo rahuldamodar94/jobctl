@@ -72,7 +72,12 @@ export function buildJobsFilter(
       where.push('category = ?');
       params.push(category);
     }
-    if (minScore) {
+    // score / recency / role are "refinement-on-new-only" knobs that only make
+    // sense over the matched queue. The unmatched audit view is all-score-0, so
+    // applying them would wrongly drop rows (a deep-linked/exported URL can carry
+    // both match=unmatched AND a leftover minScore) — skip them there.
+    const refine = match !== 'unmatched';
+    if (minScore && refine) {
       where.push(`(match_score >= ? OR status <> 'new')`);
       params.push(Number(minScore));
     }
@@ -80,7 +85,7 @@ export function buildJobsFilter(
       where.push('source_id = ?');
       params.push(source);
     }
-    if (postedWithin) {
+    if (postedWithin && refine) {
       // "Recent" = recently posted OR recently discovered by us. The OR matters:
       // an old-but-still-open ATS posting first seen today must show up today
       // (then age out), and undated board jobs must never vanish. Triaged rows
@@ -89,7 +94,7 @@ export function buildJobsFilter(
       where.push(`((posted_date >= ? OR first_seen >= ?) OR status <> 'new')`);
       params.push(cutoff, cutoff);
     }
-    if (role) {
+    if (role && refine) {
       // csv of role ids → match any (the UI sends all role ids in a lane)
       const ids = role.split(',').map((s) => s.trim()).filter(Boolean);
       if (ids.length) {

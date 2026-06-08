@@ -23,9 +23,7 @@ sources:
     label: Cryptocurrency Jobs
     kind: html
     base_url: https://cryptocurrencyjobs.co
-    options:
-      paths:
-        - /engineering/
+    # (the adapter fetches the site root — no configurable paths)
 
   # remote3.co removed: job list is client-side rendered (only sponsored ads in
   # static HTML) — needs a browser, which v1 deliberately avoids.
@@ -34,9 +32,7 @@ sources:
     label: Blockchain Headhunter
     kind: html
     base_url: https://blockchainheadhunter.com
-    options:
-      paths:
-        - /jobs
+    # (the adapter fetches /jobs — no configurable paths)
 
   - id: remotive
     label: Remotive (general remote jobs)

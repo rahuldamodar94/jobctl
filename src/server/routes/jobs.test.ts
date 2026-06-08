@@ -114,6 +114,14 @@ describe('GET /api/jobs WHERE builder', () => {
     expect(bogus.body.jobs.map((j: any) => j.company)).not.toContain('GoneCo'); // dismissed stays hidden
   });
 
+  test('unmatched audit ignores a leftover minScore (all-score-0 rows must still show)', async () => {
+    // LowCo becomes an untriaged unmatched row (is_match=0, score 0)
+    db.prepare(`UPDATE jobs SET is_match = 0, match_score = 0 WHERE company = 'LowCo'`).run();
+    // a deep-linked/exported URL carrying both match=unmatched AND a high minScore
+    const r = await get(app, '/api/jobs?status=new&match=unmatched&minScore=70');
+    expect(r.body.jobs.map((j: any) => j.company)).toEqual(['LowCo']); // not dropped by the score floor
+  });
+
   test('match filter: matched (default) / unmatched / all', async () => {
     // make LowCo an unmatched row with a stored rejection reason
     db.prepare(
