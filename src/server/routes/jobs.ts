@@ -10,8 +10,6 @@ const STATUSES = ['new', 'interested', 'applied', 'rejected', 'dismissed'];
  *  "filtered view requested" apart from a bare full-dump backup call. */
 export const FILTER_KEYS = ['q', 'status', 'category', 'minScore', 'source', 'postedWithin', 'role', 'match', 'location', 'verdict'];
 
-const VERDICTS = ['STRONG', 'DECENT', 'WEAK', 'SKIP'];
-
 /** escape LIKE wildcards so a user search for "100%" or "node_modules" is literal */
 const likeArg = (s: string) => `%${s.replace(/[\\%_]/g, '\\$&')}%`;
 
@@ -55,6 +53,10 @@ export function buildJobsFilter(
       if (list.length) {
         where.push(`status IN (${list.map(() => '?').join(',')})`);
         params.push(...list);
+      } else {
+        // every value was invalid → fall back to the protective default rather
+        // than leaking dismissed rows (which a no-filter clause would do)
+        where.push(`status != 'dismissed'`);
       }
     } else {
       // missing/empty status (bare API calls) still hides dismissed — the
@@ -101,7 +103,7 @@ export function buildJobsFilter(
     }
     if (verdict) {
       // explicit verdict filter (csv) — global, like category (not new-only)
-      const list = verdict.split(',').filter((v) => VERDICTS.includes(v));
+      const list = verdict.split(',').filter((v) => (JUDGE_VERDICTS as readonly string[]).includes(v));
       if (list.length) {
         where.push(`llm_verdict IN (${list.map(() => '?').join(',')})`);
         params.push(...list);

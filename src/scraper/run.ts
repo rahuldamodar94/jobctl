@@ -282,6 +282,10 @@ function rescoreAll(
   const active = repo.allActive();
   repo.transaction(() => {
     for (const job of active) {
+      // demo/sample rows ship with baked scores and aren't real listings — never
+      // rescore them (else a real scrape un-matches them and the "N sample jobs"
+      // banner desyncs from the now-empty table).
+      if (job.sourceId === 'demo') continue;
       const m = matchJob(
         { title: job.title, description: job.description, tags: job.tags, location: job.location },
         roles

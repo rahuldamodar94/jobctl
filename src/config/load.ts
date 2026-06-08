@@ -26,6 +26,10 @@ const CONFIG_DIR = process.env.CONFIG_DIR ?? join(ROOT, 'config');
 // Schemas
 // ---------------------------------------------------------------------------
 
+// http(s) only — z.string().url() alone also accepts file:/javascript:/etc.
+// Used for careers_url, board base_url, and LLM base_url (all eventually fetched).
+const httpUrl = () => z.string().url().refine((u) => /^https?:\/\//i.test(u), 'must be an http(s) URL');
+
 const roleSchema = z.object({
   id: z.string().min(1),
   label: z.string().min(1),
@@ -53,7 +57,7 @@ export const roleTemplatesFileSchema = z.object({ templates: z.array(roleTemplat
 
 const companySchema = z.object({
   name: z.string().min(1),
-  careers_url: z.string().url(),
+  careers_url: httpUrl(),
   provider: z.enum(['greenhouse', 'lever', 'ashby']).optional(),
   enabled: z.boolean().default(true),
 });
@@ -108,7 +112,7 @@ export const profileSchema = z.object({
           z.object({
             engine: z.enum(['claude-cli', 'openai-compatible']),
             model: z.string().optional(),
-            base_url: z.string().url().optional(),
+            base_url: httpUrl().optional(),
             api_key_env: z.string().optional(),
           })
         )
@@ -134,7 +138,7 @@ const sourceSchema = z.object({
   id: z.string().min(1),
   label: z.string().min(1),
   kind: z.enum(['api', 'html', 'rss']),
-  base_url: z.string().url(),
+  base_url: httpUrl(),
   options: z.record(z.string(), z.unknown()).optional(),
 });
 

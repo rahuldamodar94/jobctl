@@ -109,6 +109,11 @@ describe('GET /api/jobs WHERE builder', () => {
     expect(empty.body.jobs.map((j: any) => j.company)).not.toContain('GoneCo');
   });
 
+  test('an all-invalid status csv still hides dismissed (no leak via empty filter)', async () => {
+    const bogus = await get(app, '/api/jobs?status=bogus,nope');
+    expect(bogus.body.jobs.map((j: any) => j.company)).not.toContain('GoneCo'); // dismissed stays hidden
+  });
+
   test('match filter: matched (default) / unmatched / all', async () => {
     // make LowCo an unmatched row with a stored rejection reason
     db.prepare(

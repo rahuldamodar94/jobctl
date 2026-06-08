@@ -21,6 +21,9 @@ import { judgeRouter } from './routes/judge.js';
 import { demoRouter } from './routes/demo.js';
 
 const PORT = Number(process.env.PORT ?? 3000);
+// Bind loopback only by default — this is a single-user, no-auth tool, so it
+// must not be reachable from the LAN. Docker/advanced users can set HOST=0.0.0.0.
+const HOST = process.env.HOST ?? '127.0.0.1';
 
 const db = connect();
 const repo = new Repo(db);
@@ -36,6 +39,19 @@ if (reconciled > 0) console.log(`reconciled ${reconciled} orphaned scrape run(s)
 
 const app = express();
 app.use(express.json({ limit: '1mb' }));
+
+// CSRF / DNS-rebinding guard: reject state-changing requests whose Origin is a
+// non-local site. Same-origin UI calls (Origin = localhost:<port>) and local
+// CLI/curl (no Origin header) pass; a malicious web page's cross-origin fetch to
+// localhost is blocked. Cheap defense that keeps the no-auth localhost UX.
+app.use((req, res, next) => {
+  if (req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS') return next();
+  const origin = req.headers.origin;
+  if (typeof origin === 'string' && !/^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/i.test(origin)) {
+    return res.status(403).json({ error: 'cross-origin request blocked' });
+  }
+  next();
+});
 
 app.use('/api/jobs', jobsRouter(db, repo));
 app.use('/api/scrape', scrapeRouter(db, repo));
@@ -62,14 +78,17 @@ if (existsSync(uiDist)) {
   app.get(/^\/(?!api).*/, (_req, res) => res.sendFile(join(uiDist, 'index.html')));
 }
 
-// Last-resort error handler: any route throw becomes a JSON 500 instead of an
-// Express HTML stack trace (or a hung connection for async throws).
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// Last-resort error handler: any route throw becomes a JSON error instead of an
+// Express HTML stack trace (or a hung connection for async throws). Honor the
+// status Express attaches to body-parser failures (malformed JSON → 400,
+// oversized body → 413) rather than flattening everything to 500.
+// (_next is required for Express to treat this as an error handler.)
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  console.error('[api]', err);
-  res.status(500).json({ error: err.message ?? 'internal error' });
+  const status = (err as { status?: number; statusCode?: number }).status ?? (err as { statusCode?: number }).statusCode ?? 500;
+  if (status >= 500) console.error('[api]', err);
+  res.status(status).json({ error: err.message ?? 'internal error' });
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, HOST, () => {
   console.log(`jobctl listening on http://localhost:${PORT}`);
 });

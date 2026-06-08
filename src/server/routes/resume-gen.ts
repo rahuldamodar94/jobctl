@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import type Database from 'better-sqlite3';
+import { Repo } from '../../db/repo.js';
 import { existsSync } from 'node:fs';
 import { join, normalize, sep } from 'node:path';
 import { profileDir } from '../../config/load.js';
@@ -19,6 +20,9 @@ export function resumeGenRouter(db: Database.Database): Router {
   r.post('/jobs/:id/resume', async (req, res) => {
     if (!claudeAvailable()) {
       return res.status(503).json({ error: 'claude CLI not available on this machine (feature is host-only)' });
+    }
+    if (!new Repo(db).findById(Number(req.params.id))) {
+      return res.status(404).json({ error: 'not found' });
     }
     try {
       const result = await generateResume(db, Number(req.params.id));

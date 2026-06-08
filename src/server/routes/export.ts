@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import type Database from 'better-sqlite3';
 import { buildJobsFilter, FILTER_KEYS } from './jobs.js';
+import { localDateISO } from '../../matcher/dates.js';
 
 /**
  * GET /api/export.csv — streams jobs as CSV, formula-injection safe.
@@ -14,7 +15,7 @@ export function exportRouter(db: Database.Database): Router {
 
   r.get('/', (req, res) => {
     res.setHeader('content-type', 'text/csv; charset=utf-8');
-    res.setHeader('content-disposition', `attachment; filename="jobs-${new Date().toISOString().slice(0, 10)}.csv"`);
+    res.setHeader('content-disposition', `attachment; filename="jobs-${localDateISO()}.csv"`);
 
     const filtered = FILTER_KEYS.some((k) => (req.query as Record<string, string>)[k] !== undefined);
     const { where, params } = filtered
