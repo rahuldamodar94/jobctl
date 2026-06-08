@@ -18,6 +18,7 @@ import { configRouter } from './routes/config.js';
 import { statsRouter } from './routes/stats.js';
 import { settingsRouter } from './routes/settings.js';
 import { judgeRouter } from './routes/judge.js';
+import { importRouter } from './routes/import.js';
 
 const PORT = Number(process.env.PORT ?? 3000);
 
@@ -52,6 +53,7 @@ app.use('/api/settings', settingsRouter());
 
 app.use('/api', resumeGenRouter(db));
 app.use('/api', judgeRouter(db));
+app.use('/api', importRouter(db));
 
 // Static UI (production build). In dev, Vite serves the UI with a proxy.
 const uiDist = join(process.cwd(), 'dist', 'ui');
