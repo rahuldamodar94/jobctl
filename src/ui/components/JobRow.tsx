@@ -88,7 +88,7 @@ export function JobRow({
 }: {
   job: UiJob;
   selected: boolean;
-  /** true only when the server has a usable claude CLI (host machine, not Docker) */
+  /** true only when the server has a usable claude CLI (host machine with the CLI installed) */
   resumeGenEnabled: boolean;
   /** advisory fit-judge is on → show verdict chip + re-judge */
   judgeEnabled: boolean;

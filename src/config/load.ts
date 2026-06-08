@@ -4,7 +4,7 @@
  * path-specific message instead of a stack trace deep in the scraper.
  * All keyword/geo strings are lowercased ONCE here so the matcher can do
  * plain case-insensitive substring checks everywhere.
- * PROFILE_DIR/CONFIG_DIR env vars exist for tests and Docker.
+ * PROFILE_DIR/CONFIG_DIR env vars exist for tests (and non-default install layouts).
  */
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';

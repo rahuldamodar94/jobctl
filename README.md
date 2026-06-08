@@ -66,18 +66,11 @@ clear in one click.
 **Developing?** `npm run dev` runs the UI with hot reload (port 5173, proxying
 the API on 3000).
 
-### Run with Docker
-
-```bash
-cp -r profile.example profile    # edit it, then:
-docker compose up -d --build     # → http://localhost:3000
-docker compose exec jobctl npm run scrape   # or use the UI button
-```
-
-`./data` (the database) and `./profile` (your config) are bind-mounted, so the
-container stays stateless. **Linux note:** if SQLite reports read-only, set
-`user: "<your-uid>:<your-gid>"` in `docker-compose.yml` — the bind mount is
-owned by your host user.
+> **Reproducible setup, no Docker:** `.nvmrc` pins the Node version and
+> `package-lock.json` pins exact dependency versions, so `nvm use && npm ci`
+> gives everyone the same environment. (Docker was intentionally dropped — the
+> resume-gen and fit-judge features need the host's `claude` CLI and can't run
+> in a container; it may return for a NAS/headless-only setup later.)
 
 ## How a day looks
 
@@ -173,8 +166,7 @@ a one-page PDF into `profile/generated/`.
 
 The split is deliberate: **the model writes the words, the code controls the
 layout**, so the same input always produces the same PDF. The button hides
-itself when the CLI isn't available (e.g. inside Docker — this feature is
-host-only).
+itself when the `claude` CLI isn't installed (this feature is host-only).
 
 ### Choosing a model
 

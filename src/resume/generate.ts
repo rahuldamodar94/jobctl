@@ -14,9 +14,9 @@ import { localDateISO } from '../matcher/dates.js';
  * local `claude` CLI (headless, billed to the user's Claude subscription — no
  * API key) → validated markdown → deterministic PDF → profile/generated/.
  *
- * The CLI dependency makes this feature host-machine-only by design: the
- * Docker container has no `claude` binary, so claudeAvailable() reports false
- * and the UI hides the button there.
+ * The CLI dependency makes this feature host-machine-only by design: on a
+ * machine without the `claude` CLI, claudeAvailable() reports false and the UI
+ * hides the button.
  */
 
 const SKILL_FILE = 'RESUME_GENERATION_SKILL.md';

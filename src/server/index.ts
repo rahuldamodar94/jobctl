@@ -2,7 +2,7 @@
  * Express server — API + static UI in one process.
  * The single shared better-sqlite3 connection is safe here: calls are
  * synchronous and serialized by the JS event loop, and WAL mode lets a
- * separate CLI scrape process (docker exec) write concurrently.
+ * separate CLI scrape process write concurrently.
  */
 import express from 'express';
 import { existsSync } from 'node:fs';
@@ -22,7 +22,7 @@ import { demoRouter } from './routes/demo.js';
 
 const PORT = Number(process.env.PORT ?? 3000);
 // Bind loopback only by default — this is a single-user, no-auth tool, so it
-// must not be reachable from the LAN. Docker/advanced users can set HOST=0.0.0.0.
+// must not be reachable from the LAN. advanced/headless setups can set HOST=0.0.0.0.
 const HOST = process.env.HOST ?? '127.0.0.1';
 
 const db = connect();
