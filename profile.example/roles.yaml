@@ -59,14 +59,8 @@ roles:
       - rust
       - c++
 
-    # GEO — places you want (big boost) vs would relocate to (smaller boost).
-    # "remote" matches any remote-friendly listing.
-    geo_priority:
-      - remote
-      - berlin
-    geo_relocation_ok:
-      - london
-      - amsterdam
+    # NOTE: location preference is now PROFILE-level (profile.yaml geo_priority /
+    # geo_relocation_ok) — one preference for all roles. Per-role geo_* is ignored.
 
   # ===========================================================================
   # TEMPLATE 2: Frontend / Full-stack Engineer (uncomment + adapt)
@@ -88,8 +82,6 @@ roles:
   #     graphql: 3
   #     tailwind: 2
   #   exclude_if_primary: [angular, php]
-  #   geo_priority: [remote]
-  #   geo_relocation_ok: []
 
   # ===========================================================================
   # TEMPLATE 3: Platform / SRE / DevOps (uncomment + adapt)
@@ -110,5 +102,3 @@ roles:
   #     ci/cd: 4
   #     golang: 3
   #   exclude_if_primary: [windows server, on-prem only]
-  #   geo_priority: [remote]
-  #   geo_relocation_ok: []

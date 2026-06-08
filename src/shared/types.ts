@@ -122,6 +122,9 @@ export interface RoleConfig {
   /** keyword -> weight (positive boosts, negative penalties). */
   niceToHave: Record<string, number>;
   excludeIfPrimary: string[];
+  /** Location preference is profile-level (one job seeker, one preference); the
+   *  scraper injects ProfileConfig.geoPriority/geoRelocationOk into every role
+   *  before matching, so the matcher reads these as usual. */
   geoPriority: string[];
   geoRelocationOk: string[];
 }
@@ -134,6 +137,10 @@ export interface ProfileConfig {
   inactiveAfterDays: number;
   /** Which boards from config/sources.yaml are enabled for this user. */
   enabledSources: string[];
+  /** Preferred locations (+15 score) and relocation-OK locations (+10),
+   *  applied to every role. 'remote' is a normal entry. */
+  geoPriority: string[];
+  geoRelocationOk: string[];
   resumes: { id: string; label: string; file: string; base?: 'ic' | 'em' }[];
   /** Categories the user never wants matched (jobs stay in the DB as
    *  unmatched-with-reason for auditability; deleting them would just get

@@ -57,7 +57,13 @@ export async function runScrape(db: Database.Database, opts: ScrapeOptions = {})
   const repo = new Repo(db);
 
   const profile = loadProfile();
-  const roles = loadRoles();
+  // location is profile-level: inject it into every role so the per-role matcher
+  // scores geo from the one profile preference (one job seeker, one location).
+  const roles = loadRoles().map((r) => ({
+    ...r,
+    geoPriority: profile.geoPriority,
+    geoRelocationOk: profile.geoRelocationOk,
+  }));
   const categories = loadCategories();
   const sourceConfigs = loadSources();
 

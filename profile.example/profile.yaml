@@ -21,6 +21,13 @@ enabled_sources:
   - remoteok
   - ats
 
+# Your location preference (applies to ALL roles — one job seeker, one
+# preference). Jobs matching geo_priority get a score boost; geo_relocation_ok a
+# smaller one. "remote" is a normal entry that matches remote-friendly listings.
+geo_priority:
+  - remote
+geo_relocation_ok: []
+
 # Which slices of the committed company registry (config/companies.yaml) to
 # pull jobs from. Available domains:
 #   web3 defi exchange infra fintech payments ai devtools

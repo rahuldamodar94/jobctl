@@ -36,8 +36,8 @@ const roleSchema = z.object({
   must_have_stack: z.array(z.string().min(1)).min(1),
   nice_to_have: z.record(z.string(), z.number()).default({}),
   exclude_if_primary: z.array(z.string()).default([]),
-  geo_priority: z.array(z.string()).default([]),
-  geo_relocation_ok: z.array(z.string()).default([]),
+  // location preference is profile-level now (profile.yaml geo_priority); any
+  // legacy per-role geo_* keys are harmlessly ignored.
 });
 
 export const rolesFileSchema = z.object({ roles: z.array(roleSchema).min(1) });
@@ -61,6 +61,9 @@ export const profileSchema = z.object({
   max_age_days: z.number().int().positive().default(30),
   inactive_after_days: z.number().int().positive().default(14),
   enabled_sources: z.array(z.string()).min(1),
+  // Location preference (applies to all roles). 'remote' is a normal entry.
+  geo_priority: z.array(z.string()).default([]),
+  geo_relocation_ok: z.array(z.string()).default([]),
   resumes: z
     .array(
       z.object({
@@ -196,8 +199,9 @@ export function loadRoles(): RoleConfig[] {
     mustHaveStack: r.must_have_stack.map(lc),
     niceToHave: lowercaseKeys(r.nice_to_have),
     excludeIfPrimary: r.exclude_if_primary.map(lc),
-    geoPriority: r.geo_priority.map(lc),
-    geoRelocationOk: r.geo_relocation_ok.map(lc),
+    // geo is profile-level — the scraper injects it from the profile before matching
+    geoPriority: [],
+    geoRelocationOk: [],
   }));
 }
 
@@ -208,6 +212,8 @@ export function loadProfile(): ProfileConfig {
     maxAgeDays: p.max_age_days,
     inactiveAfterDays: p.inactive_after_days,
     enabledSources: p.enabled_sources,
+    geoPriority: p.geo_priority.map(lc),
+    geoRelocationOk: p.geo_relocation_ok.map(lc),
     resumes: p.resumes,
     excludeCategories: p.exclude_categories,
     resumeRules: { forbiddenTerms: p.resume_rules.forbidden_terms },
