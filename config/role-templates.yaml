@@ -23,7 +23,8 @@
 # profile/roles.yaml, never here.
 
 templates:
-  # ============================= Engineering =============================
+
+  # ============================ Engineering (14) ============================
   - id: backend_engineer
     label: Backend Engineer
     group: Engineering
@@ -156,150 +157,6 @@ templates:
       roadmap: 3
       distributed systems: 2
 
-  # ============================== Data ==============================
-  - id: data_scientist
-    label: Data Scientist
-    group: Data & Science
-    description: Modeling, experimentation, statistical analysis.
-    title_keywords: [data scientist, applied scientist, research scientist, machine learning scientist]
-    title_exclude: [junior, intern, manager]
-    must_have_stack: [python, sql, machine learning, statistics]
-    nice_to_have:
-      experimentation: 4
-      a/b testing: 4
-      pytorch: 3
-      causal inference: 3
-
-  - id: data_analyst
-    label: Data / Business Analyst
-    group: Data & Science
-    description: Reporting, dashboards, business insight.
-    title_keywords: [data analyst, business analyst, business intelligence, bi analyst, analytics analyst]
-    title_exclude: [junior, intern, manager]
-    must_have_stack: [sql, tableau, looker, power bi, excel, python]
-    nice_to_have:
-      dbt: 3
-      dashboards: 3
-      stakeholder: 2
-
-  # ============================= Product =============================
-  - id: product_manager
-    label: Product Manager
-    group: Product
-    description: Product strategy, roadmap, discovery, delivery.
-    title_keywords: [product manager, senior product manager, group product manager, principal product manager, director of product, head of product]
-    title_exclude: [intern, marketing, project manager]
-    must_have_stack: [product, roadmap, stakeholder, discovery, user research]
-    nice_to_have:
-      experimentation: 4
-      analytics: 3
-      b2b: 2
-      platform: 2
-
-  - id: technical_program_manager
-    label: Technical Program Manager
-    group: Product
-    description: Cross-team delivery of technical programs.
-    title_keywords: [technical program manager, tpm, program manager, technical project manager]
-    title_exclude: [intern, marketing]
-    must_have_stack: [program management, cross-functional, stakeholder, delivery]
-    nice_to_have:
-      agile: 3
-      risk management: 3
-      infrastructure: 2
-
-  # ============================== Design ==============================
-  - id: product_designer
-    label: Product Designer
-    group: Design
-    description: UX/UI design, interaction, design systems.
-    title_keywords: [product designer, ux designer, ui designer, ux/ui designer, senior product designer, design lead]
-    title_exclude: [intern, graphic designer, marketing]
-    must_have_stack: [figma, ux, ui, prototyping, user research]
-    nice_to_have:
-      design systems: 5
-      interaction design: 4
-      accessibility: 3
-      design tokens: 2
-
-  - id: ux_researcher
-    label: UX Researcher
-    group: Design
-    description: User research, usability, insight generation.
-    title_keywords: [ux researcher, user researcher, design researcher, research lead]
-    title_exclude: [intern, market researcher]
-    must_have_stack: [user research, usability, qualitative, interviews]
-    nice_to_have:
-      survey: 3
-      mixed methods: 3
-      figma: 2
-
-  # ===================== Growth / Marketing / Sales =====================
-  - id: growth_marketing
-    label: Growth / Marketing Manager
-    group: Growth & Marketing
-    description: Acquisition, lifecycle, performance marketing.
-    title_keywords: [growth manager, marketing manager, growth marketing, performance marketing, demand generation, head of growth]
-    title_exclude: [intern, engineer]
-    must_have_stack: [marketing, growth, acquisition, campaigns, analytics]
-    nice_to_have:
-      seo: 3
-      paid acquisition: 3
-      lifecycle: 3
-      a/b testing: 2
-
-  - id: product_marketing
-    label: Product Marketing Manager
-    group: Growth & Marketing
-    description: Positioning, messaging, go-to-market.
-    title_keywords: [product marketing manager, pmm, product marketing, go-to-market manager]
-    title_exclude: [intern, engineer]
-    must_have_stack: [product marketing, positioning, messaging, go-to-market, launch]
-    nice_to_have:
-      competitive analysis: 3
-      sales enablement: 3
-      b2b: 2
-
-  - id: account_executive
-    label: Account Executive (Sales)
-    group: Sales & Success
-    description: B2B sales, pipeline, quota-carrying.
-    title_keywords: [account executive, sales executive, enterprise sales, sales representative, account manager]
-    title_exclude: [intern, engineer, marketing]
-    must_have_stack: [sales, quota, pipeline, prospecting, crm]
-    nice_to_have:
-      saas: 3
-      enterprise: 3
-      salesforce: 2
-
-  - id: customer_success
-    label: Customer Success Manager
-    group: Sales & Success
-    description: Retention, onboarding, account health.
-    title_keywords: [customer success manager, csm, customer success, customer experience]
-    title_exclude: [intern, engineer]
-    must_have_stack: [customer success, onboarding, retention, account management]
-    nice_to_have:
-      saas: 3
-      churn: 3
-      upsell: 2
-
-  - id: technical_recruiter
-    label: Technical Recruiter
-    group: People & Ops
-    description: Sourcing and hiring for technical teams.
-    title_keywords: [technical recruiter, recruiter, talent acquisition, sourcer, recruiting manager]
-    title_exclude: [intern]
-    must_have_stack: [recruiting, sourcing, talent acquisition, hiring]
-    nice_to_have:
-      technical hiring: 4
-      employer branding: 2
-      ats: 2
-
-  # ===================== v3 additions (2026-06-09) =====================
-  # More roles across the same function groups (top level of the wizard's
-  # two-level picker). Each is a rich, ready-to-use config like the above.
-
   - id: blockchain_engineer
     label: Blockchain / Smart Contract Engineer
     group: Engineering
@@ -356,6 +213,32 @@ templates:
       linux kernel: 3
       hardware: 2
 
+  # ============================ Data & Science (4) ============================
+  - id: data_scientist
+    label: Data Scientist
+    group: Data & Science
+    description: Modeling, experimentation, statistical analysis.
+    title_keywords: [data scientist, applied scientist, research scientist, machine learning scientist]
+    title_exclude: [junior, intern, manager]
+    must_have_stack: [python, sql, machine learning, statistics]
+    nice_to_have:
+      experimentation: 4
+      a/b testing: 4
+      pytorch: 3
+      causal inference: 3
+
+  - id: data_analyst
+    label: Data / Business Analyst
+    group: Data & Science
+    description: Reporting, dashboards, business insight.
+    title_keywords: [data analyst, business analyst, business intelligence, bi analyst, analytics analyst]
+    title_exclude: [junior, intern, manager]
+    must_have_stack: [sql, tableau, looker, power bi, excel, python]
+    nice_to_have:
+      dbt: 3
+      dashboards: 3
+      stakeholder: 2
+
   - id: analytics_engineer
     label: Analytics Engineer
     group: Data & Science
@@ -382,6 +265,32 @@ templates:
       computer vision: 3
       reinforcement learning: 3
 
+  # ============================ Product (4) ============================
+  - id: product_manager
+    label: Product Manager
+    group: Product
+    description: Product strategy, roadmap, discovery, delivery.
+    title_keywords: [product manager, senior product manager, group product manager, principal product manager, director of product, head of product]
+    title_exclude: [intern, marketing, project manager]
+    must_have_stack: [product, roadmap, stakeholder, discovery, user research]
+    nice_to_have:
+      experimentation: 4
+      analytics: 3
+      b2b: 2
+      platform: 2
+
+  - id: technical_program_manager
+    label: Technical Program Manager
+    group: Product
+    description: Cross-team delivery of technical programs.
+    title_keywords: [technical program manager, tpm, program manager, technical project manager]
+    title_exclude: [intern, marketing]
+    must_have_stack: [program management, cross-functional, stakeholder, delivery]
+    nice_to_have:
+      agile: 3
+      risk management: 3
+      infrastructure: 2
+
   - id: ai_product_manager
     label: AI Product Manager
     group: Product
@@ -406,6 +315,32 @@ templates:
       analytics: 3
       research ops: 3
       roadmap: 2
+
+  # ============================ Design (4) ============================
+  - id: product_designer
+    label: Product Designer
+    group: Design
+    description: UX/UI design, interaction, design systems.
+    title_keywords: [product designer, ux designer, ui designer, ux/ui designer, senior product designer, design lead]
+    title_exclude: [intern, graphic designer, marketing]
+    must_have_stack: [figma, ux, ui, prototyping, user research]
+    nice_to_have:
+      design systems: 5
+      interaction design: 4
+      accessibility: 3
+      design tokens: 2
+
+  - id: ux_researcher
+    label: UX Researcher
+    group: Design
+    description: User research, usability, insight generation.
+    title_keywords: [ux researcher, user researcher, design researcher, research lead]
+    title_exclude: [intern, market researcher]
+    must_have_stack: [user research, usability, qualitative, interviews]
+    nice_to_have:
+      survey: 3
+      mixed methods: 3
+      figma: 2
 
   - id: design_engineer
     label: Design Engineer (UX Engineer)
@@ -432,6 +367,32 @@ templates:
       illustration: 3
       design systems: 3
 
+  # ============================ Growth & Marketing (4) ============================
+  - id: growth_marketing
+    label: Growth / Marketing Manager
+    group: Growth & Marketing
+    description: Acquisition, lifecycle, performance marketing.
+    title_keywords: [growth manager, marketing manager, growth marketing, performance marketing, demand generation, head of growth]
+    title_exclude: [intern, engineer]
+    must_have_stack: [marketing, growth, acquisition, campaigns, analytics]
+    nice_to_have:
+      seo: 3
+      paid acquisition: 3
+      lifecycle: 3
+      a/b testing: 2
+
+  - id: product_marketing
+    label: Product Marketing Manager
+    group: Growth & Marketing
+    description: Positioning, messaging, go-to-market.
+    title_keywords: [product marketing manager, pmm, product marketing, go-to-market manager]
+    title_exclude: [intern, engineer]
+    must_have_stack: [product marketing, positioning, messaging, go-to-market, launch]
+    nice_to_have:
+      competitive analysis: 3
+      sales enablement: 3
+      b2b: 2
+
   - id: content_marketing_manager
     label: Content Marketing Manager
     group: Growth & Marketing
@@ -457,6 +418,31 @@ templates:
       attribution: 3
       sql: 2
 
+  # ============================ Sales & Success (4) ============================
+  - id: account_executive
+    label: Account Executive (Sales)
+    group: Sales & Success
+    description: B2B sales, pipeline, quota-carrying.
+    title_keywords: [account executive, sales executive, enterprise sales, sales representative, account manager]
+    title_exclude: [intern, engineer, marketing]
+    must_have_stack: [sales, quota, pipeline, prospecting, crm]
+    nice_to_have:
+      saas: 3
+      enterprise: 3
+      salesforce: 2
+
+  - id: customer_success
+    label: Customer Success Manager
+    group: Sales & Success
+    description: Retention, onboarding, account health.
+    title_keywords: [customer success manager, csm, customer success, customer experience]
+    title_exclude: [intern, engineer]
+    must_have_stack: [customer success, onboarding, retention, account management]
+    nice_to_have:
+      saas: 3
+      churn: 3
+      upsell: 2
+
   - id: solutions_engineer
     label: Solutions / Sales Engineer
     group: Sales & Success
@@ -481,6 +467,19 @@ templates:
       saas: 3
       outreach: 3
       salesforce: 2
+
+  # ============================ People & Ops (3) ============================
+  - id: technical_recruiter
+    label: Technical Recruiter
+    group: People & Ops
+    description: Sourcing and hiring for technical teams.
+    title_keywords: [technical recruiter, recruiter, talent acquisition, sourcer, recruiting manager]
+    title_exclude: [intern]
+    must_have_stack: [recruiting, sourcing, talent acquisition, hiring]
+    nice_to_have:
+      technical hiring: 4
+      employer branding: 2
+      ats: 2
 
   - id: business_operations_manager
     label: Business Operations Manager
