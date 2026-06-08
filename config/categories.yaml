@@ -1,32 +1,18 @@
-# Default job-categorization rules (committed). First match in `order` wins.
-# These ids align with the domain vocabulary in config/domains.yaml. Only the
-# domains with reliable keyword signal are classified here today; everything else
-# falls back to `saas` (general software). Override per-user by placing a
-# categories.yaml in your profile/ dir.
+# Default job-categorization rules (committed). First match in `order` wins, so
+# the list is ordered most-distinctive → most-general. These ids are the domain
+# vocabulary in config/domains.yaml. Keywords are DISTINCTIVE on purpose — bare
+# generic terms ("liquidity", "data", "cloud") mislabel hundreds of jobs (corpus
+# audits 2026-06). Anything unmatched falls back to `saas` (general software).
+# Override per-user by placing a categories.yaml in your profile/ dir.
 
-order: [ai-ml, crypto, fintech, saas]
+order: [crypto, gaming, healthtech, security, data, ai-ml, devtools, cloud-infra, fintech, ecommerce, consumer]
 
-# Category assigned when nothing in `keywords` matches (general software).
 fallback: saas
 
 keywords:
-  ai-ml:
-    - llm
-    - openai
-    - anthropic
-    - claude
-    - gen ai
-    - generative ai
-    - mcp
-    - ml engineer
-    - ai agent
-    - ai engineer
-    - gpt
-    # NOTE: bare "machine learning" removed — a fintech JD mentioning an ML
-    # fraud model is not an AI company (corpus audit: mislabeled Razorpay etc.)
   crypto:
-    # protocol-specific terms — bare "liquidity"/"yield"/"swap" are everyday
-    # TradFi vocabulary and mislabeled hundreds of payments jobs (2026-06-07 audit)
+    # protocol-specific — bare "liquidity"/"yield"/"swap" are everyday TradFi
+    # vocabulary and mislabeled hundreds of payments jobs (2026-06-07 audit)
     - defi
     - lending protocol
     - dex
@@ -45,11 +31,86 @@ keywords:
     - on-chain
     - onchain
     - indexer
-    - l2
     - rollup
     - crypto
     - solana
     - wallet
+  gaming:
+    - game engine
+    - unreal engine
+    - gameplay
+    - game designer
+    - gamedev
+    - game studio
+    - multiplayer
+    - level design
+  healthtech:
+    - ehr
+    - electronic health record
+    - hipaa
+    - telehealth
+    - digital health
+    - fhir
+    - clinical data
+    - medtech
+    - patient data
+  security:
+    - cybersecurity
+    - infosec
+    - appsec
+    - siem
+    - edr
+    - xdr
+    - threat detection
+    - threat intelligence
+    - penetration testing
+    - pentest
+    - vulnerability management
+    - zero trust
+    - security operations
+    - malware
+  data:
+    - data engineer
+    - data platform
+    - data warehouse
+    - data pipeline
+    - analytics engineer
+    - snowflake
+    - databricks
+    - dbt
+    - apache spark
+    - business intelligence
+  ai-ml:
+    - llm
+    - openai
+    - anthropic
+    - claude
+    - gen ai
+    - generative ai
+    - mcp
+    - ml engineer
+    - ai agent
+    - ai engineer
+    - gpt
+    # NOTE: bare "machine learning" removed — a fintech JD mentioning an ML
+    # fraud model is not an AI company (corpus audit: mislabeled Razorpay etc.)
+  devtools:
+    - developer tools
+    - developer experience
+    - devex
+    - ci/cd pipeline
+    - api platform
+    - sdk
+    - observability
+  cloud-infra:
+    - kubernetes
+    - terraform
+    - site reliability
+    - sre
+    - devops
+    - serverless
+    - cloud platform
+    - infrastructure engineer
   fintech:
     - payments
     - banking
@@ -62,3 +123,17 @@ keywords:
     - neobank
     - remittance
     - ledger
+  ecommerce:
+    - e-commerce
+    - ecommerce
+    - marketplace
+    - storefront
+    - fulfillment
+    - merchant
+    - checkout flow
+  consumer:
+    - social network
+    - creator economy
+    - content moderation
+    - consumer mobile
+    - subscriptions platform
