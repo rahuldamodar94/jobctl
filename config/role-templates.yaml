@@ -18,489 +18,1916 @@
 #     won't match "Backend Software Engineer" — list the variants you want).
 #   - must_have_stack / nice_to_have are word-boundary matched, so prefer
 #     unambiguous terms ("golang" over bare "go", "node.js" over "node").
+#     Real audit learnings (do not regress): never bare "go" (use "golang"),
+#     never bare "r"/"c"; "java" is word-boundary-safe and won't hit
+#     "javascript", but list both when you want both; guard ambiguous title
+#     tokens ("sde" vs "sdet", "research", "sre", "site reliability").
+#   - exclude_if_primary: language/stack terms that, when PRIMARY in a JD,
+#     exclude it (forgiven on polyglot titles that also name a must-have term).
 #
 # Refining a template = a PR (shared value). Your personal edits live in
 # profile/roles.yaml, never here.
 
 templates:
 
-  # ============================ Engineering (14) ============================
+  # ============================ Engineering (16) ============================
   - id: backend_engineer
     label: Backend Engineer
     group: Engineering
     description: Server-side services, APIs, distributed systems.
-    title_keywords: [backend engineer, backend developer, senior software engineer, software engineer, server engineer, api engineer]
-    title_exclude: [junior, intern, frontend, mobile, manager]
-    must_have_stack: [python, java, golang, node.js, typescript, ruby, c#]
+    title_keywords:
+      - backend engineer
+      - backend developer
+      - back-end engineer
+      - back end engineer
+      - senior backend
+      - staff backend
+      - senior software engineer
+      - staff software engineer
+      - principal software engineer
+      - software engineer
+      - software engineer, backend
+      - engineer, backend
+      - server engineer
+      - server-side engineer
+      - api engineer
+      - platform engineer
+      - distributed systems engineer
+      - systems engineer
+      - software development engineer
+      - sde
+      - services engineer
+      - core engineer
+      - product engineer
+      - founding engineer
+      - member of technical staff
+    title_exclude:
+      - junior
+      - intern
+      - graduate
+      - working student
+      - entry level
+      - apprentice
+      - frontend
+      - front-end
+      - mobile
+      - ios
+      - android
+      - manager
+      - director
+      - head of
+      - sdet
+      - test engineer
+      - sre
+      - site reliability
+      - research
+      - solutions
+      - sales engineer
+      - rust
+      - golang
+      - scala
+      - c++
+    must_have_stack:
+      - python
+      - java
+      - golang
+      - node.js
+      - node
+      - nodejs
+      - typescript
+      - ruby
+      - c#
+      - rust
     nice_to_have:
-      postgresql: 4
-      kafka: 4
-      microservices: 4
+      microservices: 5
       distributed systems: 5
+      postgresql: 4
+      postgres: 4
+      kafka: 4
+      redis: 4
+      grpc: 4
+      rest api: 3
+      graphql: 3
+      event-driven: 4
+      message queue: 3
+      high-throughput: 5
+      scalability: 4
       aws: 3
       kubernetes: 3
+      docker: 3
+      observability: 3
+      ci/cd: 3
+      on-call: 2
+      "manager": -8
+      "frontend engineer": -10
+      "on-site only": -10
+      "relocation required": -5
 
   - id: frontend_engineer
     label: Frontend Engineer
     group: Engineering
     description: Web UI, design systems, browser performance.
-    title_keywords: [frontend engineer, front-end engineer, frontend developer, ui engineer, web engineer]
-    title_exclude: [junior, intern, backend, manager]
-    must_have_stack: [react, typescript, javascript, vue, angular, next.js]
+    title_keywords:
+      - frontend engineer
+      - front-end engineer
+      - front end engineer
+      - frontend developer
+      - front-end developer
+      - ui engineer
+      - ui developer
+      - web engineer
+      - web developer
+      - senior frontend
+      - staff frontend
+      - senior software engineer
+      - software engineer, frontend
+      - engineer, frontend
+      - javascript engineer
+      - react engineer
+      - react developer
+      - client-side engineer
+      - product engineer
+      - founding engineer
+    title_exclude:
+      - junior
+      - intern
+      - graduate
+      - working student
+      - entry level
+      - backend
+      - back-end
+      - mobile
+      - ios
+      - android
+      - manager
+      - director
+      - head of
+      - sdet
+      - test engineer
+      - sales engineer
+      - solutions
+    must_have_stack:
+      - react
+      - typescript
+      - javascript
+      - vue
+      - angular
+      - next.js
+      - svelte
     nice_to_have:
       design systems: 5
       accessibility: 4
+      web performance: 4
       graphql: 3
-      tailwind: 2
-      web performance: 3
+      tailwind: 3
+      redux: 3
+      webpack: 2
+      css: 3
+      responsive design: 3
+      typescript: 4
+      storybook: 2
+      ssr: 3
+      web vitals: 3
+      testing library: 2
+      "backend engineer": -8
+      "on-site only": -10
+      "wordpress": -5
 
   - id: fullstack_engineer
     label: Full-Stack Engineer
     group: Engineering
     description: End-to-end web features across frontend and backend.
-    title_keywords: [full stack engineer, fullstack engineer, full-stack engineer, full stack developer, software engineer]
-    title_exclude: [junior, intern, manager]
-    must_have_stack: [react, typescript, node.js, python, postgresql]
+    title_keywords:
+      - full stack engineer
+      - fullstack engineer
+      - full-stack engineer
+      - full stack developer
+      - fullstack developer
+      - full-stack developer
+      - senior full stack
+      - staff full stack
+      - software engineer
+      - senior software engineer
+      - product engineer
+      - founding engineer
+      - web engineer
+      - application engineer
+    title_exclude:
+      - junior
+      - intern
+      - graduate
+      - working student
+      - entry level
+      - manager
+      - director
+      - head of
+      - mobile
+      - ios
+      - android
+      - sdet
+      - sales engineer
+      - solutions
+    must_have_stack:
+      - react
+      - typescript
+      - node.js
+      - node
+      - nodejs
+      - javascript
+      - python
+      - postgresql
     nice_to_have:
       next.js: 4
-      graphql: 3
+      graphql: 4
       aws: 3
-      docker: 2
+      docker: 3
+      postgresql: 4
+      rest api: 3
+      microservices: 3
+      redis: 3
+      tailwind: 2
+      kubernetes: 2
+      ci/cd: 3
+      typescript: 4
+      "on-site only": -10
+      "manager": -8
 
   - id: mobile_engineer
     label: Mobile Engineer
     group: Engineering
     description: iOS / Android / cross-platform apps.
-    title_keywords: [mobile engineer, ios engineer, android engineer, mobile developer, ios developer, android developer]
-    title_exclude: [junior, intern, manager]
-    must_have_stack: [swift, kotlin, react native, flutter, objective-c]
+    title_keywords:
+      - mobile engineer
+      - mobile developer
+      - ios engineer
+      - ios developer
+      - android engineer
+      - android developer
+      - senior mobile
+      - staff mobile
+      - react native engineer
+      - react native developer
+      - flutter engineer
+      - flutter developer
+      - cross-platform engineer
+      - mobile software engineer
+      - software engineer, mobile
+      - swift engineer
+      - kotlin engineer
+    title_exclude:
+      - junior
+      - intern
+      - graduate
+      - working student
+      - entry level
+      - manager
+      - director
+      - head of
+      - backend
+      - frontend
+      - web developer
+      - sdet
+      - qa
+    must_have_stack:
+      - swift
+      - kotlin
+      - react native
+      - flutter
+      - objective-c
+      - ios
+      - android
     nice_to_have:
       swiftui: 4
       jetpack compose: 4
-      app store: 2
+      app store: 3
+      mobile architecture: 3
+      offline-first: 3
+      push notifications: 2
+      ci/cd: 3
+      fastlane: 2
+      core data: 2
+      performance: 3
+      accessibility: 2
+      "on-site only": -10
+      "manager": -8
 
   - id: devops_sre
     label: DevOps / SRE / Platform Engineer
     group: Engineering
     description: Infrastructure, reliability, CI/CD, platform.
-    title_keywords: [devops engineer, site reliability, sre, platform engineer, infrastructure engineer, cloud engineer]
-    title_exclude: [junior, intern, manager]
-    must_have_stack: [kubernetes, terraform, aws, gcp, azure, docker]
+    title_keywords:
+      - devops engineer
+      - site reliability engineer
+      - sre
+      - platform engineer
+      - infrastructure engineer
+      - cloud engineer
+      - reliability engineer
+      - systems engineer
+      - production engineer
+      - senior devops
+      - staff devops
+      - senior sre
+      - staff sre
+      - infrastructure architect
+      - cloud infrastructure engineer
+      - kubernetes engineer
+      - build engineer
+      - release engineer
+    title_exclude:
+      - junior
+      - intern
+      - graduate
+      - working student
+      - entry level
+      - manager
+      - director
+      - head of
+      - frontend
+      - mobile
+      - data engineer
+      - security engineer
+      - sales
+    must_have_stack:
+      - kubernetes
+      - terraform
+      - aws
+      - gcp
+      - azure
+      - docker
+      - ansible
     nice_to_have:
       observability: 5
       incident response: 4
       ci/cd: 4
+      prometheus: 4
+      grafana: 3
       golang: 3
-      prometheus: 3
+      helm: 3
+      argocd: 3
+      service mesh: 3
+      linux: 3
+      on-call: 3
+      infrastructure as code: 4
+      monitoring: 3
+      datadog: 3
+      "on-site only": -10
+      "manager": -8
 
   - id: data_engineer
     label: Data Engineer
     group: Engineering
     description: Pipelines, warehousing, streaming, data platforms.
-    title_keywords: [data engineer, analytics engineer, data platform engineer, etl developer]
-    title_exclude: [junior, intern, manager]
-    must_have_stack: [python, sql, spark, airflow, dbt, kafka]
+    title_keywords:
+      - data engineer
+      - senior data engineer
+      - staff data engineer
+      - data platform engineer
+      - analytics engineer
+      - etl developer
+      - etl engineer
+      - big data engineer
+      - data infrastructure engineer
+      - data pipeline engineer
+      - streaming engineer
+      - data warehouse engineer
+    title_exclude:
+      - junior
+      - intern
+      - graduate
+      - working student
+      - entry level
+      - manager
+      - director
+      - head of
+      - data scientist
+      - data analyst
+      - machine learning
+    must_have_stack:
+      - python
+      - sql
+      - spark
+      - airflow
+      - dbt
+      - kafka
+      - scala
     nice_to_have:
       snowflake: 4
       databricks: 4
-      streaming: 3
+      streaming: 4
       aws: 3
+      data modeling: 4
+      data warehouse: 4
+      flink: 3
+      bigquery: 3
+      redshift: 3
+      data lake: 3
+      orchestration: 3
+      pipeline: 3
+      "manager": -8
+      "on-site only": -10
 
   - id: ml_engineer
     label: Machine Learning Engineer
     group: Engineering
     description: Model training, serving, ML infrastructure.
-    title_keywords: [machine learning engineer, ml engineer, ai engineer, applied scientist, research engineer]
-    title_exclude: [junior, intern, manager]
-    must_have_stack: [python, pytorch, tensorflow, machine learning, llm]
+    title_keywords:
+      - machine learning engineer
+      - ml engineer
+      - senior machine learning
+      - staff machine learning
+      - ai engineer
+      - applied scientist
+      - applied ml engineer
+      - ml platform engineer
+      - ml infrastructure engineer
+      - mlops engineer
+      - deep learning engineer
+      - computer vision engineer
+      - nlp engineer
+      - member of technical staff
+    title_exclude:
+      - junior
+      - intern
+      - graduate
+      - working student
+      - entry level
+      - manager
+      - director
+      - head of
+      - data analyst
+      - product manager
+    must_have_stack:
+      - python
+      - pytorch
+      - tensorflow
+      - machine learning
+      - llm
+      - deep learning
     nice_to_have:
-      mlops: 4
+      mlops: 5
       transformers: 4
-      gpu: 3
-      kubernetes: 2
+      gpu: 4
+      kubernetes: 3
+      model serving: 4
+      feature engineering: 3
+      distributed training: 4
+      llm: 4
+      inference: 3
+      cuda: 3
+      sagemaker: 2
+      vector database: 3
+      rag: 3
+      fine-tuning: 3
+      "manager": -8
+      "on-site only": -10
 
   - id: security_engineer
     label: Security Engineer
     group: Engineering
     description: AppSec, cloud security, detection, identity.
-    title_keywords: [security engineer, application security, appsec, security analyst, product security, cloud security]
-    title_exclude: [junior, intern, manager, physical security]
-    must_have_stack: [security, penetration testing, threat modeling, owasp, siem]
+    title_keywords:
+      - security engineer
+      - application security engineer
+      - appsec engineer
+      - security analyst
+      - product security engineer
+      - cloud security engineer
+      - senior security engineer
+      - staff security engineer
+      - infrastructure security engineer
+      - offensive security engineer
+      - detection engineer
+      - security software engineer
+      - devsecops engineer
+    title_exclude:
+      - junior
+      - intern
+      - graduate
+      - working student
+      - entry level
+      - manager
+      - director
+      - head of
+      - physical security
+      - sales
+      - guard
+    must_have_stack:
+      - security
+      - penetration testing
+      - threat modeling
+      - owasp
+      - siem
+      - vulnerability
     nice_to_have:
       cloud security: 5
       incident response: 4
-      detection: 3
-      python: 2
+      detection: 4
+      python: 3
+      iam: 3
+      zero trust: 3
+      kubernetes: 2
+      threat detection: 4
+      compliance: 2
+      cryptography: 3
+      red team: 3
+      "manager": -8
+      "on-site only": -10
 
   - id: qa_engineer
     label: QA / Test Engineer
     group: Engineering
     description: Test automation, quality, release engineering.
-    title_keywords: [qa engineer, test engineer, sdet, quality engineer, automation engineer]
-    title_exclude: [junior, intern, manager]
-    must_have_stack: [test automation, selenium, cypress, playwright, python, java]
+    title_keywords:
+      - qa engineer
+      - test engineer
+      - sdet
+      - quality engineer
+      - automation engineer
+      - test automation engineer
+      - software engineer in test
+      - senior qa
+      - staff qa
+      - qa automation
+      - quality assurance engineer
+      - performance test engineer
+    title_exclude:
+      - junior
+      - intern
+      - graduate
+      - working student
+      - entry level
+      - manager
+      - director
+      - head of
+      - manual tester
+      - game tester
+    must_have_stack:
+      - test automation
+      - selenium
+      - cypress
+      - playwright
+      - python
+      - java
+      - testing
     nice_to_have:
-      ci/cd: 3
-      performance testing: 3
-      api testing: 2
-
-  - id: engineering_manager
-    label: Engineering Manager
-    group: Engineering
-    description: Leading software teams (people management).
-    lane: em
-    title_keywords: [engineering manager, software engineering manager, director of engineering, head of engineering, vp engineering]
-    title_exclude: [intern]
-    must_have_stack: [engineering, software, team, leadership]
-    nice_to_have:
-      hiring: 3
-      roadmap: 3
-      distributed systems: 2
+      ci/cd: 4
+      performance testing: 4
+      api testing: 3
+      test framework: 3
+      load testing: 3
+      pytest: 2
+      appium: 2
+      test strategy: 3
+      regression testing: 2
+      "manager": -8
+      "manual only": -8
+      "on-site only": -10
 
   - id: blockchain_engineer
     label: Blockchain / Smart Contract Engineer
     group: Engineering
     description: Smart contracts, protocols, on-chain systems.
-    title_keywords: [blockchain engineer, smart contract engineer, protocol engineer, solidity engineer, smart contract developer, blockchain developer]
-    title_exclude: [junior, intern, manager, marketing]
-    must_have_stack: [solidity, rust, smart contracts, evm, web3]
+    title_keywords:
+      - blockchain engineer
+      - blockchain developer
+      - smart contract engineer
+      - smart contract developer
+      - protocol engineer
+      - solidity engineer
+      - solidity developer
+      - web3 engineer
+      - web3 developer
+      - rust engineer
+      - core protocol engineer
+      - defi engineer
+      - senior blockchain
+      - staff blockchain
+      - founding engineer
+    title_exclude:
+      - junior
+      - intern
+      - graduate
+      - working student
+      - entry level
+      - manager
+      - director
+      - head of
+      - marketing
+      - community
+      - sales
+      - business development
+    must_have_stack:
+      - solidity
+      - rust
+      - smart contracts
+      - evm
+      - web3
+      - blockchain
     nice_to_have:
       defi: 5
       cryptography: 4
       zero knowledge: 4
-      foundry: 3
+      foundry: 4
       hardhat: 3
-      golang: 2
+      golang: 3
+      ethers.js: 3
+      viem: 3
+      consensus: 4
+      cross-chain: 4
+      staking: 3
+      audit: 2
+      "marketing": -10
+      "on-site only": -10
 
   - id: game_engineer
     label: Game / Gameplay Engineer
     group: Engineering
     description: Gameplay systems, engines, multiplayer netcode.
-    title_keywords: [game engineer, gameplay engineer, game developer, engine programmer, gameplay programmer, graphics engineer]
-    title_exclude: [junior, intern, manager]
-    must_have_stack: [c++, unreal engine, unity, game development, c#]
+    title_keywords:
+      - game engineer
+      - gameplay engineer
+      - game developer
+      - gameplay programmer
+      - engine programmer
+      - graphics engineer
+      - graphics programmer
+      - game programmer
+      - senior gameplay
+      - tools programmer
+      - rendering engineer
+      - network programmer
+    title_exclude:
+      - junior
+      - intern
+      - graduate
+      - working student
+      - entry level
+      - manager
+      - director
+      - head of
+      - game tester
+      - qa
+      - artist
+    must_have_stack:
+      - c++
+      - unreal engine
+      - unity
+      - game development
+      - c#
     nice_to_have:
       multiplayer: 4
       netcode: 4
       graphics: 4
       physics: 3
       gameplay: 3
+      rendering: 3
+      shaders: 3
+      game engine: 4
+      optimization: 3
+      "manager": -8
+      "on-site only": -10
 
   - id: ai_research_engineer
     label: AI Research Engineer
     group: Engineering
     description: Applied research on models, training, evaluation.
-    title_keywords: [research engineer, ai research engineer, member of technical staff, applied research engineer, deep learning engineer]
-    title_exclude: [junior, intern, manager]
-    must_have_stack: [pytorch, machine learning, deep learning, llm, transformers]
+    title_keywords:
+      - research engineer
+      - ai research engineer
+      - applied research engineer
+      - member of technical staff
+      - deep learning engineer
+      - machine learning research engineer
+      - research scientist
+      - ml research engineer
+      - llm engineer
+      - foundation model engineer
+    title_exclude:
+      - junior
+      - intern
+      - graduate
+      - working student
+      - entry level
+      - manager
+      - director
+      - head of
+      - data analyst
+      - product manager
+      - market research
+    must_have_stack:
+      - pytorch
+      - machine learning
+      - deep learning
+      - llm
+      - transformers
+      - jax
     nice_to_have:
       distributed training: 5
       cuda: 4
       reinforcement learning: 4
       jax: 3
       research: 3
+      publications: 3
+      llm: 4
+      diffusion: 3
+      evaluation: 3
+      pretraining: 4
+      fine-tuning: 3
+      gpu: 3
+      "manager": -8
+      "on-site only": -10
 
   - id: embedded_engineer
     label: Embedded / Firmware Engineer
     group: Engineering
     description: Firmware, embedded systems, hardware-adjacent software.
-    title_keywords: [embedded engineer, firmware engineer, embedded software engineer, embedded systems engineer]
-    title_exclude: [junior, intern, manager]
-    must_have_stack: [embedded, firmware, c++, rtos, microcontroller]
+    title_keywords:
+      - embedded engineer
+      - firmware engineer
+      - embedded software engineer
+      - embedded systems engineer
+      - firmware developer
+      - embedded developer
+      - senior firmware
+      - staff firmware
+      - low-level engineer
+      - bsp engineer
+      - hardware software engineer
+    title_exclude:
+      - junior
+      - intern
+      - graduate
+      - working student
+      - entry level
+      - manager
+      - director
+      - head of
+      - web
+      - frontend
+      - data
+    must_have_stack:
+      - embedded
+      - firmware
+      - c++
+      - rtos
+      - microcontroller
     nice_to_have:
       arm: 4
       device drivers: 4
       linux kernel: 3
-      hardware: 2
+      hardware: 3
+      bare-metal: 3
+      i2c: 2
+      spi: 2
+      can bus: 2
+      real-time: 3
+      bootloader: 2
+      "manager": -8
+      "on-site only": -8
+
+  - id: api_platform_engineer
+    label: API / Developer Platform Engineer
+    group: Engineering
+    description: Public APIs, SDKs, developer-facing platforms.
+    title_keywords:
+      - api engineer
+      - platform engineer
+      - developer platform engineer
+      - developer experience engineer
+      - sdk engineer
+      - integrations engineer
+      - developer tools engineer
+      - senior platform engineer
+      - staff platform engineer
+      - api platform engineer
+      - software engineer
+      - backend engineer
+    title_exclude:
+      - junior
+      - intern
+      - graduate
+      - working student
+      - entry level
+      - manager
+      - director
+      - head of
+      - frontend
+      - mobile
+      - sales engineer
+      - solutions
+    must_have_stack:
+      - typescript
+      - node.js
+      - node
+      - nodejs
+      - python
+      - golang
+      - api
+      - rest
+    nice_to_have:
+      sdk: 5
+      developer experience: 5
+      graphql: 4
+      grpc: 4
+      open source: 4
+      api design: 4
+      webhooks: 3
+      openapi: 3
+      documentation: 3
+      rest api: 3
+      versioning: 2
+      "on-site only": -10
+      "manager": -8
+
+  - id: distributed_systems_engineer
+    label: Distributed Systems Engineer
+    group: Engineering
+    description: High-scale distributed systems, databases, consensus.
+    title_keywords:
+      - distributed systems engineer
+      - systems engineer
+      - senior systems engineer
+      - staff systems engineer
+      - infrastructure engineer
+      - backend engineer
+      - software engineer
+      - database engineer
+      - storage engineer
+      - core engineer
+      - performance engineer
+      - founding engineer
+    title_exclude:
+      - junior
+      - intern
+      - graduate
+      - working student
+      - entry level
+      - manager
+      - director
+      - head of
+      - frontend
+      - mobile
+      - sdet
+      - sales engineer
+    must_have_stack:
+      - distributed systems
+      - golang
+      - rust
+      - c++
+      - java
+      - kafka
+    nice_to_have:
+      consensus: 5
+      raft: 4
+      high-throughput: 5
+      low-latency: 4
+      replication: 4
+      sharding: 4
+      database internals: 4
+      concurrency: 4
+      scalability: 4
+      fault tolerance: 4
+      "manager": -8
+      "on-site only": -10
 
   # ============================ Data & Science (4) ============================
   - id: data_scientist
     label: Data Scientist
     group: Data & Science
     description: Modeling, experimentation, statistical analysis.
-    title_keywords: [data scientist, applied scientist, research scientist, machine learning scientist]
-    title_exclude: [junior, intern, manager]
-    must_have_stack: [python, sql, machine learning, statistics]
+    title_keywords:
+      - data scientist
+      - senior data scientist
+      - staff data scientist
+      - applied scientist
+      - research scientist
+      - machine learning scientist
+      - quantitative analyst
+      - decision scientist
+      - product data scientist
+      - lead data scientist
+      - principal data scientist
+    title_exclude:
+      - junior
+      - intern
+      - graduate
+      - working student
+      - entry level
+      - manager
+      - director
+      - head of
+      - data engineer
+      - data analyst
+    must_have_stack:
+      - python
+      - sql
+      - machine learning
+      - statistics
+      - pandas
     nice_to_have:
       experimentation: 4
       a/b testing: 4
       pytorch: 3
-      causal inference: 3
+      causal inference: 4
+      statistical modeling: 4
+      forecasting: 3
+      scikit-learn: 3
+      bayesian: 3
+      regression: 2
+      python: 3
+      "manager": -8
+      "on-site only": -10
 
   - id: data_analyst
     label: Data / Business Analyst
     group: Data & Science
     description: Reporting, dashboards, business insight.
-    title_keywords: [data analyst, business analyst, business intelligence, bi analyst, analytics analyst]
-    title_exclude: [junior, intern, manager]
-    must_have_stack: [sql, tableau, looker, power bi, excel, python]
+    title_keywords:
+      - data analyst
+      - business analyst
+      - business intelligence analyst
+      - bi analyst
+      - analytics analyst
+      - senior data analyst
+      - product analyst
+      - marketing analyst
+      - operations analyst
+      - reporting analyst
+      - insights analyst
+    title_exclude:
+      - junior
+      - intern
+      - graduate
+      - working student
+      - entry level
+      - manager
+      - director
+      - head of
+      - data scientist
+      - data engineer
+      - financial analyst
+    must_have_stack:
+      - sql
+      - tableau
+      - looker
+      - power bi
+      - excel
+      - python
     nice_to_have:
       dbt: 3
-      dashboards: 3
-      stakeholder: 2
+      dashboards: 4
+      stakeholder: 3
+      data visualization: 4
+      reporting: 3
+      a/b testing: 3
+      sql: 4
+      kpi: 2
+      "manager": -8
+      "on-site only": -10
 
   - id: analytics_engineer
     label: Analytics Engineer
     group: Data & Science
     description: Transform + model data for analytics (dbt / warehouse).
-    title_keywords: [analytics engineer, analytics developer, bi engineer, data analytics engineer]
-    title_exclude: [junior, intern, manager]
-    must_have_stack: [sql, dbt, snowflake, bigquery, python]
+    title_keywords:
+      - analytics engineer
+      - analytics developer
+      - bi engineer
+      - data analytics engineer
+      - senior analytics engineer
+      - business intelligence engineer
+      - data modeling engineer
+    title_exclude:
+      - junior
+      - intern
+      - graduate
+      - working student
+      - entry level
+      - manager
+      - director
+      - head of
+      - data scientist
+      - data analyst
+    must_have_stack:
+      - sql
+      - dbt
+      - snowflake
+      - bigquery
+      - python
+      - looker
     nice_to_have:
       data modeling: 5
-      looker: 3
+      looker: 4
       airflow: 3
-      warehouse: 3
+      warehouse: 4
+      dimensional modeling: 4
+      data pipeline: 3
+      semantic layer: 3
+      testing: 2
+      "manager": -8
+      "on-site only": -10
 
   - id: research_scientist
     label: Research Scientist (ML/AI)
     group: Data & Science
     description: Novel ML/AI research, modeling, evaluation.
-    title_keywords: [research scientist, applied scientist, machine learning scientist, ai scientist]
-    title_exclude: [junior, intern, manager]
-    must_have_stack: [machine learning, deep learning, pytorch, research, statistics]
+    title_keywords:
+      - research scientist
+      - applied scientist
+      - machine learning scientist
+      - ai scientist
+      - senior research scientist
+      - staff research scientist
+      - member of technical staff
+      - principal scientist
+      - ml researcher
+      - deep learning researcher
+    title_exclude:
+      - junior
+      - intern
+      - graduate
+      - working student
+      - entry level
+      - manager
+      - director
+      - head of
+      - market research
+      - data analyst
+      - ux researcher
+    must_have_stack:
+      - machine learning
+      - deep learning
+      - pytorch
+      - research
+      - statistics
     nice_to_have:
       publications: 4
       nlp: 3
       computer vision: 3
-      reinforcement learning: 3
+      reinforcement learning: 4
+      transformers: 3
+      llm: 4
+      phd: 3
+      experimentation: 3
+      evaluation: 3
+      "manager": -8
+      "on-site only": -10
 
-  # ============================ Product (4) ============================
+  # ============================ Product (5) ============================
   - id: product_manager
     label: Product Manager
     group: Product
     description: Product strategy, roadmap, discovery, delivery.
-    title_keywords: [product manager, senior product manager, group product manager, principal product manager, director of product, head of product]
-    title_exclude: [intern, marketing, project manager]
-    must_have_stack: [product, roadmap, stakeholder, discovery, user research]
+    title_keywords:
+      - product manager
+      - senior product manager
+      - group product manager
+      - principal product manager
+      - lead product manager
+      - product owner
+      - product lead
+      - technical product manager
+      - growth product manager
+      - platform product manager
+    title_exclude:
+      - intern
+      - graduate
+      - working student
+      - product marketing
+      - project manager
+      - program manager
+      - associate product manager
+      - product designer
+    must_have_stack:
+      - product
+      - roadmap
+      - stakeholder
+      - discovery
+      - user research
+      - product strategy
     nice_to_have:
       experimentation: 4
-      analytics: 3
-      b2b: 2
-      platform: 2
+      analytics: 4
+      b2b: 3
+      saas: 3
+      platform: 3
+      product-led: 3
+      a/b testing: 3
+      data-driven: 3
+      go-to-market: 2
+      api: 2
+      "intern": -10
+      "on-site only": -8
 
   - id: technical_program_manager
     label: Technical Program Manager
     group: Product
     description: Cross-team delivery of technical programs.
-    title_keywords: [technical program manager, tpm, program manager, technical project manager]
-    title_exclude: [intern, marketing]
-    must_have_stack: [program management, cross-functional, stakeholder, delivery]
+    title_keywords:
+      - technical program manager
+      - tpm
+      - program manager
+      - technical project manager
+      - senior program manager
+      - senior technical program manager
+      - staff technical program manager
+      - principal program manager
+      - delivery manager
+    title_exclude:
+      - intern
+      - graduate
+      - working student
+      - product manager
+      - product marketing
+      - marketing program
+      - event program
+    must_have_stack:
+      - program management
+      - cross-functional
+      - stakeholder
+      - delivery
+      - project management
     nice_to_have:
-      agile: 3
-      risk management: 3
-      infrastructure: 2
+      agile: 4
+      risk management: 4
+      infrastructure: 3
+      scrum: 3
+      roadmap: 3
+      dependencies: 3
+      technical: 3
+      jira: 2
+      "intern": -10
+      "on-site only": -8
 
   - id: ai_product_manager
     label: AI Product Manager
     group: Product
     description: Product for AI/ML-powered features and platforms.
-    title_keywords: [ai product manager, machine learning product manager, llm product manager, product manager, ai pm]
-    title_exclude: [intern, marketing, project manager]
-    must_have_stack: [product, machine learning, ai, roadmap, llm]
+    title_keywords:
+      - ai product manager
+      - machine learning product manager
+      - ml product manager
+      - llm product manager
+      - product manager, ai
+      - product manager, ml
+      - senior ai product manager
+      - data product manager
+      - generative ai product manager
+    title_exclude:
+      - intern
+      - graduate
+      - working student
+      - product marketing
+      - project manager
+      - program manager
+    must_have_stack:
+      - product
+      - machine learning
+      - ai
+      - roadmap
+      - llm
     nice_to_have:
       experimentation: 4
       data: 3
       platform: 3
-      developer: 2
+      developer: 3
+      llm: 4
+      generative ai: 4
+      analytics: 3
+      go-to-market: 2
+      api: 2
+      "intern": -10
+      "on-site only": -8
 
   - id: product_operations_manager
     label: Product Operations Manager
     group: Product
     description: Product ops — process, tooling, insights.
-    title_keywords: [product operations, product ops, product operations manager]
-    title_exclude: [intern]
-    must_have_stack: [product operations, process, stakeholder, tooling]
+    title_keywords:
+      - product operations manager
+      - product operations
+      - product ops
+      - senior product operations
+      - product operations lead
+      - product ops manager
+    title_exclude:
+      - intern
+      - graduate
+      - working student
+      - product manager
+      - product marketing
+      - warehouse
+      - sales operations
+    must_have_stack:
+      - product operations
+      - process
+      - stakeholder
+      - tooling
+      - cross-functional
     nice_to_have:
-      analytics: 3
+      analytics: 4
       research ops: 3
-      roadmap: 2
+      roadmap: 3
+      data: 3
+      process improvement: 3
+      reporting: 3
+      "intern": -10
+      "on-site only": -8
+
+  - id: group_product_manager
+    label: Group / Director of Product
+    group: Product
+    description: Lead a product area + people-manage PMs.
+    lane: em
+    title_keywords:
+      - group product manager
+      - director of product
+      - head of product
+      - vp of product
+      - vp product
+      - senior director of product
+      - director, product management
+      - head of product management
+      - chief product officer
+      - cpo
+    title_exclude:
+      - intern
+      - graduate
+      - working student
+      - product marketing
+      - product designer
+      - associate
+    must_have_stack:
+      - product
+      - product strategy
+      - roadmap
+      - leadership
+      - stakeholder
+    nice_to_have:
+      hiring: 4
+      product vision: 4
+      cross-functional: 3
+      b2b: 3
+      saas: 3
+      platform: 3
+      go-to-market: 2
+      "intern": -10
+      "on-site only": -8
 
   # ============================ Design (4) ============================
   - id: product_designer
     label: Product Designer
     group: Design
     description: UX/UI design, interaction, design systems.
-    title_keywords: [product designer, ux designer, ui designer, ux/ui designer, senior product designer, design lead]
-    title_exclude: [intern, graphic designer, marketing]
-    must_have_stack: [figma, ux, ui, prototyping, user research]
+    title_keywords:
+      - product designer
+      - senior product designer
+      - staff product designer
+      - ux designer
+      - ui designer
+      - ux/ui designer
+      - product design lead
+      - principal product designer
+      - lead product designer
+      - interaction designer
+      - experience designer
+    title_exclude:
+      - intern
+      - graduate
+      - working student
+      - graphic designer
+      - visual designer
+      - brand designer
+      - marketing
+      - motion designer
+    must_have_stack:
+      - figma
+      - ux
+      - ui
+      - prototyping
+      - user research
+      - interaction design
     nice_to_have:
       design systems: 5
       interaction design: 4
       accessibility: 3
-      design tokens: 2
+      design tokens: 3
+      user research: 4
+      wireframing: 3
+      usability: 3
+      b2b: 2
+      saas: 2
+      "intern": -10
+      "on-site only": -8
 
   - id: ux_researcher
     label: UX Researcher
     group: Design
     description: User research, usability, insight generation.
-    title_keywords: [ux researcher, user researcher, design researcher, research lead]
-    title_exclude: [intern, market researcher]
-    must_have_stack: [user research, usability, qualitative, interviews]
+    title_keywords:
+      - ux researcher
+      - user researcher
+      - design researcher
+      - user experience researcher
+      - senior ux researcher
+      - staff ux researcher
+      - research lead
+      - principal ux researcher
+      - product researcher
+    title_exclude:
+      - intern
+      - graduate
+      - working student
+      - market researcher
+      - data scientist
+      - research scientist
+      - product designer
+    must_have_stack:
+      - user research
+      - usability
+      - qualitative
+      - interviews
+      - ux research
     nice_to_have:
       survey: 3
-      mixed methods: 3
+      mixed methods: 4
       figma: 2
+      usability testing: 4
+      quantitative: 3
+      research operations: 3
+      synthesis: 3
+      personas: 2
+      "intern": -10
+      "on-site only": -8
 
   - id: design_engineer
     label: Design Engineer (UX Engineer)
     group: Design
     description: Bridge design + frontend — prototypes, design systems in code.
-    title_keywords: [design engineer, ux engineer, design technologist, creative technologist]
-    title_exclude: [junior, intern, manager, backend]
-    must_have_stack: [react, css, design systems, typescript, figma]
+    title_keywords:
+      - design engineer
+      - ux engineer
+      - design technologist
+      - creative technologist
+      - senior design engineer
+      - staff design engineer
+      - frontend design engineer
+      - design systems engineer
+      - prototyping engineer
+    title_exclude:
+      - junior
+      - intern
+      - graduate
+      - working student
+      - entry level
+      - manager
+      - director
+      - head of
+      - backend
+      - graphic designer
+    must_have_stack:
+      - react
+      - css
+      - design systems
+      - typescript
+      - figma
     nice_to_have:
       animation: 4
       prototyping: 4
-      accessibility: 3
-      tailwind: 2
+      accessibility: 4
+      tailwind: 3
+      design tokens: 4
+      interaction design: 3
+      svg: 2
+      web performance: 3
+      storybook: 2
+      "on-site only": -8
+      "manager": -8
 
   - id: brand_designer
     label: Brand / Visual Designer
     group: Design
     description: Brand identity, visual systems, marketing design.
-    title_keywords: [brand designer, visual designer, graphic designer, brand design, art director]
-    title_exclude: [intern, ux designer, product designer]
-    must_have_stack: [branding, visual design, typography, adobe, figma]
+    title_keywords:
+      - brand designer
+      - visual designer
+      - graphic designer
+      - brand design lead
+      - art director
+      - senior brand designer
+      - senior visual designer
+      - communication designer
+      - marketing designer
+      - motion designer
+    title_exclude:
+      - intern
+      - graduate
+      - working student
+      - ux designer
+      - product designer
+      - ui designer
+      - design engineer
+    must_have_stack:
+      - branding
+      - visual design
+      - typography
+      - adobe
+      - figma
     nice_to_have:
       motion: 4
       illustration: 3
       design systems: 3
+      brand identity: 4
+      art direction: 3
+      animation: 3
+      after effects: 2
+      "intern": -10
+      "on-site only": -8
 
   # ============================ Growth & Marketing (4) ============================
   - id: growth_marketing
     label: Growth / Marketing Manager
     group: Growth & Marketing
     description: Acquisition, lifecycle, performance marketing.
-    title_keywords: [growth manager, marketing manager, growth marketing, performance marketing, demand generation, head of growth]
-    title_exclude: [intern, engineer]
-    must_have_stack: [marketing, growth, acquisition, campaigns, analytics]
+    title_keywords:
+      - growth manager
+      - growth marketing manager
+      - marketing manager
+      - growth marketing
+      - performance marketing manager
+      - demand generation manager
+      - head of growth
+      - growth lead
+      - senior growth manager
+      - lifecycle marketing manager
+      - acquisition manager
+    title_exclude:
+      - intern
+      - graduate
+      - working student
+      - engineer
+      - product manager
+      - sales
+      - designer
+    must_have_stack:
+      - marketing
+      - growth
+      - acquisition
+      - campaigns
+      - analytics
     nice_to_have:
       seo: 3
-      paid acquisition: 3
-      lifecycle: 3
-      a/b testing: 2
+      paid acquisition: 4
+      lifecycle: 4
+      a/b testing: 3
+      retention: 3
+      funnel: 3
+      crm: 2
+      email marketing: 3
+      saas: 2
+      "intern": -10
+      "on-site only": -8
 
   - id: product_marketing
     label: Product Marketing Manager
     group: Growth & Marketing
     description: Positioning, messaging, go-to-market.
-    title_keywords: [product marketing manager, pmm, product marketing, go-to-market manager]
-    title_exclude: [intern, engineer]
-    must_have_stack: [product marketing, positioning, messaging, go-to-market, launch]
+    title_keywords:
+      - product marketing manager
+      - pmm
+      - product marketing
+      - senior product marketing manager
+      - go-to-market manager
+      - product marketing lead
+      - head of product marketing
+      - principal product marketing manager
+    title_exclude:
+      - intern
+      - graduate
+      - working student
+      - engineer
+      - product manager
+      - sales development
+      - content marketing
+    must_have_stack:
+      - product marketing
+      - positioning
+      - messaging
+      - go-to-market
+      - launch
     nice_to_have:
-      competitive analysis: 3
-      sales enablement: 3
-      b2b: 2
+      competitive analysis: 4
+      sales enablement: 4
+      b2b: 3
+      saas: 3
+      market research: 3
+      content: 2
+      analyst relations: 2
+      "intern": -10
+      "on-site only": -8
 
   - id: content_marketing_manager
     label: Content Marketing Manager
     group: Growth & Marketing
     description: Content strategy, SEO, editorial, thought leadership.
-    title_keywords: [content marketing, content manager, content strategist, seo manager, editorial manager]
-    title_exclude: [intern, engineer]
-    must_have_stack: [content, marketing, seo, editorial, copywriting]
+    title_keywords:
+      - content marketing manager
+      - content manager
+      - content strategist
+      - seo manager
+      - editorial manager
+      - content marketing
+      - content lead
+      - senior content marketing manager
+      - head of content
+      - content marketing strategist
+    title_exclude:
+      - intern
+      - graduate
+      - working student
+      - engineer
+      - product marketing
+      - social media intern
+    must_have_stack:
+      - content
+      - marketing
+      - seo
+      - editorial
+      - copywriting
     nice_to_have:
-      content strategy: 4
+      content strategy: 5
       analytics: 3
-      b2b: 2
+      b2b: 3
+      thought leadership: 3
+      blog: 2
+      email marketing: 2
+      content calendar: 2
+      saas: 2
+      "intern": -10
+      "on-site only": -8
 
   - id: performance_marketing_manager
     label: Performance Marketing Manager
     group: Growth & Marketing
     description: Paid acquisition, PPC, ROAS, channel growth.
-    title_keywords: [performance marketing, paid media, paid acquisition, ppc manager, digital marketing manager]
-    title_exclude: [intern, engineer]
-    must_have_stack: [paid acquisition, performance marketing, ppc, analytics, roas]
+    title_keywords:
+      - performance marketing manager
+      - performance marketing
+      - paid media manager
+      - paid acquisition manager
+      - ppc manager
+      - digital marketing manager
+      - paid search manager
+      - growth marketing manager
+      - senior performance marketing manager
+    title_exclude:
+      - intern
+      - graduate
+      - working student
+      - engineer
+      - product marketing
+      - content marketing
+    must_have_stack:
+      - paid acquisition
+      - performance marketing
+      - ppc
+      - analytics
+      - roas
     nice_to_have:
-      google ads: 3
-      meta ads: 3
-      attribution: 3
+      google ads: 4
+      meta ads: 4
+      attribution: 4
       sql: 2
+      paid search: 3
+      conversion: 3
+      campaign optimization: 3
+      saas: 2
+      "intern": -10
+      "on-site only": -8
 
   # ============================ Sales & Success (4) ============================
   - id: account_executive
     label: Account Executive (Sales)
     group: Sales & Success
     description: B2B sales, pipeline, quota-carrying.
-    title_keywords: [account executive, sales executive, enterprise sales, sales representative, account manager]
-    title_exclude: [intern, engineer, marketing]
-    must_have_stack: [sales, quota, pipeline, prospecting, crm]
+    title_keywords:
+      - account executive
+      - sales executive
+      - enterprise account executive
+      - enterprise sales
+      - sales representative
+      - account manager
+      - senior account executive
+      - mid-market account executive
+      - commercial account executive
+      - strategic account executive
+    title_exclude:
+      - intern
+      - graduate
+      - working student
+      - engineer
+      - marketing
+      - sales development representative
+      - sdr
+      - customer success
+    must_have_stack:
+      - sales
+      - quota
+      - pipeline
+      - prospecting
+      - crm
     nice_to_have:
-      saas: 3
-      enterprise: 3
-      salesforce: 2
+      saas: 4
+      enterprise: 4
+      salesforce: 3
+      b2b: 3
+      closing: 3
+      negotiation: 2
+      revenue: 2
+      "intern": -10
+      "on-site only": -8
 
   - id: customer_success
     label: Customer Success Manager
     group: Sales & Success
     description: Retention, onboarding, account health.
-    title_keywords: [customer success manager, csm, customer success, customer experience]
-    title_exclude: [intern, engineer]
-    must_have_stack: [customer success, onboarding, retention, account management]
+    title_keywords:
+      - customer success manager
+      - csm
+      - customer success
+      - customer experience manager
+      - senior customer success manager
+      - enterprise customer success manager
+      - customer success lead
+      - account success manager
+      - client success manager
+    title_exclude:
+      - intern
+      - graduate
+      - working student
+      - engineer
+      - account executive
+      - sales development
+      - support agent
+    must_have_stack:
+      - customer success
+      - onboarding
+      - retention
+      - account management
     nice_to_have:
-      saas: 3
-      churn: 3
-      upsell: 2
+      saas: 4
+      churn: 4
+      upsell: 3
+      renewals: 3
+      b2b: 3
+      adoption: 3
+      relationship management: 2
+      "intern": -10
+      "on-site only": -8
 
   - id: solutions_engineer
     label: Solutions / Sales Engineer
     group: Sales & Success
     description: Technical pre-sales — demos, POCs, integrations.
-    title_keywords: [solutions engineer, sales engineer, solutions architect, solutions consultant, pre-sales engineer]
-    title_exclude: [intern, manager]
-    must_have_stack: [solutions engineering, pre-sales, technical, api, customer]
+    title_keywords:
+      - solutions engineer
+      - sales engineer
+      - solutions architect
+      - solutions consultant
+      - pre-sales engineer
+      - presales engineer
+      - senior solutions engineer
+      - field engineer
+      - customer engineer
+      - forward deployed engineer
+      - technical account manager
+    title_exclude:
+      - intern
+      - graduate
+      - working student
+      - manager
+      - director
+      - head of
+      - software engineer
+      - backend
+    must_have_stack:
+      - solutions engineering
+      - pre-sales
+      - technical
+      - api
+      - customer
     nice_to_have:
-      saas: 3
+      saas: 4
       cloud: 3
-      demos: 3
-      integrations: 2
+      demos: 4
+      integrations: 4
+      proof of concept: 3
+      api: 3
+      technical sales: 3
+      "intern": -10
+      "on-site only": -8
 
   - id: sales_development_rep
     label: Sales Development Rep (SDR/BDR)
     group: Sales & Success
     description: Outbound prospecting, pipeline generation.
-    title_keywords: [sales development representative, business development representative, sales development rep]
-    title_exclude: [intern, manager, engineer]
-    must_have_stack: [sales development, prospecting, outbound, pipeline, crm]
+    title_keywords:
+      - sales development representative
+      - business development representative
+      - sales development rep
+      - sdr
+      - bdr
+      - outbound sales development representative
+      - senior sales development representative
+      - business development rep
+    title_exclude:
+      - intern
+      - graduate
+      - working student
+      - manager
+      - director
+      - head of
+      - engineer
+      - account executive
+    must_have_stack:
+      - sales development
+      - prospecting
+      - outbound
+      - pipeline
+      - crm
     nice_to_have:
-      saas: 3
-      outreach: 3
-      salesforce: 2
+      saas: 4
+      outreach: 4
+      salesforce: 3
+      cold calling: 3
+      lead generation: 3
+      b2b: 3
+      quota: 2
+      "intern": -10
+      "on-site only": -8
 
-  # ============================ People & Ops (3) ============================
+  # ============================ People & Ops (4) ============================
   - id: technical_recruiter
     label: Technical Recruiter
     group: People & Ops
     description: Sourcing and hiring for technical teams.
-    title_keywords: [technical recruiter, recruiter, talent acquisition, sourcer, recruiting manager]
-    title_exclude: [intern]
-    must_have_stack: [recruiting, sourcing, talent acquisition, hiring]
+    title_keywords:
+      - technical recruiter
+      - recruiter
+      - talent acquisition specialist
+      - talent acquisition partner
+      - sourcer
+      - recruiting manager
+      - senior technical recruiter
+      - talent partner
+      - engineering recruiter
+      - gtm recruiter
+    title_exclude:
+      - intern
+      - graduate
+      - working student
+      - recruiting coordinator
+      - hr generalist
+      - sales
+    must_have_stack:
+      - recruiting
+      - sourcing
+      - talent acquisition
+      - hiring
     nice_to_have:
-      technical hiring: 4
-      employer branding: 2
-      ats: 2
+      technical hiring: 5
+      employer branding: 3
+      ats: 3
+      full-cycle: 3
+      pipeline: 3
+      candidate experience: 3
+      linkedin recruiter: 2
+      "intern": -10
+      "on-site only": -8
 
   - id: business_operations_manager
     label: Business Operations Manager
     group: People & Ops
     description: BizOps — strategy, process, cross-functional ops.
-    title_keywords: [business operations, bizops, strategy and operations, business operations manager, chief of staff]
-    title_exclude: [intern, warehouse, fulfillment]
-    must_have_stack: [operations, strategy, cross-functional, analytics, process]
+    title_keywords:
+      - business operations manager
+      - business operations
+      - bizops
+      - strategy and operations
+      - chief of staff
+      - operations manager
+      - revenue operations manager
+      - senior business operations manager
+      - strategy and operations manager
+      - gtm operations
+    title_exclude:
+      - intern
+      - graduate
+      - working student
+      - warehouse
+      - fulfillment
+      - logistics
+      - data center
+    must_have_stack:
+      - operations
+      - strategy
+      - cross-functional
+      - analytics
+      - process
     nice_to_have:
       sql: 3
       stakeholder: 3
-      project management: 2
+      project management: 3
+      data-driven: 3
+      process improvement: 3
+      forecasting: 2
+      financial modeling: 2
+      "intern": -10
+      "on-site only": -8
 
   - id: people_partner
     label: People / HR Business Partner
     group: People & Ops
     description: HRBP — people programs, org/talent partnering.
-    title_keywords: [people partner, hr business partner, hrbp, people operations, people business partner]
-    title_exclude: [intern]
-    must_have_stack: [human resources, people operations, talent, employee relations]
+    title_keywords:
+      - people partner
+      - hr business partner
+      - hrbp
+      - people operations manager
+      - people business partner
+      - senior people partner
+      - hr manager
+      - people partner lead
+      - human resources business partner
+    title_exclude:
+      - intern
+      - graduate
+      - working student
+      - recruiter
+      - talent acquisition
+      - payroll
+    must_have_stack:
+      - human resources
+      - people operations
+      - talent
+      - employee relations
     nice_to_have:
-      performance management: 3
-      org design: 3
-      hris: 2
+      performance management: 4
+      org design: 4
+      hris: 3
+      coaching: 3
+      change management: 3
+      employee engagement: 3
+      compensation: 2
+      "intern": -10
+      "on-site only": -8
+
+  - id: engineering_manager
+    label: Engineering Manager
+    group: People & Ops
+    description: Leading software teams (people management).
+    lane: em
+    title_keywords:
+      - engineering manager
+      - software engineering manager
+      - senior engineering manager
+      - director of engineering
+      - head of engineering
+      - vp of engineering
+      - vp engineering
+      - engineering lead
+      - development manager
+      - backend engineering manager
+      - platform engineering manager
+    title_exclude:
+      - intern
+      - graduate
+      - working student
+      - frontend
+      - mobile
+      - qa
+      - test engineering
+      - data engineering
+      - sre
+      - site reliability
+      - security
+      - machine learning
+    must_have_stack:
+      - engineering
+      - software
+      - team
+      - leadership
+      - backend
+    nice_to_have:
+      hiring: 4
+      roadmap: 4
+      distributed systems: 3
+      mentoring: 4
+      on-call: 3
+      incident response: 3
+      observability: 3
+      "hands-on": 4
+      "player-coach": 4
+      "intern": -10
+      "on-site only": -8
