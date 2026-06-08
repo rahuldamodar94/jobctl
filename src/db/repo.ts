@@ -323,6 +323,16 @@ export class Repo {
       );
   }
 
+  /** Count active rows from one source — used to tell if demo data is loaded. */
+  countBySource(sourceId: string): number {
+    return (this.db.prepare('SELECT COUNT(*) AS n FROM jobs WHERE source_id = ?').get(sourceId) as { n: number }).n;
+  }
+
+  /** Remove every row from one source (e.g. clearing demo/sample data). */
+  deleteBySource(sourceId: string): number {
+    return this.db.prepare('DELETE FROM jobs WHERE source_id = ?').run(sourceId).changes;
+  }
+
   updateMatch(id: number, isMatch: boolean, score: number, roleIds: string[], reasons: MatchReasons, category: string): void {
     this.stmtUpdateMatch.run(isMatch ? 1 : 0, score, JSON.stringify(roleIds), JSON.stringify(reasons), category, id);
   }

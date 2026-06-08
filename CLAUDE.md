@@ -95,7 +95,9 @@ CONFIG (yaml)                  SCRAPE PIPELINE (src/scraper/run.ts)
                                 Express :3000 (src/server) — JSON error mw
                                 /api/jobs /api/scrape /api/runs/latest /api/stats
                                 /api/export.csv /api/resumes /api/config
-                                /api/settings (in-app config editor) + dist/ui
+                                /api/settings (in-app config editor)
+                                /api/import (user-driven import) /api/demo (sample data)
+                                + dist/ui
                                          │
                                 React triage page (src/ui)
 ```
@@ -244,7 +246,7 @@ guide: `docs/model-tradeoffs.md`.
 npm run scrape [-- --source X]   # scrape (lock-guarded; UI button same path)
 npm run judge [-- --all|--id N]  # optional fit-judge over matched jobs
 npm run dev | build | start      # UI dev / production
-npm test                         # vitest — 211 tests
+npm test                         # vitest — 251 tests
 ```
 
 ## Status
@@ -253,11 +255,23 @@ v1 complete + post-review hardening (2026-06-06): 7 build phases, dual
 line-by-line review (50 findings triaged), community-registry restructure.
 Live: ~2,900 active jobs from 5 source families and 112 company boards.
 
+**v2 — software-industry pivot (2026-06-08), 7 phases, per-phase review +
+security-review, all pushed:** repositioned to the software industry / all roles
+(`config/domains.yaml`, 21 `config/role-templates.yaml`); profile-level location;
+new sources Recruitee (ATS), We Work Remotely (RSS) + Himalayas (JSON);
+multi-dimension fit-judge with JD evidence citations; AI-first reframe +
+`docs/model-tradeoffs.md`; `POST /api/import` (user-driven, non-scraped sites) +
+`docs/importing-jobs.md`; onboarding redesign (domain multiselect, role-template
+picker, location, model setup); in-app sample data (`/api/demo`). vitest — 251
+tests. (Fixed en route: committed `categories.yaml` fallback escaped the loader
+schema — now guarded.)
+
 ## v2+ roadmap (architecture accommodates, zero code today)
 
-Telegram channels, LinkedIn import, liveness/expiry classifier, cover-letter
-tooling, and ATS adapters for:
-(LLM fit-judge — shipped, see Fit-judge above.)
+Telegram channels, liveness/expiry classifier, cover-letter tooling, N+1 ATS
+adapters (SmartRecruiters/Workable/Workday via title-gated JD enrichment), and a
+browser-extension capture flow for the import endpoint (design-gated).
+(LLM fit-judge, multi-source expansion, user-driven import — shipped above.)
 
 **Matching-accuracy ideas (architecture accommodates; nothing built):**
 - *Registry-domain category hints* — category is inferred from JD text, which

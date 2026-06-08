@@ -219,6 +219,28 @@ export async function getConfig(): Promise<AppConfig> {
 }
 
 // ---------------------------------------------------------------------------
+// Demo / sample data
+// ---------------------------------------------------------------------------
+
+export async function getDemoCount(): Promise<number> {
+  const res = await fetch('/api/demo');
+  if (!res.ok) return 0;
+  return (await res.json()).count ?? 0;
+}
+
+export async function loadDemoJobs(): Promise<number> {
+  const res = await fetch('/api/demo', { method: 'POST' });
+  if (!res.ok) throw new Error(`load demo: HTTP ${res.status}`);
+  return (await res.json()).loaded ?? 0;
+}
+
+export async function clearDemoJobs(): Promise<number> {
+  const res = await fetch('/api/demo', { method: 'DELETE' });
+  if (!res.ok) throw new Error(`clear demo: HTTP ${res.status}`);
+  return (await res.json()).cleared ?? 0;
+}
+
+// ---------------------------------------------------------------------------
 // Settings / onboarding — write surface (server zod-validates every write)
 // ---------------------------------------------------------------------------
 

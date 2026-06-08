@@ -52,7 +52,9 @@ On first launch a **setup wizard** walks you through name → sources → your r
 (optional) resume, and writes your config for you — no file editing required.
 You can change everything later under **Settings** in the app.
 
-Then click **Run scrape** and start triaging.
+Then click **Run scrape** and start triaging. Just want to see the UI first?
+Hit **Load sample jobs** on the empty state for a populated triage page you can
+clear in one click.
 
 > **Already job-hunting?** Jobs you've already applied to will show up as `new`
 > on the first scrape. Mark them `applied` or `dismissed` once, and they're
@@ -110,8 +112,10 @@ files remain the source of truth if you'd rather edit them directly:
 |---|---|
 | Greenhouse / Lever / Ashby company boards | public board APIs (full JDs), driven by the registry |
 | jobstash.xyz | public JSON API (full JDs) |
+| Recruitee company boards | public JSON API (full JDs), driven by the registry |
 | web3.career, cryptocurrencyjobs.co, blockchainheadhunter.com | static HTML |
-| remotive.com, remoteok.com | public JSON APIs (general remote boards) |
+| remotive.com, remoteok.com, weworkremotely.com, himalayas.app | public JSON/RSS feeds (general remote boards) |
+| LinkedIn / Indeed / … | **not scraped** — [import](docs/importing-jobs.md) them from your own session instead |
 
 Scraping is polite by design: an identifiable user-agent, sources fetched one at
 a time, per-host delays, and retries with backoff — a few hundred requests per run.

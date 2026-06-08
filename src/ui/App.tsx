@@ -9,11 +9,14 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   bulkStatus,
+  clearDemoJobs,
   fetchJobs,
   filtersToParams,
   getConfig,
+  getDemoCount,
   getStats,
   latestRun,
+  loadDemoJobs,
   patchJob,
   startScrape,
   type AppConfig,
@@ -59,6 +62,7 @@ export default function App() {
   const [notice, setNotice] = useState<string | null>(null);
   const [showResume, setShowResume] = useState(false);
   const [showImport, setShowImport] = useState(false);
+  const [demoCount, setDemoCount] = useState(0);
   const [resumeGenEnabled, setResumeGenEnabled] = useState(false);
   // dropdown vocabulary (roles/sources/categories) — from the user's config
   const [vocab, setVocab] = useState<Pick<AppConfig, 'roles' | 'sources' | 'categories'>>({
@@ -186,7 +190,28 @@ export default function App() {
   useEffect(() => {
     latestRun().then(setRun);
     loadConfig();
+    getDemoCount().then(setDemoCount).catch(() => {});
   }, [loadConfig]);
+
+  const onLoadDemo = async () => {
+    setNotice(null);
+    try {
+      await loadDemoJobs();
+      setDemoCount(await getDemoCount());
+      reload();
+    } catch (e) {
+      setNotice(`Couldn't load sample jobs: ${(e as Error).message}`);
+    }
+  };
+  const onClearDemo = async () => {
+    try {
+      await clearDemoJobs();
+      setDemoCount(0);
+      reload();
+    } catch (e) {
+      setNotice(`Couldn't clear sample jobs: ${(e as Error).message}`);
+    }
+  };
 
   // Poll while a scrape is running (including one already running when the
   // page loads). When it finishes, refresh the job list.
@@ -353,6 +378,17 @@ export default function App() {
       </header>
 
       <main className="mx-auto max-w-[1400px] px-4 py-4">
+        {demoCount > 0 && (
+          <div className="mb-3 flex items-center gap-2 rounded-xl border border-accent/30 bg-accent/5 px-3 py-2 text-xs">
+            <Sparkles className="h-3.5 w-3.5 text-accent" />
+            <span className="text-muted">
+              Showing <span className="tnum font-semibold text-ink">{demoCount}</span> sample jobs so you can explore the UI.
+            </span>
+            <button onClick={onClearDemo} className="ml-auto font-medium text-accent hover:underline">
+              Clear sample jobs
+            </button>
+          </div>
+        )}
         <FilterBar
           filters={filters}
           onChange={setFilters}
@@ -445,6 +481,11 @@ export default function App() {
                         <>
                           <p className="font-semibold text-ink">No jobs match the current filters</p>
                           <p className="text-xs text-muted">Try widening your filters, or run a scrape to pull fresh listings.</p>
+                          {demoCount === 0 && (
+                            <Button variant="secondary" size="sm" onClick={onLoadDemo} className="mt-1">
+                              <Sparkles className="h-3.5 w-3.5" /> Load sample jobs
+                            </Button>
+                          )}
                         </>
                       )}
                     </div>
