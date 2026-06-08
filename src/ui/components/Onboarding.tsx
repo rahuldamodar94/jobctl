@@ -8,11 +8,8 @@
 import React, { useState } from 'react';
 import { User, Globe, Briefcase, MapPin, Sparkles, FileText, Check, Crosshair, ArrowLeft, ArrowRight } from 'lucide-react';
 import { saveProfile, saveRoles, saveResume, type AppConfig, type RoleTemplate } from '../api.js';
+import { buildRoleEntry, toList } from '../role-builder.js';
 import { Button, cn } from './ui.js';
-
-const slug = (s: string) =>
-  s.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 40) || 'role';
-const toList = (s: string) => s.split(',').map((x) => x.trim()).filter(Boolean);
 
 const STEPS = [
   { icon: User, label: 'You' },
@@ -109,15 +106,18 @@ export function Onboarding({ config, onDone }: { config: AppConfig; onDone: () =
         ...(llm ? { llm } : {}),
         ...(resumes.length ? { resumes } : {}),
       };
+      // buildRoleEntry carries the chosen template's rich matching config
+      // (nice_to_have weights + excludes) so the matcher isn't starved — an empty
+      // nice_to_have caps every score at 60/100. Unit-tested in role-builder.test.
       const roles = {
         roles: [
-          {
-            id: slug(roleLabel),
-            label: roleLabel.trim(),
+          buildRoleEntry({
+            label: roleLabel,
             lane,
-            title_keywords: toList(titleKeywords),
-            must_have_stack: toList(stack),
-          },
+            titleKeywords,
+            stack,
+            template: config.roleTemplates.find((t) => t.id === templateId),
+          }),
         ],
       };
       if (resumeMd.trim()) {
