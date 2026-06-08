@@ -7,15 +7,14 @@ one fast page to review them — so you check **one place instead of ten**, and
 
 No LLM, no API keys, no running cost. Your data stays on your machine.
 
-```mermaid
-flowchart LR
-    A["Job boards<br/>(jobstash, web3.career, remotive…)"] --> C
-    B["Company career pages<br/>(Greenhouse, Lever, Ashby)"] --> C
-    C["Dedupe<br/>(keep each job once)"] --> D["Score<br/>(against your rules)"]
-    D --> E[("SQLite<br/>one local file")]
-    E --> F["Triage page<br/>localhost:3000"]
-    P["Your config<br/>roles.yaml · profile.yaml"] -. drives .-> D
 ```
+  job boards   (jobstash, web3.career, remotive, …)    ─┐
+                                                         ├─▶  dedupe ─▶ score ─▶ SQLite ─▶ triage page
+  company ATS  (Greenhouse · Lever · Ashby — registry) ─┘                                 (localhost:3000)
+```
+
+*Dedup keeps each job once · scoring is keyword-based against your `roles.yaml` ·
+everything lands in one local SQLite file you triage in the browser.*
 
 Ships with a curated, live-verified registry of **110+ company job boards**
 (web3, DeFi, fintech/payments, exchanges, AI/dev-infra, with strong MENA & India
@@ -75,14 +74,8 @@ owned by your host user.
 
 ## How a day looks
 
-```mermaid
-flowchart LR
-    R["Run scrape"] --> N["New matches<br/>(score ≥ 30, ≤ 14 days)"]
-    N --> T{"Review each"}
-    T -->|"worth it"| I["Interested / Applied"]
-    T -->|"not for me"| X["Rejected / Dismissed"]
-    I --> H["Hidden from New"]
-    X --> H
+```
+  run scrape ─▶ new matches ─▶ you triage ─▶ interested · applied · rejected · dismissed ─▶ hidden next run
 ```
 
 1. Open the UI and click **Run scrape** (or schedule `npm run scrape` with cron).
