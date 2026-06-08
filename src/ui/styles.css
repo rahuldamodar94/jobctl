@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Design tokens (refined-dark "developer console") ───────────────────────
+   Colors are space-separated RGB channels so Tailwind's /opacity modifiers
+   keep working via rgb(var(--x) / <alpha>). Swap this block for a light theme. */
+:root {
+  --bg: 9 11 16; /* #090B10 */
+  --surface: 15 18 26; /* #0F121A */
+  --surface-2: 21 25 35; /* #151923 */
+  --surface-3: 28 33 46; /* #1C212E */
+  --line: 35 41 55; /* hairline borders */
+  --line-strong: 52 60 78;
+  --text: 230 234 242; /* #E6EAF2 */
+  --text-muted: 142 151 170; /* #8E97AA */
+  --text-faint: 96 105 124;
+  --accent: 45 212 167; /* #2DD4A7 emerald-teal */
+  --accent-fg: 4 18 14; /* readable text on the accent */
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    @apply bg-bg font-sans text-ink antialiased;
+    /* atmosphere: a faint accent aurora at the top so the near-black canvas
+       has depth instead of reading as a flat void */
+    background-image:
+      radial-gradient(900px 420px at 78% -8%, rgb(var(--accent) / 0.08), transparent 60%),
+      radial-gradient(700px 360px at 8% -6%, rgb(120 140 255 / 0.05), transparent 55%);
+    background-attachment: fixed;
+  }
+  /* tabular numerals everywhere numbers matter (scores, counts, dates) */
+  .tnum { font-variant-numeric: tabular-nums; }
+
+  ::selection { background: rgb(var(--accent) / 0.28); color: rgb(var(--text)); }
+
+  *:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px rgb(var(--bg)), 0 0 0 4px rgb(var(--accent) / 0.7);
+    border-radius: 4px;
+  }
+
+  /* slim, themed scrollbars */
+  * { scrollbar-width: thin; scrollbar-color: rgb(var(--line-strong)) transparent; }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-thumb {
+    background: rgb(var(--line-strong));
+    border: 3px solid transparent;
+    background-clip: content-box;
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: rgb(var(--text-faint)); background-clip: content-box; }
+}
+
+@layer components {
+  /* shimmer used by skeleton loaders */
+  .skeleton { @apply relative overflow-hidden rounded bg-surface-2; }
+  .skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgb(var(--text) / 0.06), transparent);
+    animation: shimmer 1.5s infinite;
+  }
+  @keyframes shimmer { 100% { transform: translateX(100%); } }
+}

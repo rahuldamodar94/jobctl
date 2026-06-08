@@ -1,0 +1,79 @@
+# EASIEST SETUP: just start the app and the in-app wizard writes this for you.
+# Prefer files? Copy this directory to profile/ and edit:  cp -r profile.example profile
+# profile/ is gitignored — your personal data never leaves your machine.
+# Everything here is also editable later in the app's Settings page.
+
+name: Your Name
+
+# Skip board listings whose known posted date is older than this (days).
+# (Company-ATS postings are never age-filtered — they're open by definition.)
+max_age_days: 30
+
+# Mark jobs inactive after not being seen for this many days.
+inactive_after_days: 14
+
+# Job boards to scrape (ids from config/sources.yaml) + `ats` to enable the
+# company registry below.
+#   Web3-focused boards: jobstash, web3career, cryptocurrencyjobs, blockchainheadhunter
+#   General remote boards: remotive, remoteok
+enabled_sources:
+  - jobstash
+  - remotive
+  - remoteok
+  - ats
+
+# Which slices of the committed company registry (config/companies.yaml) to
+# pull jobs from. Available domains:
+#   web3 defi exchange infra fintech payments ai devtools
+companies:
+  domains: [ai, devtools]
+  # Personal additions — paste the job-board URL from any company's careers
+  # page (Greenhouse / Lever / Ashby are auto-detected):
+  include: []
+  #  - name: Some Startup
+  #    careers_url: https://jobs.ashbyhq.com/somestartup
+  # Registry companies you don't want to see:
+  exclude: []
+  #  - Binance
+
+# Categories you never want matched, e.g. [ai] — excluded jobs stay
+# auditable under Match=unmatched with the reason shown.
+exclude_categories: []
+
+# Resume-generation guardrails (only used by the optional Generate-resume
+# feature). forbidden_terms: words that must NEVER appear in generated
+# resumes — e.g. an employer name you can't disclose under NDA. Output
+# containing a term is rejected before rendering.
+resume_rules:
+  forbidden_terms: []
+
+# Optional LLM features: the fit-judge (advisory JD screening, needs
+# profile/judge-rubric.md) and resume generation. Each picks a backend from
+# the registry. API keys live in ENV (api_key_env), never in this file.
+#   engine: claude-cli  → local `claude` CLI, no key (host-only; your Max/Pro)
+#   engine: openai-compatible → OpenAI / Gemini / DeepSeek / OpenRouter / Ollama
+# PRIVACY: free Gemini/DeepSeek/OpenRouter tiers TRAIN ON INPUT — fine for
+# judging (semi-public job data), NOT for resume gen (your personal resume).
+# Point resume gen only at a non-training backend (paid Gemini/OpenAI or local).
+# llm:
+#   backends:
+#     local:   { engine: claude-cli }
+#     gemini:  { engine: openai-compatible, model: gemini-2.5-flash,
+#                base_url: https://generativelanguage.googleapis.com/v1beta/openai,
+#                api_key_env: GEMINI_API_KEY }
+#     ollama:  { engine: openai-compatible, model: qwen3:14b,
+#                base_url: http://localhost:11434/v1 }
+#   judge:  { enabled: false, backend: local }   # set enabled: true to turn on
+#   resume: { backend: local }
+
+# Default triage view (optional) — seeds the UI's filters on load.
+# ui_prefs:
+#   default_min_score: 30
+#   default_posted_within: 14
+
+resumes:
+  - id: main
+    label: My Resume
+    file: resumes/resume.md
+    # mark which resume the generator uses as the IC / EM base (optional):
+    # base: ic

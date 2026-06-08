@@ -1,0 +1,54 @@
+# Generic job-board definitions (committed — nothing personal here).
+# Which of these actually run for YOU is controlled by `enabled_sources`
+# in profile/profile.yaml.
+#
+# Adding a new board = one entry here + one adapter file in src/sources/boards/.
+
+sources:
+  - id: jobstash
+    label: JobStash
+    kind: api
+    base_url: https://middleware.jobstash.xyz
+    options:
+      pages: 5
+
+  - id: web3career
+    label: web3.career
+    kind: html
+    base_url: https://web3.career
+    options:
+      pages: 3
+
+  - id: cryptocurrencyjobs
+    label: Cryptocurrency Jobs
+    kind: html
+    base_url: https://cryptocurrencyjobs.co
+    options:
+      paths:
+        - /engineering/
+
+  # remote3.co removed: job list is client-side rendered (only sponsored ads in
+  # static HTML) — needs a browser, which v1 deliberately avoids.
+
+  - id: blockchainheadhunter
+    label: Blockchain Headhunter
+    kind: html
+    base_url: https://blockchainheadhunter.com
+    options:
+      paths:
+        - /jobs
+
+  - id: remotive
+    label: Remotive (general remote jobs)
+    kind: api
+    base_url: https://remotive.com
+    options:
+      category: software-dev
+
+  - id: remoteok
+    label: RemoteOK (general remote jobs)
+    kind: api
+    base_url: https://remoteok.com
+
+  # ATS sources (greenhouse/lever/ashby) are NOT listed here — they are driven
+  # by profile/companies.yaml. Enable them via enabled_sources: [ats, ...].

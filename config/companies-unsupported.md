@@ -1,0 +1,76 @@
+# Companies considered but not yet supported
+
+Every company researched (2026-06-06) whose jobs we can't pull via the three
+supported ATS APIs (Greenhouse / Lever / Ashby) today. Endpoint patterns for
+the next ATS adapters are documented in CLAUDE.md. Re-probe before assuming
+anything here is still unavailable — boards move.
+
+## On a known ATS we don't support yet (best v2 adapter targets)
+
+| Company | ATS | URL |
+|---|---|---|
+| Reap | Teamtailor | https://careers.reap.global/jobs (~23 jobs at probe) |
+| WalletConnect | Workable | https://apply.workable.com/walletconnect/ |
+| Tether | Recruitee | https://tether.recruitee.com/ |
+| Crossmint | Teamtailor | https://crossmint.na.teamtailor.com/ |
+| Zero Hash | Breezy HR | https://zero-hash.breezy.hr/ |
+| Safe | Personio | https://safe-labs.jobs.personio.com |
+| M2 | Recruitee | https://m2.recruitee.com/ (0 open roles at probe) |
+| Circle | Workday | https://careers.circle.com |
+| StarkWare | Comeet | https://www.comeet.com/jobs/starkware/C6.00E |
+| Ondo Finance | Gem | https://jobs.gem.com/ondo-finance |
+| CoinSwitch | RecruiterFlow | https://recruiterflow.com/coinswitch/jobs |
+| Tabby | Pinpoint | https://tabby.pinpointhq.com/ |
+| Talabat | Delivery Hero | https://careers.deliveryhero.com/talabat |
+| Ramp Network | Greenhouse **EU** | boards.eu.greenhouse.io/rampnetwork — the public boards-api requires auth for EU boards |
+
+## Board exists but API disabled / empty (re-check occasionally)
+
+- **Privy** — https://jobs.ashbyhq.com/privy (posting-api disabled)
+- **Caldera** — https://jobs.ashbyhq.com/caldera (posting-api disabled)
+- **Chainlink Labs** — https://jobs.ashbyhq.com/chainlink-labs (posting-api disabled)
+- **Coinbase** — Greenhouse board exists, API returns 0; jobs live on coinbase.com/careers
+- **dYdX** — former Greenhouse board now 404s; https://dydx.exchange/careers
+- **Clerk** — https://jobs.ashbyhq.com/Clerk (live board, 0 open roles at probe)
+- **Mural Pay** — jobs.ashbyhq.com/muralpay 404'd after initial verification — board removed
+- **The Graph / Edge & Node** — greenhouse `edgeandnode` dead (404); ashby `edge-node-ventures` empty
+
+## Custom / JS-rendered careers portals (no public ATS API found)
+
+- **Web3:** Aave (Avara), Flashbots, Push Protocol, Galxe, Algorand Foundation,
+  Frame (Notion page), Anchorage Digital, TRM Labs, Tenderly, Chorus One, Kiln,
+  P2P.org, Scroll, Avail, Berachain, MegaETH, Axelar (Interop Labs), deBridge,
+  Stargate, Biconomy, Pimlico, ZeroDev, Dynamic (dynamic.xyz), Magic (magic.link),
+  Web3Auth, thirdweb, Moralis, Zora, Farcaster (Merkle), Renzo, Swell, Etherscan,
+  Blockscout, Envio, Subsquid/SQD, Espresso Systems, Risc Zero, Polymer Labs,
+  Hyperlane, Chainstack, Immutable, Animoca Brands, Sky/Phoenix Labs, Spark,
+  Dromos (Aerodrome/Velodrome), Pendle, Euler Labs, Instadapp, Yearn, Curve,
+  Balancer Labs, Sushi, PancakeSwap, Jupiter, Maple Finance, Goldfinch (Warbler),
+  M0, Agora, Beam, Gelato, Rain (Gulf exchange)
+- **Payments:** Bridge.xyz (folded into Stripe), Transak, Banxa, Rapyd,
+  Sling Money, Conduit Pay, Zepz, Yellow Card, Mansa, Lemon Cash, Belo, Stables,
+  Noah, Iron, Decaf, Sphere Pay, Privacy.com, Increase, Felix Pago
+- **MENA:** Checkout.com, Mamo, BitOasis, Fuze Finance, CoinMENA, Telr,
+  Network International, Property Finder, Dubizzle Group, Kitopi, Noon, G42,
+  Presight, Yango Tech
+- **India:** Cashfree, Juspay, Setu, Slice, Jupiter Money, Fi Money, Navi,
+  Pine Labs, PayU, BharatPe, Onmeta, CoinDCX, Swiggy, Zerodha
+  (mostly Keka/Darwinbox/custom portals)
+- **Dev-infra:** Convex, Turso, Fly.io, Hatchet, Upstash, Liveblocks, Ably,
+  Daytona (Notion), Pusher (folded into Bird)
+
+## ⚠️ Same-name FALSE POSITIVES — never add these slugs
+
+| Slug | Is actually | NOT |
+|---|---|---|
+| `ashby/Socket` | socket.dev (supply-chain security) | Socket/Bungee — use `greenhouse/socket` |
+| `ashby/Maple` | restaurant-AI startup | Maple Finance |
+| `ashby/Beam` | construction software | web3 Beam |
+| `ashby/Espresso` | Snowflake-cost AI | Espresso Systems |
+| `ashby/Gelato` | print logistics | Gelato Network |
+| `ashby/rain` | US payroll co | Rain Gulf exchange |
+| `ashby/felix` | Felix Health (telehealth) | Felix Pago |
+| `lever/ethena` | HR-training SaaS | Ethena Labs — use `lever/ethenalabs` |
+| `lever/safe`, `ashby/safe` | Safe Software (GIS) | Safe (Gnosis) — they're on Personio |
+| `greenhouse/sei` | education nonprofit | Sei Labs — use `ashby/sei-labs` |
+| `greenhouse/binance`, `ashby/binance` | empty boards | live board is `lever/binance` |

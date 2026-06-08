@@ -1,0 +1,114 @@
+# Role searches — define one entry per role you're hunting for.
+# A job matches if it passes ANY role's hard filter; its score is the max
+# across matching roles. Every scrape rescores ALL jobs against this file,
+# so tune freely and re-scrape.
+#
+# Three templates below: senior_backend is ACTIVE; frontend and platform_sre
+# are commented — uncomment and adapt whichever fits you.
+
+roles:
+  # ===========================================================================
+  # TEMPLATE 1 (active): Senior Backend Engineer
+  # ===========================================================================
+  - id: senior_backend
+    label: "Senior Backend Engineer"
+    # Career lane: ic (individual contributor) or em (manager). Drives the
+    # UI's IC/EM role filter. Optional — defaults to ic.
+    lane: ic
+
+    # HARD FILTER 1 — the job title must contain one of these (substring):
+    # NOTE: substring means word ORDER matters — "senior backend" does NOT
+    # match "Senior FullStack Backend Engineer". List the variants you care
+    # about explicitly (that's why this list is long, and should be).
+    title_keywords:
+      - senior backend
+      - staff backend
+      - senior software engineer
+      - backend engineer
+      - backend developer
+      - platform engineer
+
+    # HARD FILTER 2 — titles containing any of these are rejected outright:
+    title_exclude:
+      - junior
+      - intern
+      - frontend
+      - mobile
+
+    # HARD FILTER 3 — the JD (or title+tags when no JD is available) must
+    # mention at least one of these. ← EDIT: your primary stack
+    must_have_stack:
+      - typescript
+      - node.js
+      - python
+      - java
+
+    # SOFT SCORING — keyword: weight. Positives boost (total capped),
+    # negatives subtract without excluding. ← EDIT: what makes a job great FOR YOU
+    nice_to_have:
+      postgresql: 5
+      kafka: 5
+      distributed systems: 5
+      microservices: 4
+      aws: 3
+      "on-site only": -10
+
+    # HARD FILTER 4 — exclude when one of these reads as the PRIMARY
+    # requirement (mentioned early, repeatedly, or next to "required"):
+    exclude_if_primary:
+      - rust
+      - c++
+
+    # GEO — places you want (big boost) vs would relocate to (smaller boost).
+    # "remote" matches any remote-friendly listing.
+    geo_priority:
+      - remote
+      - berlin
+    geo_relocation_ok:
+      - london
+      - amsterdam
+
+  # ===========================================================================
+  # TEMPLATE 2: Frontend / Full-stack Engineer (uncomment + adapt)
+  # ===========================================================================
+  # - id: frontend
+  #   label: "Senior Frontend Engineer"
+  #   title_keywords:
+  #     - frontend engineer
+  #     - front-end engineer
+  #     - fullstack engineer
+  #     - full stack engineer
+  #     - react developer
+  #     - ui engineer
+  #   title_exclude: [junior, intern, backend only]
+  #   must_have_stack: [react, typescript, next.js, vue]
+  #   nice_to_have:
+  #     design systems: 5
+  #     accessibility: 4
+  #     graphql: 3
+  #     tailwind: 2
+  #   exclude_if_primary: [angular, php]
+  #   geo_priority: [remote]
+  #   geo_relocation_ok: []
+
+  # ===========================================================================
+  # TEMPLATE 3: Platform / SRE / DevOps (uncomment + adapt)
+  # ===========================================================================
+  # - id: platform_sre
+  #   label: "Platform / Site Reliability Engineer"
+  #   title_keywords:
+  #     - platform engineer
+  #     - site reliability
+  #     - sre
+  #     - devops engineer
+  #     - infrastructure engineer
+  #   title_exclude: [junior, intern]
+  #   must_have_stack: [kubernetes, terraform, aws, gcp]
+  #   nice_to_have:
+  #     observability: 5
+  #     incident response: 5
+  #     ci/cd: 4
+  #     golang: 3
+  #   exclude_if_primary: [windows server, on-prem only]
+  #   geo_priority: [remote]
+  #   geo_relocation_ok: []

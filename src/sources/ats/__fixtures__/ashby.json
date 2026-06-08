@@ -1,0 +1,133 @@
+{
+ "jobs": [
+  {
+   "id": "34dfad03-10c7-4b4d-9cec-4abda1b6e4b1",
+   "title": "VP of Engineering",
+   "department": "Engineering",
+   "team": "Engineering",
+   "employmentType": "FullTime",
+   "location": "Remote in Europe",
+   "shouldDisplayCompensationOnJobPostings": true,
+   "secondaryLocations": [],
+   "publishedAt": "2026-06-02T08:25:55.847+00:00",
+   "isListed": true,
+   "isRemote": true,
+   "workplaceType": "Remote",
+   "address": {
+    "postalAddress": {
+     "addressCountry": "European Union"
+    }
+   },
+   "jobUrl": "https://jobs.ashbyhq.com/li.fi/34dfad03-10c7-4b4d-9cec-4abda1b6e4b1",
+   "applyUrl": "https://jobs.ashbyhq.com/li.fi/34dfad03-10c7-4b4d-9cec-4abda1b6e4b1/application",
+   "descriptionHtml": "<h2>A quick run-down of the job<br /></h2><p style=\"min-height:1.5em\">As <a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\"http://LI.FI\">LI.FI</a> continues to scale its engineering organisation, we are looking for a <strong>VP of Engineering</strong> to strengthen execution across teams and build the leadership structure needed for the company\u2019s next stage of growth.<br /></p><p style=\"min-height:1.5em\">You will lead the engineering organisation, overseeing all engineering teams and w",
+   "descriptionPlain": "A QUICK RUN-DOWN OF THE JOB\n\n\nAs LI.FI http://LI.FI continues to scale its engineering organisation, we are looking for a VP of Engineering to strengthen execution across teams and build the leadership structure needed for the company\u2019s next stage of growth.\n\n\nYou will lead the engineering organisation, overseeing all engineering teams and working closely with the CTO, product teams, and the broader leadership team to ensure strong delivery, technical alignment, and scalable execution. This role focuses on execution, leadership, and organisational effectiveness - ensuring teams deliver reliably while building the systems and culture needed to support long-term growth.\n\n\nA key part of this role will also be helping the organisation scale engineering productivity through AI and automation, e",
+   "compensation": {
+    "compensationTierSummary": "\u20ac180K \u2013 \u20ac250K \u2022 Offers Equity",
+    "scrapeableCompensationSalarySummary": "\u20ac180K - \u20ac250K",
+    "compensationTiers": [
+     {
+      "id": "6588170f-6d92-411e-977f-84c1ae3b3683",
+      "tierSummary": "\u20ac180K \u2013 \u20ac250K \u2022 Offers Equity",
+      "title": null,
+      "additionalInformation": null,
+      "components": [
+       {
+        "id": "3c53316b-68ee-4a82-95f1-2b098ea2ea41",
+        "summary": "\u20ac180K \u2013 \u20ac250K",
+        "compensationType": "Salary",
+        "interval": "1 YEAR",
+        "currencyCode": "EUR",
+        "minValue": 180000,
+        "maxValue": 250000
+       },
+       {
+        "id": "e9a4515a-d29d-45d0-a611-2e9386dde8e6",
+        "summary": "Offers Equity",
+        "compensationType": "EquityPercentage",
+        "interval": "NONE",
+        "currencyCode": null,
+        "minValue": null,
+        "maxValue": null
+       }
+      ]
+     }
+    ],
+    "summaryComponents": [
+     {
+      "compensationType": "Salary",
+      "interval": "1 YEAR",
+      "currencyCode": "EUR",
+      "minValue": 180000,
+      "maxValue": 250000
+     },
+     {
+      "compensationType": "EquityPercentage",
+      "interval": "NONE",
+      "currencyCode": null,
+      "minValue": null,
+      "maxValue": null
+     }
+    ]
+   }
+  },
+  {
+   "id": "00f956a0-48b3-42ed-9490-6d6ffe7cc5e6",
+   "title": "Lead Security Architect ",
+   "department": "Security",
+   "team": "Security",
+   "employmentType": "FullTime",
+   "location": "Remote EMEA",
+   "shouldDisplayCompensationOnJobPostings": true,
+   "secondaryLocations": [],
+   "publishedAt": "2026-06-01T08:41:02.062+00:00",
+   "isListed": true,
+   "isRemote": true,
+   "workplaceType": "Remote",
+   "address": {
+    "postalAddress": {
+     "addressRegion": "EMEA",
+     "addressCountry": "EMEA remote",
+     "addressLocality": "EMEA"
+    }
+   },
+   "jobUrl": "https://jobs.ashbyhq.com/li.fi/00f956a0-48b3-42ed-9490-6d6ffe7cc5e6",
+   "applyUrl": "https://jobs.ashbyhq.com/li.fi/00f956a0-48b3-42ed-9490-6d6ffe7cc5e6/application",
+   "descriptionHtml": "<h2>A quick run-down of the job</h2><h2><br /></h2><p style=\"min-height:1.5em\">We're looking for a <strong>Lead Security Architect </strong>to own and elevate security across the entire company. This is a hands-on, <strong>senior leadership role</strong> responsible for defining our security strategy, strengthening security practices, and driving solutions across our infrastructure, applications, and internal systems.</p><p style=\"min-height:1.5em\">This role is responsible for <strong>security a",
+   "descriptionPlain": "A QUICK RUN-DOWN OF THE JOB\n\n\n\n\n\nWe're looking for a Lead Security Architect to own and elevate security across the entire company. This is a hands-on, senior leadership role responsible for defining our security strategy, strengthening security practices, and driving solutions across our infrastructure, applications, and internal systems.\n\nThis role is responsible for security across the company, with a particular focus on application security and emerging Web3 and AI-related security risks. You'll set the direction for how our teams build securely, strengthen the security posture of our products, identify vulnerabilities, and introduce scalable security processes and tooling.\n\nWe're looking for someone who can quickly understand our systems, identify risks, and drive action - not just pr",
+   "compensation": {
+    "compensationTierSummary": "\u20ac120K \u2013 \u20ac150K",
+    "scrapeableCompensationSalarySummary": "\u20ac120K - \u20ac150K",
+    "compensationTiers": [
+     {
+      "id": "cf458612-ef61-458e-97c1-76f2b1c7572a",
+      "tierSummary": "\u20ac120K \u2013 \u20ac150K",
+      "title": null,
+      "additionalInformation": null,
+      "components": [
+       {
+        "id": "d2eb14de-5a07-4b6f-8b8e-faa8ecd52538",
+        "summary": "\u20ac120K \u2013 \u20ac150K",
+        "compensationType": "Salary",
+        "interval": "1 YEAR",
+        "currencyCode": "EUR",
+        "minValue": 120000,
+        "maxValue": 150000
+       }
+      ]
+     }
+    ],
+    "summaryComponents": [
+     {
+      "compensationType": "Salary",
+      "interval": "1 YEAR",
+      "currencyCode": "EUR",
+      "minValue": 120000,
+      "maxValue": 150000
+     }
+    ]
+   }
+  }
+ ],
+ "apiVersion": "1"
+}

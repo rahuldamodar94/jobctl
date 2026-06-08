@@ -1,0 +1,63 @@
+# Default categorization rules (committed). First match in `order` wins.
+# Override per-user by placing a categories.yaml in your profile/ dir.
+
+order: [ai, defi, web3, fintech, web2]
+
+# Category assigned when nothing in `keywords` matches (web2 = "general tech").
+fallback: web2
+
+keywords:
+  ai:
+    - llm
+    - openai
+    - anthropic
+    - claude
+    - gen ai
+    - generative ai
+    - mcp
+    - ml engineer
+    - ai agent
+    - ai engineer
+    - gpt
+    # NOTE: bare "machine learning" removed — a fintech JD mentioning an ML
+    # fraud model is not an AI company (corpus audit: mislabeled Razorpay etc.)
+  # DeFi terms must be protocol-specific: bare "liquidity"/"yield"/"swap" are
+  # everyday TradFi vocabulary (FX swaps, liquidity management) and mislabeled
+  # hundreds of payments-company jobs as defi (2026-06-07 corpus audit).
+  defi:
+    - defi
+    - lending protocol
+    - dex
+    - perpetuals
+    - staking
+    - cross-chain
+    - amm
+    - yield farming
+    - liquidity pool
+    - liquidity mining
+  web3:
+    - web3
+    - blockchain
+    - ethereum
+    - evm
+    - smart contract
+    - on-chain
+    - onchain
+    - indexer
+    - l2
+    - rollup
+    - crypto
+    - solana
+    - wallet
+  fintech:
+    - payments
+    - banking
+    - stablecoin
+    - on-ramp
+    - kyc
+    - settlement
+    - treasury
+    - card issuing
+    - neobank
+    - remittance
+    - ledger

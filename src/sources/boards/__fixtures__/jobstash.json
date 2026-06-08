@@ -1,0 +1,271 @@
+{
+ "page": 1,
+ "count": 3,
+ "total": 3048,
+ "data": [
+  {
+   "id": "0e87b7a0-cc23-4ab0-ae98-081b3b46fe98",
+   "access": "public",
+   "url": "https://boards.greenhouse.io/robinhood/jobs/7960734?t=gh_src=&gh_jid=7960734",
+   "title": "Software Engineer",
+   "summary": "Robinhood is looking for Software Engineers to build test and release product and platform features with scalability and correctness requirements.",
+   "description": "You will build, test, and release product and platform features with stringent correctness and scalability requirements. You will design and implement software, APIs, and data pipelines using Go and Python. You will collaborate with trading partners and cross functional teams to deliver robust and secure financial services. You will ensure performance and reliability at scale.",
+   "requirements": [
+    "Master\u2019s degree in Computer Science, or a related field.",
+    "Golang and Python programming languages, data structures, algorithms and software design.",
+    "Distributed and highly concurrent systems, microservice architecture, messaging middleware.",
+    "REST design and implementation.",
+    "Cloud computing platforms and orchestration technology.",
+    "Relational and NoSQL databases systems, designing and optimizing database queries.",
+    "Background checks required."
+   ],
+   "onboardIntoWeb3": false,
+   "ethSeasonOfInternships": false,
+   "responsibilities": [
+    "Build, test, and release product facing and platform features with stringent correctness and scalability requirements.",
+    "Design and write software and API using REST and messaging middleware.",
+    "Utilize Go and Python to drive solutions development.",
+    "Write database queries and code to store data to enable complex financial services processes.",
+    "Design solutions to fix scalability problems and implement them.",
+    "Test software systems for scalability and performance problems and identify opportunities for improvement.",
+    "Work with trading partners to integrate with their systems to provide customers access to markets across supported asset classes.",
+    "Collaborate with operations, execution, risk and data partners to deliver robust and reliable solutions.",
+    "Build, test, and release operational-facing features with stringent correctness and compliance requirements.",
+    "Telecommuting permitted."
+   ],
+   "shortUUID": "GnR47O",
+   "minimumSalary": 161637,
+   "maximumSalary": 195000,
+   "salary": 178318.5,
+   "seniority": null,
+   "benefits": [
+    "100% paid health insurance for employees with 90% coverage for dependents",
+    "Employer-paid life and disability insurance, fertility benefits, and mental health benefits",
+    "Time off to recharge including company holidays, paid time off, sick time, parental leave, and more",
+    "Equity ownership and 401(k) matching",
+    "Lifestyle wallet - a flexible benefits spending account for wellness, learning, and more",
+    "Exceptional office experience with catered meals, events, and comfortable workspaces"
+   ],
+   "culture": null,
+   "location": "Menlo Park, California",
+   "salaryCurrency": "USD",
+   "paysInCrypto": null,
+   "featured": false,
+   "featureStartDate": null,
+   "featureEndDate": null,
+   "offersTokenAllocation": null,
+   "timestamp": 1780484485296,
+   "tags": [
+    {
+     "id": "916bf9f8-e2d8-43d6-8322-8e02a9c1bb0b",
+     "createdTimestamp": 1767773359914,
+     "name": "trading",
+     "normalizedName": "trading"
+    },
+    {
+     "id": "f733f9a8-65c9-4c6f-8537-12640919be14",
+     "createdTimestamp": 1767773315479,
+     "name": "microservice",
+     "normalizedName": "microservice"
+    },
+    {
+     "id": "673e2fc1-bddb-42dc-a9f4-c4d32db9c852",
+     "createdTimestamp": 1767773315479,
+     "name": "distributed system",
+     "normalizedName": "distributed-system"
+    },
+    {
+     "id": "7e333f6b-eb79-4127-9106-5b197d02041e",
+     "createdTimestamp": 1767773268615,
+     "name": "API",
+     "normalizedName": "api"
+    },
+    {
+     "id": "e77b963b-9af7-4cc3-a69c-5025f7e92f74",
+     "createdTimestamp": 1762346394460,
+     "name": "Messaging",
+     "normalizedName": "messaging"
+    }
+   ],
+   "commitment": "FULL_TIME",
+   "locationType": "HYBRID",
+   "classification": "ENGINEERING",
+   "organization": {
+    "name": "Robinhood Markets, Inc.",
+    "orgId": "12461",
+    "location": "Menlo Park, USA"
+   },
+   "project": null
+  },
+  {
+   "id": "4c77aca5-e542-49fc-bbd3-e7ee528bcb92",
+   "access": "public",
+   "url": "https://driftprotocol.notion.site/p/Drift-Labs-Junior-Quantitative-Trader-JD-1f8b74b65a9880f38203d7806199c827",
+   "title": "Junior Quantitative Trader",
+   "summary": "Drift Labs is looking for a Junior Quantitative Trader to design deploy and optimize automated trading strategies across Drift markets.",
+   "description": "You design deploy and optimize automated trading strategies across Drift perps and spot markets monitor performance backtest with Drift historical data and external datasets run risk managed on chain strategies with real capital and analyze activity to identify opportunities.",
+   "requirements": [
+    "Strong coding skills in Python TypeScript or Rust",
+    "Hands on experience with DeFi trading market making or crypto strategy development",
+    "Familiarity with Solana development tools on chain data and trading APIs",
+    "Strong sense of ownership reliability and execution speed",
+    "Bonus Experience using Drift or building on Solana"
+   ],
+   "onboardIntoWeb3": false,
+   "ethSeasonOfInternships": false,
+   "responsibilities": [
+    "Design and deploy automated trading strategies across Drift perps and spot markets and other exchanges",
+    "Monitor and optimize strategy performance based on PnL volume generated capital efficiency and risk",
+    "Backtest and simulate strategies using Drift historical data and external datasets",
+    "Run risk managed strategies on chain including delta neutral and directional plays with real capital",
+    "Contribute to Drift liquidity growth by identifying inefficiencies quoting opportunities or gaps in market depth",
+    "Analyze Drift trading activity and data to uncover new opportunities or flag anomalies",
+    "Build internal dashboards and tracking tools for strategy metrics trade logs and capital usage"
+   ],
+   "shortUUID": "avsB7G",
+   "minimumSalary": null,
+   "maximumSalary": null,
+   "salary": null,
+   "seniority": "2",
+   "benefits": [],
+   "culture": null,
+   "location": null,
+   "salaryCurrency": null,
+   "paysInCrypto": null,
+   "featured": false,
+   "featureStartDate": null,
+   "featureEndDate": null,
+   "offersTokenAllocation": null,
+   "timestamp": 1780484485296,
+   "tags": [
+    {
+     "id": "4346dda2-66a0-4528-a076-fe27508f04a2",
+     "createdTimestamp": 1779711166577,
+     "name": "marketmaking",
+     "normalizedName": "marketmaking"
+    },
+    {
+     "id": "c87a5418-61e0-4767-945e-ed425352a862",
+     "createdTimestamp": 1763995288514,
+     "name": "TypeScript",
+     "normalizedName": "typescript"
+    },
+    {
+     "id": "2216016f-1a81-4ed7-a7fd-ee5d04aed1d5",
+     "createdTimestamp": 1755262591352,
+     "name": "onchain",
+     "normalizedName": "onchain"
+    },
+    {
+     "id": "0d040f40-5492-499a-82a9-e333885f2cf3",
+     "createdTimestamp": 1763995379454,
+     "name": "crypto",
+     "normalizedName": "crypto"
+    },
+    {
+     "id": "b3568339-7403-48b6-8ead-7a3991f0f991",
+     "createdTimestamp": 1767773146673,
+     "name": "Python",
+     "normalizedName": "python"
+    }
+   ],
+   "commitment": "FULL_TIME",
+   "locationType": null,
+   "classification": "TRADING",
+   "organization": {
+    "name": "Drift",
+    "orgId": "314",
+    "location": "Distributed"
+   },
+   "project": null
+  },
+  {
+   "id": "4b6bddaa-d1ff-4024-ac00-83b2791dab8b",
+   "access": "protected",
+   "url": null,
+   "title": "Senior Solana Engineer",
+   "summary": "M0 is looking for a Senior Solana Engineer to architect and develop Solana programs in Rust to maintain issuance infrastructure optimize compute usage participate in code reviews and prepare audits",
+   "description": "You will architect and develop Solana programs in Rust using Anchor and native frameworks and extend M0's issuance infrastructure with Token-2022 You will optimize compute unit usage and transaction packing participate in code and design reviews and prepare codebases for third party audits by writing tests invariants and fuzz harnesses You bring a strong ownership mindset and thrive in a fast paced environment",
+   "requirements": [
+    "5+ years of software engineering experience.",
+    "2+ years writing production code in Rust.",
+    "Proven track record of deploying and maintaining complex Solana programs in production.",
+    "Solana-native deep working knowledge of the account model, rent, transaction limits, versioned transactions, address lookup tables, etc.",
+    "Strong familiarity with the SPL Token program, Token-2022, and Associated Token Accounts.",
+    "Hands-on experience with the broader Solana DeFi ecosystem.",
+    "Experience with cross-chain messaging and bridging protocols \u2014 Wormhole NTT, LayerZero, Hyperlane, or Chainlink CCIP.",
+    "Basic familiarity with Solidity and EVM development, sufficient to reason about cross-chain message flows and equivalent contract behavior on both sides."
+   ],
+   "onboardIntoWeb3": false,
+   "ethSeasonOfInternships": false,
+   "responsibilities": [
+    "Architect and develop Solana programs in Rust, using Anchor and/or native frameworks.",
+    "Maintain and extend M0\u2019s existing issuance infrastructure, with a focus on Token-2022 extensions.",
+    "Optimize programs for compute unit usage, account size, and transaction packing.",
+    "Participate actively in code and design reviews.",
+    "Prepare codebases for third-party audits, including writing comprehensive tests, invariants, and fuzz harnesses."
+   ],
+   "shortUUID": "4GuhCp",
+   "minimumSalary": null,
+   "maximumSalary": null,
+   "salary": null,
+   "seniority": "3",
+   "benefits": [
+    "Global team and flexibility: remote work or from NYC or Berlin hubs.",
+    "Health and wellness: comprehensive healthcare insurance coverage, wellbeing allowance and gym membership.",
+    "Customizable IT setup: access to top-notch IT equipment.",
+    "Professional development: annual development budget and opportunities to participate in conferences and on-site company events worldwide."
+   ],
+   "culture": null,
+   "location": "Remote, USA",
+   "salaryCurrency": null,
+   "paysInCrypto": null,
+   "featured": false,
+   "featureStartDate": null,
+   "featureEndDate": null,
+   "offersTokenAllocation": true,
+   "timestamp": 1780652245506,
+   "tags": [
+    {
+     "id": "2bf9e6f4-331a-444f-92d9-284645e39f8c",
+     "createdTimestamp": 1762862969367,
+     "name": "Wormhole",
+     "normalizedName": "wormhole"
+    },
+    {
+     "id": "26181d86-2f05-4564-962f-99d6f93f63c2",
+     "createdTimestamp": 1755262614060,
+     "name": "interoperability",
+     "normalizedName": "interoperability"
+    },
+    {
+     "id": "8feaa3fc-7501-4121-9384-e3f28ee5d1ab",
+     "createdTimestamp": 1770814490438,
+     "name": "Rust",
+     "normalizedName": "rust"
+    },
+    {
+     "id": "d8da8201-8f28-48b4-ac89-50a1ea2568da",
+     "createdTimestamp": 1770814665575,
+     "name": "Solidity",
+     "normalizedName": "solidity"
+    },
+    {
+     "id": "368660d2-d6b2-4d0e-9e2c-6317c985673c",
+     "createdTimestamp": 1755262728433,
+     "name": "LayerZero",
+     "normalizedName": "layerzero"
+    }
+   ],
+   "commitment": "FULL_TIME",
+   "locationType": "REMOTE",
+   "classification": "SMART_CONTRACTS",
+   "organization": {
+    "name": "M0",
+    "orgId": "10216",
+    "location": "Distributed"
+   },
+   "project": null
+  }
+ ]
+}
