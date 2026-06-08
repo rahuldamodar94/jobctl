@@ -97,7 +97,7 @@ CONFIG (yaml)                  SCRAPE PIPELINE (src/scraper/run.ts)
                                 /api/jobs /api/scrape /api/runs/latest /api/stats
                                 /api/export.csv /api/resumes /api/config
                                 /api/settings (in-app config editor)
-                                /api/import (user-driven import) /api/demo (sample data)
+                                /api/demo (sample data)
                                 + dist/ui
                                          │
                                 React triage page (src/ui)
@@ -178,8 +178,9 @@ CONFIG (yaml)                  SCRAPE PIPELINE (src/scraper/run.ts)
   delivery model IS the value. Deep PM research 2026-06-08; a different product.
 - **scraping LinkedIn / Indeed / Naukri / X** — account bans, active LinkedIn
   litigation, killed/paid APIs, anti-bot maintenance treadmill; breaks the
-  no-headless-browser design. Coverage of these comes via a user-driven local
-  *import* endpoint (the user's own session), not server-side scraping.
+  no-headless-browser design. Coverage of these is intended via a user-driven
+  local *import* of the user's own session (planned, not currently built — a v2
+  import endpoint was removed in v3 as incomplete), never server-side scraping.
 - **going generic across ALL industries** — scope is the *software industry*
   (any role). Non-tech industries need different boards + non-self-host-capable
   users; out of scope.
@@ -261,18 +262,18 @@ security-review, all pushed:** repositioned to the software industry / all roles
 (`config/domains.yaml`, 21 `config/role-templates.yaml`); profile-level location;
 new sources Recruitee (ATS), We Work Remotely (RSS) + Himalayas (JSON);
 multi-dimension fit-judge with JD evidence citations; AI-first reframe +
-`docs/model-tradeoffs.md`; `POST /api/import` (user-driven, non-scraped sites) +
-`docs/importing-jobs.md`; onboarding redesign (domain multiselect, role-template
-picker, location, model setup); in-app sample data (`/api/demo`). vitest — 251
-tests. (Fixed en route: committed `categories.yaml` fallback escaped the loader
-schema — now guarded.)
+`docs/model-tradeoffs.md`; onboarding redesign (domain multiselect, role-template
+picker, location, model setup); in-app sample data (`/api/demo`). (A user-driven
+LinkedIn/Indeed import was built then removed in v3 as incomplete — deferred to a
+future version.)
 
 ## v2+ roadmap (architecture accommodates, zero code today)
 
 Telegram channels, liveness/expiry classifier, cover-letter tooling, N+1 ATS
 adapters (SmartRecruiters/Workable/Workday via title-gated JD enrichment), and a
-browser-extension capture flow for the import endpoint (design-gated).
-(LLM fit-judge, multi-source expansion, user-driven import — shipped above.)
+**user-driven LinkedIn/Indeed import** (paste/extract from your own session +
+optional browser-extension capture — design-gated; the v2 attempt was removed).
+(LLM fit-judge, multi-source expansion — shipped above.)
 
 **Matching-accuracy ideas (architecture accommodates; nothing built):**
 - *Registry-domain category hints* — category is inferred from JD text, which

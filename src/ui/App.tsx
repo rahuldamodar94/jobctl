@@ -31,9 +31,8 @@ import { RunStatusStrip } from './components/RunStatusStrip.js';
 import { ResumeDrawer } from './components/ResumeDrawer.js';
 import { Onboarding } from './components/Onboarding.js';
 import { Settings } from './components/Settings.js';
-import { ImportModal } from './components/ImportModal.js';
 import { Button, Skeleton } from './components/ui.js';
-import { Play, Download, FileText, Settings as SettingsIcon, Crosshair, SearchX, Sparkles, DownloadCloud } from 'lucide-react';
+import { Play, Download, FileText, Settings as SettingsIcon, Crosshair, SearchX, Sparkles } from 'lucide-react';
 
 const DEFAULT_FILTERS: Filters = {
   q: '',
@@ -61,7 +60,6 @@ export default function App() {
   const [run, setRun] = useState<RunSummary | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [showResume, setShowResume] = useState(false);
-  const [showImport, setShowImport] = useState(false);
   const [demoCount, setDemoCount] = useState(0);
   const [resumeGenEnabled, setResumeGenEnabled] = useState(false);
   // dropdown vocabulary (roles/sources/categories) — from the user's config
@@ -363,9 +361,6 @@ export default function App() {
               >
                 <Download className="h-[17px] w-[17px]" />
               </a>
-              <button onClick={() => setShowImport(true)} title="Import jobs (LinkedIn, Indeed, …)" className={ICON_BTN}>
-                <DownloadCloud className="h-[17px] w-[17px]" />
-              </button>
               <button onClick={() => setShowResume(true)} title="Resume reference drawer" className={ICON_BTN}>
                 <FileText className="h-[17px] w-[17px]" />
               </button>
@@ -508,12 +503,6 @@ export default function App() {
       </main>
 
       {showResume && <ResumeDrawer onClose={() => setShowResume(false)} />}
-      {showImport && (
-        <ImportModal
-          onClose={() => setShowImport(false)}
-          onImported={() => reload({ keepSelection: true })}
-        />
-      )}
     </div>
   );
 }

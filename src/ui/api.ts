@@ -179,29 +179,6 @@ export interface RoleTemplate {
   excludeIfPrimary: string[];
 }
 
-export interface ImportResult {
-  imported: number;
-  received: number;
-  merged: number;
-  source: string;
-}
-
-/** Import jobs from a site jobctl doesn't scrape (LinkedIn/Indeed) — see
- *  docs/importing-jobs.md. The body is validated server-side. */
-export async function importJobs(site: string, jobs: unknown[]): Promise<ImportResult> {
-  const res = await fetch('/api/import', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ site, jobs }),
-  });
-  const body = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    const detail = body.issues?.length ? `: ${body.issues.join('; ')}` : '';
-    throw new Error((body.error ?? `HTTP ${res.status}`) + detail);
-  }
-  return body;
-}
-
 /** The verdict fields the judge endpoint returns — merged into a row client-side. */
 export type VerdictPatch = Pick<UiJob, 'llm_verdict' | 'llm_summary' | 'llm_reasons' | 'llm_blockers' | 'llm_dimensions'>;
 
