@@ -25,6 +25,8 @@ import { cryptocurrencyjobs } from '../sources/boards/cryptocurrencyjobs.js';
 import { blockchainheadhunter } from '../sources/boards/blockchainheadhunter.js';
 import { remotive } from '../sources/boards/remotive.js';
 import { remoteok } from '../sources/boards/remoteok.js';
+import { weworkremotely } from '../sources/boards/weworkremotely.js';
+import { himalayas } from '../sources/boards/himalayas.js';
 
 /** Registry of board adapters — one entry per file in src/sources/boards/. */
 const BOARD_ADAPTERS: Record<string, BoardAdapter> = {
@@ -34,6 +36,8 @@ const BOARD_ADAPTERS: Record<string, BoardAdapter> = {
   [blockchainheadhunter.id]: blockchainheadhunter,
   [remotive.id]: remotive,
   [remoteok.id]: remoteok,
+  [weworkremotely.id]: weworkremotely,
+  [himalayas.id]: himalayas,
 };
 
 /** Per-provider source ids the aggregate `ats` source expands to — the decay

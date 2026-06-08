@@ -124,7 +124,7 @@ export const profileSchema = z.object({
 const sourceSchema = z.object({
   id: z.string().min(1),
   label: z.string().min(1),
-  kind: z.enum(['api', 'html']),
+  kind: z.enum(['api', 'html', 'rss']),
   base_url: z.string().url(),
   options: z.record(z.string(), z.unknown()).optional(),
 });

@@ -50,5 +50,29 @@ sources:
     kind: api
     base_url: https://remoteok.com
 
+  - id: weworkremotely
+    label: We Work Remotely (remote tech jobs)
+    kind: rss
+    base_url: https://weworkremotely.com
+    # one RSS request per category feed — software-industry roles
+    # (eng · design · devops · product · sales & marketing). Full JD inline.
+    options:
+      paths:
+        - /categories/remote-programming-jobs.rss
+        - /categories/remote-design-jobs.rss
+        - /categories/remote-devops-sysadmin-jobs.rss
+        - /categories/remote-product-jobs.rss
+        - /categories/remote-sales-and-marketing-jobs.rss
+
+  - id: himalayas
+    label: Himalayas (remote jobs)
+    kind: api
+    base_url: https://himalayas.app
+    # newest-first JSON API; full JD inline. 100k+ listings → page a window.
+    # Server caps each page at 20; 5 pages ≈ 100 newest jobs.
+    options:
+      limit: 20
+      pages: 5
+
   # ATS sources (greenhouse/lever/ashby) are NOT listed here — they are driven
   # by profile/companies.yaml. Enable them via enabled_sources: [ats, ...].

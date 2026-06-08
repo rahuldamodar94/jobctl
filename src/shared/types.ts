@@ -177,7 +177,7 @@ export interface SourceConfig {
   id: string;
   label: string;
   /** Board adapters declare their kind; ATS sources are driven by companies.yaml instead. */
-  kind: 'api' | 'html';
+  kind: 'api' | 'html' | 'rss';
   baseUrl: string;
   /** Adapter-specific knobs (paths, pages to scan, etc.). */
   options?: Record<string, unknown>;

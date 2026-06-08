@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/">
+  <channel>
+    <title>We Work Remotely: Remote Programming Jobs</title>
+    <item>
+      <media:content url="https://example.com/logo.gif" type="image/png"/>
+      <title>Nomad: Senior Software Engineer II</title>
+      <region>Anywhere in the World</region>
+      <category>Full-Stack Programming</category>
+      <type>Full-Time</type>
+      <description>&lt;p&gt;&lt;strong&gt;About Nomad&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;We build with TypeScript and Go.&lt;/p&gt;</description>
+      <pubDate>Tue, 19 May 2026 15:45:54 +0000</pubDate>
+      <guid>https://weworkremotely.com/remote-jobs/nomad-senior-software-engineer-ii</guid>
+      <link>https://weworkremotely.com/remote-jobs/nomad-senior-software-engineer-ii</link>
+    </item>
+    <item>
+      <title>Acme Corp: Product Designer</title>
+      <region>USA Only</region>
+      <category>Design</category>
+      <type>Contract</type>
+      <description>&lt;p&gt;Design beautiful things.&lt;/p&gt;</description>
+      <pubDate>Mon, 01 Jun 2026 10:00:00 +0000</pubDate>
+      <guid>https://weworkremotely.com/remote-jobs/acme-corp-product-designer</guid>
+      <link>https://weworkremotely.com/remote-jobs/acme-corp-product-designer</link>
+    </item>
+    <item>
+      <title>No Company Colon Here</title>
+      <region>Anywhere in the World</region>
+      <category>Other</category>
+      <description>&lt;p&gt;cannot extract a company → skipped&lt;/p&gt;</description>
+      <pubDate>Mon, 01 Jun 2026 10:00:00 +0000</pubDate>
+      <guid>https://weworkremotely.com/remote-jobs/no-company-colon-here</guid>
+      <link>https://weworkremotely.com/remote-jobs/no-company-colon-here</link>
+    </item>
+  </channel>
+</rss>

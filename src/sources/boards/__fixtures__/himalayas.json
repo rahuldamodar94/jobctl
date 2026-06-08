@@ -1,0 +1,58 @@
+{
+  "comments": "trimmed live sample",
+  "updatedAt": 1748800000,
+  "offset": 0,
+  "limit": 3,
+  "totalCount": 106433,
+  "jobs": [
+    {
+      "title": "Senior Product Manager, AI Agents",
+      "excerpt": "Why Jerry?",
+      "companyName": "Jerry",
+      "companySlug": "jerry",
+      "employmentType": "Full Time",
+      "minSalary": 160000,
+      "maxSalary": 200000,
+      "currency": "USD",
+      "seniority": ["Senior", "Manager"],
+      "locationRestrictions": ["Canada", "United States"],
+      "timezoneRestrictions": [-8, -5],
+      "categories": ["Senior-AI-Product-Manager", "AI-Platform-Product-Manager"],
+      "parentCategories": [],
+      "description": "<h3><strong>Why Jerry?</strong></h3><ul><li><p>We are building the first super app.</p></li><li><p>We use <strong>TypeScript</strong> and LLMs.</p></li></ul>",
+      "pubDate": 1748736000,
+      "expiryDate": 1751328000,
+      "applicationLink": "https://himalayas.app/companies/jerry/jobs/senior-pm-ai-3120228057",
+      "guid": "https://himalayas.app/companies/jerry/jobs/senior-pm-ai-3120228057"
+    },
+    {
+      "title": "Backend Engineer",
+      "excerpt": "Build APIs.",
+      "companyName": "Globex",
+      "companySlug": "globex",
+      "employmentType": "Full Time",
+      "minSalary": null,
+      "maxSalary": null,
+      "currency": null,
+      "seniority": ["Mid"],
+      "locationRestrictions": [],
+      "timezoneRestrictions": [],
+      "categories": ["Backend-Engineer"],
+      "parentCategories": [],
+      "description": "<p>Build APIs in Go. We value clean code.</p>",
+      "pubDate": 1746057600,
+      "expiryDate": 1748649600,
+      "applicationLink": "https://himalayas.app/companies/globex/jobs/backend-engineer-1",
+      "guid": "https://himalayas.app/companies/globex/jobs/backend-engineer-1"
+    },
+    {
+      "title": "Ghost Listing (no link)",
+      "companyName": "Initech",
+      "locationRestrictions": ["United Kingdom"],
+      "description": "<p>should be skipped — no application link or guid</p>",
+      "pubDate": 1746057600,
+      "applicationLink": null,
+      "guid": null
+    }
+  ]
+}
