@@ -296,13 +296,6 @@ export function Onboarding({ config, onDone }: { config: AppConfig; onDone: () =
                     <span className={lbl}>Role label</span>
                     <input className={input} value={roleLabel} onChange={(e) => setRoleLabel(e.target.value)} placeholder="Senior Backend Engineer" />
                   </label>
-                  <div className="flex gap-2">
-                    {(['ic', 'em'] as const).map((l) => (
-                      <button key={l} onClick={() => setLane(l)} className={cn('flex-1', tile, lane === l ? tileOn : tileOff)}>
-                        {l === 'ic' ? 'Individual contributor' : 'Manager / EM'}
-                      </button>
-                    ))}
-                  </div>
                   <label className="block">
                     <span className={lbl}>Title keywords <span className="font-normal text-faint">— a job's title must contain one</span></span>
                     <input className={input} value={titleKeywords} onChange={(e) => setTitleKeywords(e.target.value)} placeholder="senior backend, backend engineer" />
