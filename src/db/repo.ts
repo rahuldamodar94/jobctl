@@ -49,6 +49,7 @@ interface JobRow {
   llm_summary: string | null;
   llm_reasons: string | null;
   llm_blockers: string | null;
+  llm_dimensions: string | null;
   llm_judged_hash: string | null;
 }
 
@@ -110,6 +111,7 @@ function rowToJob(r: JobRow): Job {
     llmSummary: r.llm_summary,
     llmReasons: safeJsonParse<string[]>(r.llm_reasons, [], r.id, 'llm_reasons'),
     llmBlockers: safeJsonParse<string[]>(r.llm_blockers, [], r.id, 'llm_blockers'),
+    llmDimensions: safeJsonParse<Job['llmDimensions']>(r.llm_dimensions, [], r.id, 'llm_dimensions'),
     llmJudgedHash: r.llm_judged_hash,
   };
 }
@@ -308,9 +310,17 @@ export class Repo {
     this.db
       .prepare(
         `UPDATE jobs SET llm_verdict = ?, llm_summary = ?, llm_reasons = ?,
-         llm_blockers = ?, llm_judged_hash = ? WHERE id = ?`
+         llm_blockers = ?, llm_dimensions = ?, llm_judged_hash = ? WHERE id = ?`
       )
-      .run(v.verdict, v.summary, JSON.stringify(v.reasons), JSON.stringify(v.blockers), jdHash, id);
+      .run(
+        v.verdict,
+        v.summary,
+        JSON.stringify(v.reasons),
+        JSON.stringify(v.blockers),
+        JSON.stringify(v.dimensions),
+        jdHash,
+        id
+      );
   }
 
   updateMatch(id: number, isMatch: boolean, score: number, roleIds: string[], reasons: MatchReasons, category: string): void {

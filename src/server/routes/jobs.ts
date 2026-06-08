@@ -140,6 +140,7 @@ export function jobsRouter(db: Database.Database, repo: Repo): Router {
              category, posted_date, first_seen, source_id, is_match,
              matched_role_ids, match_score, match_reasons, status, user_notes,
              status_updated_at, llm_verdict, llm_summary, llm_reasons, llm_blockers,
+             llm_dimensions,
              substr(COALESCE(description, ''), 1, 600) AS description_excerpt
       FROM jobs
       WHERE ${where.join(' AND ')}
@@ -157,6 +158,7 @@ export function jobsRouter(db: Database.Database, repo: Repo): Router {
       match_reasons: row.match_reasons ? JSON.parse(String(row.match_reasons)) : null,
       llm_reasons: row.llm_reasons ? JSON.parse(String(row.llm_reasons)) : [],
       llm_blockers: row.llm_blockers ? JSON.parse(String(row.llm_blockers)) : [],
+      llm_dimensions: row.llm_dimensions ? JSON.parse(String(row.llm_dimensions)) : [],
     }));
 
     const countSql = `SELECT COUNT(*) AS n FROM jobs WHERE ${where.join(' AND ')}`;

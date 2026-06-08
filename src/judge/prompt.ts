@@ -1,8 +1,10 @@
-import type { JudgeVerdict, Verdict } from '../shared/types.js';
+import type { DimensionKey, DimensionRating, JudgeVerdict, Verdict, VerdictDimension } from '../shared/types.js';
 
 /**
  * Fit-judge prompt assembly + output parsing. The LLM applies the user's
- * rubric (profile/judge-rubric.md) to a JD and returns a 4-level verdict.
+ * rubric (profile/judge-rubric.md) to a JD and returns a 4-level overall
+ * verdict PLUS a per-dimension breakdown, each dimension backed by 1-2 short
+ * evidence citations from the JD.
  * Advisory only — the caller never hides jobs on a verdict; it annotates/ranks.
  */
 
@@ -14,6 +16,10 @@ export interface JudgeJobInput {
 }
 
 const VERDICTS: JudgeVerdict[] = ['STRONG', 'DECENT', 'WEAK', 'SKIP'];
+const DIMENSION_KEYS: DimensionKey[] = ['skills', 'seniority', 'domain', 'location', 'red_flags'];
+const DIMENSION_RATINGS: DimensionRating[] = ['strong', 'ok', 'weak', 'unknown'];
+const MAX_EVIDENCE = 2;
+const EVIDENCE_MAX_LEN = 280;
 
 export function buildJudgePrompt(job: JudgeJobInput, rubric: string): string {
   return [
@@ -32,13 +38,26 @@ export function buildJudgePrompt(job: JudgeJobInput, rubric: string): string {
     '=== OUTPUT (STRICT) ===',
     'Return ONLY a JSON object, no prose, no code fences, with EXACTLY these keys:',
     '  "verdict":  one of "STRONG" | "DECENT" | "WEAK" | "SKIP"',
-    '  "summary":  one sentence on the fit',
-    '  "reasons":  array of short strings (why this verdict)',
+    '  "summary":  one sentence on the overall fit',
+    '  "reasons":  array of short strings (why this overall verdict)',
     '  "blockers": array of short strings — hard mismatches to verify (e.g.',
     '              "Go-primary", "onsite SF, no visa", "requires 10+ yrs"); [] if none',
-    'Be conservative: if genuinely unsure between two levels, choose the MORE',
-    'generous one (WEAK over SKIP) — never wrongly discard a real match.',
-    'All four keys are required; use empty arrays rather than omitting.',
+    '  "dimensions": array of EXACTLY these five objects, one per dimension, in order:',
+    '              skills, seniority, domain, location, red_flags',
+    '     each: { "key": <the dimension>,',
+    '             "rating": "strong" | "ok" | "weak" | "unknown",',
+    '             "note": one short sentence,',
+    '             "evidence": array of 1-2 SHORT quotes/paraphrases FROM THE JD that',
+    '                         justify the rating ([] only if the JD says nothing) }',
+    '  Rating meaning: strong = great fit / no concern, ok = acceptable, weak =',
+    '  poor / concerning, unknown = the JD does not say. For "red_flags",',
+    '  strong = none found, weak = notable red flags.',
+    '',
+    'Be conservative on the OVERALL verdict: if genuinely unsure between two',
+    'levels, choose the MORE generous one (WEAK over SKIP) — never wrongly',
+    'discard a real match. Ground every dimension in the JD: evidence must be',
+    'text actually present in the description, never invented.',
+    'All keys are required; use empty arrays rather than omitting.',
   ].join('\n');
 }
 
@@ -63,7 +82,38 @@ export function parseVerdict(raw: string): Verdict {
     summary: typeof obj.summary === 'string' ? obj.summary.trim() : '',
     reasons: toStringArray(obj.reasons),
     blockers: toStringArray(obj.blockers),
+    dimensions: parseDimensions(obj.dimensions),
   };
+}
+
+/**
+ * Parse the dimensions array defensively: drop entries with an unknown key,
+ * coerce an out-of-range rating to "unknown", trim+cap evidence to MAX_EVIDENCE
+ * short strings, and dedupe by key (first wins). A model that omits dimensions
+ * or ships junk degrades to [] — the verdict is still usable (advisory).
+ */
+function parseDimensions(raw: unknown): VerdictDimension[] {
+  if (!Array.isArray(raw)) return [];
+  const seen = new Set<DimensionKey>();
+  const out: VerdictDimension[] = [];
+  for (const item of raw) {
+    if (!item || typeof item !== 'object') continue;
+    const o = item as Record<string, unknown>;
+    const key = DIMENSION_KEYS.find((k) => k === String(o.key ?? '').toLowerCase().trim());
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    const r = String(o.rating ?? '').toLowerCase().trim();
+    const rating = DIMENSION_RATINGS.find((x) => x === r) ?? 'unknown';
+    out.push({
+      key,
+      rating,
+      note: typeof o.note === 'string' ? o.note.trim() : '',
+      evidence: toStringArray(o.evidence)
+        .slice(0, MAX_EVIDENCE)
+        .map((e) => (e.length > EVIDENCE_MAX_LEN ? `${e.slice(0, EVIDENCE_MAX_LEN - 1)}…` : e)),
+    });
+  }
+  return out;
 }
 
 /**

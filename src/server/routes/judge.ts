@@ -31,6 +31,7 @@ export function judgeRouter(db: Database.Database): Router {
         llm_summary: j.llmSummary,
         llm_reasons: j.llmReasons,
         llm_blockers: j.llmBlockers,
+        llm_dimensions: j.llmDimensions,
       });
     } catch (e) {
       res.status(500).json({ error: (e as Error).message });

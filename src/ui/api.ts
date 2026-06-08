@@ -34,6 +34,16 @@ export interface UiJob {
   llm_summary: string | null;
   llm_reasons: string[];
   llm_blockers: string[];
+  /** per-dimension breakdown with JD evidence ([] for un-judged / old verdicts) */
+  llm_dimensions: VerdictDimension[];
+}
+
+/** One advisory fit dimension scored by the judge, backed by JD evidence. */
+export interface VerdictDimension {
+  key: 'skills' | 'seniority' | 'domain' | 'location' | 'red_flags';
+  rating: 'strong' | 'ok' | 'weak' | 'unknown';
+  note: string;
+  evidence: string[];
 }
 
 export interface RunSummary {
@@ -154,7 +164,7 @@ export interface AppConfig {
 }
 
 /** The verdict fields the judge endpoint returns — merged into a row client-side. */
-export type VerdictPatch = Pick<UiJob, 'llm_verdict' | 'llm_summary' | 'llm_reasons' | 'llm_blockers'>;
+export type VerdictPatch = Pick<UiJob, 'llm_verdict' | 'llm_summary' | 'llm_reasons' | 'llm_blockers' | 'llm_dimensions'>;
 
 /** Re-judge one job via the configured fit-judge backend (~seconds). */
 export async function judgeJob(id: number): Promise<VerdictPatch> {

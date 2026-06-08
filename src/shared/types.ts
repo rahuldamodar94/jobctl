@@ -83,6 +83,8 @@ export interface Job extends RawJob {
   llmSummary: string | null;
   llmReasons: string[];
   llmBlockers: string[];
+  /** per-dimension breakdown with JD evidence (advisory; [] for old verdicts) */
+  llmDimensions: VerdictDimension[];
   /** sha1 of the JD text the verdict was computed against (stale → re-judge) */
   llmJudgedHash: string | null;
 }
@@ -90,12 +92,29 @@ export interface Job extends RawJob {
 /** 4-level fit verdict from the LLM judge (matches profile/judge-rubric.md). */
 export type JudgeVerdict = 'STRONG' | 'DECENT' | 'WEAK' | 'SKIP';
 
+/** The advisory fit dimensions the judge scores, each backed by JD evidence. */
+export type DimensionKey = 'skills' | 'seniority' | 'domain' | 'location' | 'red_flags';
+/** Per-dimension fit: strong = great fit / no concerns, weak = poor / concerning,
+ *  unknown = the JD doesn't say. (For red_flags: strong = none found.) */
+export type DimensionRating = 'strong' | 'ok' | 'weak' | 'unknown';
+
+export interface VerdictDimension {
+  key: DimensionKey;
+  rating: DimensionRating;
+  /** one short sentence explaining the rating */
+  note: string;
+  /** 1-2 short quotes/paraphrases from the JD that justify the rating */
+  evidence: string[];
+}
+
 export interface Verdict {
   verdict: JudgeVerdict;
   summary: string;
   reasons: string[];
   /** candidate hard-stops to verify (e.g. "Go-primary", "onsite, no visa"). */
   blockers: string[];
+  /** advisory per-dimension breakdown with evidence citations */
+  dimensions: VerdictDimension[];
 }
 
 export interface LlmBackendConfig {

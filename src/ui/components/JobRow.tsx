@@ -25,6 +25,21 @@ const VERDICT_TONE: Record<string, React.ComponentProps<typeof Badge>['tone']> =
   SKIP: 'muted',
 };
 
+/** per-dimension sub-score → chip tone + human label (advisory breakdown) */
+const DIM_RATING_TONE: Record<string, React.ComponentProps<typeof Badge>['tone']> = {
+  strong: 'success',
+  ok: 'info',
+  weak: 'warn',
+  unknown: 'muted',
+};
+const DIM_LABEL: Record<string, string> = {
+  skills: 'Skills',
+  seniority: 'Seniority',
+  domain: 'Domain',
+  location: 'Location',
+  red_flags: 'Red flags',
+};
+
 /** status → row tint + left-rail color */
 const DEFAULT_ROW = { tint: '', rail: 'border-l-transparent' };
 const STATUS_ROW: Record<string, { tint: string; rail: string }> = {
@@ -346,6 +361,23 @@ export function JobRow({
                   {job.llm_reasons.length > 0 && <div className="mt-1.5 text-muted">Why: {job.llm_reasons.join(' · ')}</div>}
                   {job.llm_blockers.length > 0 && (
                     <div className="mt-1"><span className="text-muted">Verify: </span><span className="text-amber-300">{job.llm_blockers.join(' · ')}</span></div>
+                  )}
+                  {job.llm_dimensions.length > 0 && (
+                    <div className="mt-2 space-y-1 border-t border-line/60 pt-2">
+                      {job.llm_dimensions.map((d) => (
+                        <div key={d.key} className="flex items-baseline gap-2">
+                          <Badge tone={DIM_RATING_TONE[d.rating] ?? 'muted'} className="w-[4.75rem] shrink-0 justify-center text-[10px]">
+                            {DIM_LABEL[d.key] ?? d.key}
+                          </Badge>
+                          <span className="text-ink/80">
+                            {d.note}
+                            {d.evidence.length > 0 && (
+                              <span className="text-faint"> — “{d.evidence.join('” · “')}”</span>
+                            )}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </div>
               )}

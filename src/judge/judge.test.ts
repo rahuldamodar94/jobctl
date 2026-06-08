@@ -55,6 +55,38 @@ describe('parseVerdict', () => {
     const v = parseVerdict('{"verdict":"STRONG","summary":"x","reasons":[],"blockers":[]} ...oops {"verdict":"SKIP"}');
     expect(v.verdict).toBe('STRONG');
   });
+
+  test('back-compat: a verdict with no dimensions key → dimensions []', () => {
+    const v = parseVerdict('{"verdict":"DECENT","summary":"","reasons":[],"blockers":[]}');
+    expect(v.dimensions).toEqual([]);
+  });
+
+  test('parses dimensions: valid keys/ratings, evidence capped at 2, junk dropped', () => {
+    const v = parseVerdict(
+      JSON.stringify({
+        verdict: 'STRONG',
+        summary: 'great',
+        reasons: [],
+        blockers: [],
+        dimensions: [
+          { key: 'skills', rating: 'strong', note: 'TS match', evidence: ['uses TypeScript', 'Node services', 'extra cite'] },
+          { key: 'location', rating: 'WEAK', note: 'onsite', evidence: ['onsite in SF'] }, // rating case-normalized
+          { key: 'red_flags', rating: 'banana', note: 'odd', evidence: [] }, // bad rating → unknown
+          { key: 'made_up', rating: 'strong', note: 'x', evidence: [] }, // unknown key → dropped
+          { key: 'skills', rating: 'ok', note: 'dup', evidence: [] }, // duplicate key → dropped
+        ],
+      })
+    );
+    expect(v.dimensions.map((d) => d.key)).toEqual(['skills', 'location', 'red_flags']);
+    expect(v.dimensions[0]!.evidence).toEqual(['uses TypeScript', 'Node services']); // capped at 2
+    expect(v.dimensions[1]!.rating).toBe('weak'); // case-normalized
+    expect(v.dimensions[2]!.rating).toBe('unknown'); // out-of-range → unknown
+  });
+
+  test('non-array dimensions degrade to []', () => {
+    const v = parseVerdict('{"verdict":"SKIP","summary":"","reasons":[],"blockers":[],"dimensions":"oops"}');
+    expect(v.dimensions).toEqual([]);
+  });
   test('fenced JSON whose summary contains a fence', () => {
     const v = parseVerdict('```json\n{"verdict":"WEAK","summary":"wrap in ```","reasons":[],"blockers":[]}\n```');
     expect(v.verdict).toBe('WEAK');
@@ -125,7 +157,9 @@ llm:
   test('judges a matched job, persists the verdict, and skips when unchanged', async () => {
     const repo = new Repo(db);
     const id = repo.insert(makeInput());
-    mockFetch('{"verdict":"STRONG","summary":"strong fit","reasons":["ts"],"blockers":[]}');
+    mockFetch(
+      '{"verdict":"STRONG","summary":"strong fit","reasons":["ts"],"blockers":[],"dimensions":[{"key":"skills","rating":"strong","note":"TS/Node","evidence":["TypeScript backend role"]}]}'
+    );
     const { judgePending } = await freshJudge();
 
     const r1 = await judgePending(repo, () => {});
@@ -134,6 +168,10 @@ llm:
     expect(job.llmVerdict).toBe('STRONG');
     expect(job.llmReasons).toEqual(['ts']);
     expect(job.llmJudgedHash).toBeTruthy();
+    // dimensions round-trip through persistence
+    expect(job.llmDimensions).toEqual([
+      { key: 'skills', rating: 'strong', note: 'TS/Node', evidence: ['TypeScript backend role'] },
+    ]);
 
     // unchanged JD → no re-judge
     const r2 = await judgePending(repo, () => {});

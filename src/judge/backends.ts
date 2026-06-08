@@ -9,12 +9,26 @@ export type Runner = (prompt: string) => Promise<string>;
 const VERDICT_SCHEMA = {
   type: 'object',
   additionalProperties: false,
-  required: ['verdict', 'summary', 'reasons', 'blockers'],
+  required: ['verdict', 'summary', 'reasons', 'blockers', 'dimensions'],
   properties: {
     verdict: { type: 'string', enum: ['STRONG', 'DECENT', 'WEAK', 'SKIP'] },
     summary: { type: 'string' },
     reasons: { type: 'array', items: { type: 'string' } },
     blockers: { type: 'array', items: { type: 'string' } },
+    dimensions: {
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['key', 'rating', 'note', 'evidence'],
+        properties: {
+          key: { type: 'string', enum: ['skills', 'seniority', 'domain', 'location', 'red_flags'] },
+          rating: { type: 'string', enum: ['strong', 'ok', 'weak', 'unknown'] },
+          note: { type: 'string' },
+          evidence: { type: 'array', items: { type: 'string' } },
+        },
+      },
+    },
   },
 };
 

@@ -90,6 +90,7 @@ export function initSchema(db: Database.Database): void {
     'llm_summary TEXT',
     'llm_reasons TEXT',
     'llm_blockers TEXT',
+    'llm_dimensions TEXT', // JSON: per-dimension breakdown with evidence (added later)
     'llm_judged_hash TEXT',
   ]) {
     try {
