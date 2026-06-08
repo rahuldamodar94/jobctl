@@ -295,3 +295,213 @@ templates:
       technical hiring: 4
       employer branding: 2
       ats: 2
+
+  # ===================== v3 additions (2026-06-09) =====================
+  # More roles across the same function groups (top level of the wizard's
+  # two-level picker). Each is a rich, ready-to-use config like the above.
+
+  - id: blockchain_engineer
+    label: Blockchain / Smart Contract Engineer
+    group: Engineering
+    description: Smart contracts, protocols, on-chain systems.
+    title_keywords: [blockchain engineer, smart contract engineer, protocol engineer, solidity engineer, smart contract developer, blockchain developer]
+    title_exclude: [junior, intern, manager, marketing]
+    must_have_stack: [solidity, rust, smart contracts, evm, web3]
+    nice_to_have:
+      defi: 5
+      cryptography: 4
+      zero knowledge: 4
+      foundry: 3
+      hardhat: 3
+      golang: 2
+
+  - id: game_engineer
+    label: Game / Gameplay Engineer
+    group: Engineering
+    description: Gameplay systems, engines, multiplayer netcode.
+    title_keywords: [game engineer, gameplay engineer, game developer, engine programmer, gameplay programmer, graphics engineer]
+    title_exclude: [junior, intern, manager]
+    must_have_stack: [c++, unreal engine, unity, game development, c#]
+    nice_to_have:
+      multiplayer: 4
+      netcode: 4
+      graphics: 4
+      physics: 3
+      gameplay: 3
+
+  - id: ai_research_engineer
+    label: AI Research Engineer
+    group: Engineering
+    description: Applied research on models, training, evaluation.
+    title_keywords: [research engineer, ai research engineer, member of technical staff, applied research engineer, deep learning engineer]
+    title_exclude: [junior, intern, manager]
+    must_have_stack: [pytorch, machine learning, deep learning, llm, transformers]
+    nice_to_have:
+      distributed training: 5
+      cuda: 4
+      reinforcement learning: 4
+      jax: 3
+      research: 3
+
+  - id: embedded_engineer
+    label: Embedded / Firmware Engineer
+    group: Engineering
+    description: Firmware, embedded systems, hardware-adjacent software.
+    title_keywords: [embedded engineer, firmware engineer, embedded software engineer, embedded systems engineer]
+    title_exclude: [junior, intern, manager]
+    must_have_stack: [embedded, firmware, c++, rtos, microcontroller]
+    nice_to_have:
+      arm: 4
+      device drivers: 4
+      linux kernel: 3
+      hardware: 2
+
+  - id: analytics_engineer
+    label: Analytics Engineer
+    group: Data & Science
+    description: Transform + model data for analytics (dbt / warehouse).
+    title_keywords: [analytics engineer, analytics developer, bi engineer, data analytics engineer]
+    title_exclude: [junior, intern, manager]
+    must_have_stack: [sql, dbt, snowflake, bigquery, python]
+    nice_to_have:
+      data modeling: 5
+      looker: 3
+      airflow: 3
+      warehouse: 3
+
+  - id: research_scientist
+    label: Research Scientist (ML/AI)
+    group: Data & Science
+    description: Novel ML/AI research, modeling, evaluation.
+    title_keywords: [research scientist, applied scientist, machine learning scientist, ai scientist]
+    title_exclude: [junior, intern, manager]
+    must_have_stack: [machine learning, deep learning, pytorch, research, statistics]
+    nice_to_have:
+      publications: 4
+      nlp: 3
+      computer vision: 3
+      reinforcement learning: 3
+
+  - id: ai_product_manager
+    label: AI Product Manager
+    group: Product
+    description: Product for AI/ML-powered features and platforms.
+    title_keywords: [ai product manager, machine learning product manager, llm product manager, product manager, ai pm]
+    title_exclude: [intern, marketing, project manager]
+    must_have_stack: [product, machine learning, ai, roadmap, llm]
+    nice_to_have:
+      experimentation: 4
+      data: 3
+      platform: 3
+      developer: 2
+
+  - id: product_operations_manager
+    label: Product Operations Manager
+    group: Product
+    description: Product ops — process, tooling, insights.
+    title_keywords: [product operations, product ops, product operations manager]
+    title_exclude: [intern]
+    must_have_stack: [product operations, process, stakeholder, tooling]
+    nice_to_have:
+      analytics: 3
+      research ops: 3
+      roadmap: 2
+
+  - id: design_engineer
+    label: Design Engineer (UX Engineer)
+    group: Design
+    description: Bridge design + frontend — prototypes, design systems in code.
+    title_keywords: [design engineer, ux engineer, design technologist, creative technologist]
+    title_exclude: [junior, intern, manager, backend]
+    must_have_stack: [react, css, design systems, typescript, figma]
+    nice_to_have:
+      animation: 4
+      prototyping: 4
+      accessibility: 3
+      tailwind: 2
+
+  - id: brand_designer
+    label: Brand / Visual Designer
+    group: Design
+    description: Brand identity, visual systems, marketing design.
+    title_keywords: [brand designer, visual designer, graphic designer, brand design, art director]
+    title_exclude: [intern, ux designer, product designer]
+    must_have_stack: [branding, visual design, typography, adobe, figma]
+    nice_to_have:
+      motion: 4
+      illustration: 3
+      design systems: 3
+
+  - id: content_marketing_manager
+    label: Content Marketing Manager
+    group: Growth & Marketing
+    description: Content strategy, SEO, editorial, thought leadership.
+    title_keywords: [content marketing, content manager, content strategist, seo manager, editorial manager]
+    title_exclude: [intern, engineer]
+    must_have_stack: [content, marketing, seo, editorial, copywriting]
+    nice_to_have:
+      content strategy: 4
+      analytics: 3
+      b2b: 2
+
+  - id: performance_marketing_manager
+    label: Performance Marketing Manager
+    group: Growth & Marketing
+    description: Paid acquisition, PPC, ROAS, channel growth.
+    title_keywords: [performance marketing, paid media, paid acquisition, ppc manager, digital marketing manager]
+    title_exclude: [intern, engineer]
+    must_have_stack: [paid acquisition, performance marketing, ppc, analytics, roas]
+    nice_to_have:
+      google ads: 3
+      meta ads: 3
+      attribution: 3
+      sql: 2
+
+  - id: solutions_engineer
+    label: Solutions / Sales Engineer
+    group: Sales & Success
+    description: Technical pre-sales — demos, POCs, integrations.
+    title_keywords: [solutions engineer, sales engineer, solutions architect, solutions consultant, pre-sales engineer]
+    title_exclude: [intern, manager]
+    must_have_stack: [solutions engineering, pre-sales, technical, api, customer]
+    nice_to_have:
+      saas: 3
+      cloud: 3
+      demos: 3
+      integrations: 2
+
+  - id: sales_development_rep
+    label: Sales Development Rep (SDR/BDR)
+    group: Sales & Success
+    description: Outbound prospecting, pipeline generation.
+    title_keywords: [sales development representative, business development representative, sales development rep]
+    title_exclude: [intern, manager, engineer]
+    must_have_stack: [sales development, prospecting, outbound, pipeline, crm]
+    nice_to_have:
+      saas: 3
+      outreach: 3
+      salesforce: 2
+
+  - id: business_operations_manager
+    label: Business Operations Manager
+    group: People & Ops
+    description: BizOps — strategy, process, cross-functional ops.
+    title_keywords: [business operations, bizops, strategy and operations, business operations manager, chief of staff]
+    title_exclude: [intern, warehouse, fulfillment]
+    must_have_stack: [operations, strategy, cross-functional, analytics, process]
+    nice_to_have:
+      sql: 3
+      stakeholder: 3
+      project management: 2
+
+  - id: people_partner
+    label: People / HR Business Partner
+    group: People & Ops
+    description: HRBP — people programs, org/talent partnering.
+    title_keywords: [people partner, hr business partner, hrbp, people operations, people business partner]
+    title_exclude: [intern]
+    must_have_stack: [human resources, people operations, talent, employee relations]
+    nice_to_have:
+      performance management: 3
+      org design: 3
+      hris: 2
