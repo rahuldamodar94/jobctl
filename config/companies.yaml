@@ -7,19 +7,16 @@
 #
 # Which slices YOU scrape is chosen in profile/profile.yaml:
 #   companies:
-#     domains: [web3, fintech, ...]   # pick from the tags below
+#     domains: [ai-ml, fintech, ...]  # pick ids from config/domains.yaml
 #     include: [...]                  # your own additions
 #     exclude: [...]                  # registry names to skip
 #
-# domains vocabulary:
-#   web3      crypto/blockchain companies of any kind
-#   defi      DeFi protocols and apps
-#   exchange  centralized crypto exchanges
-#   infra     chains, L2s, node/indexing/custody infrastructure
-#   fintech   payments, banking, cards, treasury
-#   payments  payments-heavy subset of fintech (incl. stablecoin rails)
-#   ai        AI products and AI-infra
-#   devtools  developer tooling / cloud platforms
+# Domain tags are the ids defined in config/domains.yaml (the canonical
+# software-industry vocabulary):
+#   ai-ml · fintech · crypto · cloud-infra · devtools · security · data ·
+#   saas · gaming · consumer · ecommerce · healthtech
+# The registry is currently strongest in crypto / fintech / cloud-infra /
+# devtools / ai-ml; the other domains fill in via ATS expansion + community PRs.
 #
 # Companies we COULDN'T support yet (other ATSs, custom portals) and known
 # same-name false positives: see config/companies-unsupported.md
@@ -29,242 +26,242 @@ companies:
   # ----- web3: DeFi / protocols / L2s ----------------------------------------
   - name: LiFi
     careers_url: https://jobs.ashbyhq.com/li.fi
-    domains: [web3, defi, infra]
+    domains: [crypto, cloud-infra]
   - name: Ether.fi
     careers_url: https://jobs.ashbyhq.com/ether.fi
-    domains: [web3, defi]
+    domains: [crypto]
   - name: Plasma
     careers_url: https://jobs.ashbyhq.com/plasma
-    domains: [web3, fintech, payments]
+    domains: [crypto, fintech]
   - name: 1inch
     careers_url: https://jobs.lever.co/1inch
-    domains: [web3, defi]
+    domains: [crypto]
   - name: Uniswap Labs
     careers_url: https://jobs.ashbyhq.com/uniswap
-    domains: [web3, defi]
+    domains: [crypto]
   - name: Morpho Labs
     careers_url: https://jobs.ashbyhq.com/morpho
-    domains: [web3, defi]
+    domains: [crypto]
   - name: Polymarket
     careers_url: https://jobs.ashbyhq.com/polymarket
-    domains: [web3, defi]
+    domains: [crypto]
   - name: Optimism
     careers_url: https://jobs.ashbyhq.com/oplabs
-    domains: [web3, infra]
+    domains: [crypto, cloud-infra]
   - name: Arbitrum Foundation
     careers_url: https://jobs.lever.co/arbitrumfoundation
-    domains: [web3, infra]
+    domains: [crypto, cloud-infra]
   - name: Offchain Labs
     careers_url: https://jobs.lever.co/offchainlabs
-    domains: [web3, infra]
+    domains: [crypto, cloud-infra]
   - name: Polygon Labs
     careers_url: https://jobs.ashbyhq.com/polygon-labs
-    domains: [web3, infra]
+    domains: [crypto, cloud-infra]
   - name: Matter Labs
     careers_url: https://jobs.ashbyhq.com/matter-labs
-    domains: [web3, infra]
+    domains: [crypto, cloud-infra]
   - name: Eclipse
     careers_url: https://boards.greenhouse.io/eclipse
-    domains: [web3, infra]
+    domains: [crypto, cloud-infra]
   - name: Celestia
     careers_url: https://jobs.lever.co/celestia
-    domains: [web3, infra]
+    domains: [crypto, cloud-infra]
   - name: Monad
     careers_url: https://jobs.ashbyhq.com/monad.foundation
-    domains: [web3, infra]
+    domains: [crypto, cloud-infra]
   - name: Hyperliquid
     careers_url: https://jobs.ashbyhq.com/Hyperliquid%20Labs
-    domains: [web3, defi]
+    domains: [crypto]
   - name: EigenLayer
     careers_url: https://jobs.ashbyhq.com/eigen-labs
-    domains: [web3, defi, infra]
+    domains: [crypto, cloud-infra]
   - name: Lido
     careers_url: https://jobs.ashbyhq.com/Lido.fi
-    domains: [web3, defi]
+    domains: [crypto]
   - name: Ethena Labs
     careers_url: https://jobs.lever.co/ethenalabs
-    domains: [web3, defi]
+    domains: [crypto]
   - name: Sei Labs
     careers_url: https://jobs.ashbyhq.com/sei-labs
-    domains: [web3, infra]
+    domains: [crypto, cloud-infra]
   - name: Wintermute
     careers_url: https://jobs.lever.co/wintermute-trading
-    domains: [web3, defi]
+    domains: [crypto]
   - name: OpenSea
     careers_url: https://jobs.ashbyhq.com/OpenSea
-    domains: [web3]
+    domains: [crypto]
   - name: Socket (Bungee)
     careers_url: https://boards.greenhouse.io/socket
-    domains: [web3, infra]
+    domains: [crypto, cloud-infra]
     enabled: false   # board live but only a "Wildcard" catch-all posting today
   - name: LayerZero Labs
     careers_url: https://boards.greenhouse.io/layerzerolabs
-    domains: [web3, infra]
+    domains: [crypto, cloud-infra]
   - name: Wormhole Labs
     careers_url: https://jobs.ashbyhq.com/wormholelabs
-    domains: [web3, infra]
+    domains: [crypto, cloud-infra]
   - name: Succinct
     careers_url: https://jobs.ashbyhq.com/Succinct
-    domains: [web3, infra]
+    domains: [crypto, cloud-infra]
   - name: Conduit
     careers_url: https://jobs.ashbyhq.com/Conduit
-    domains: [web3, infra]
+    domains: [crypto, cloud-infra]
   - name: Nethermind
     careers_url: https://jobs.ashbyhq.com/Nethermind
-    domains: [web3, infra]
+    domains: [crypto, cloud-infra]
   - name: Story Protocol
     careers_url: https://jobs.lever.co/piplabs
-    domains: [web3]
+    domains: [crypto]
   - name: Centrifuge
     careers_url: https://jobs.lever.co/centrifuge
-    domains: [web3, defi, fintech]
+    domains: [crypto, fintech]
   - name: Securitize
     careers_url: https://boards.greenhouse.io/securitize
-    domains: [web3, fintech]
+    domains: [crypto, fintech]
   - name: Bastion
     careers_url: https://jobs.ashbyhq.com/Bastion
-    domains: [web3, fintech]
+    domains: [crypto, fintech]
   - name: Halliday
     careers_url: https://jobs.ashbyhq.com/Halliday
-    domains: [web3, fintech]
+    domains: [crypto, fintech]
   - name: Trilitech
     careers_url: https://jobs.ashbyhq.com/trilitech
-    domains: [web3, infra]
+    domains: [crypto, cloud-infra]
   - name: Mysten Labs
     careers_url: https://jobs.ashbyhq.com/MystenLabs
-    domains: [web3, infra]
+    domains: [crypto, cloud-infra]
   - name: Aptos Labs
     careers_url: https://boards.greenhouse.io/aptoslabs
-    domains: [web3, infra]
+    domains: [crypto, cloud-infra]
 
   # ----- web3: infra / indexing / wallets / custody / compliance --------------
   - name: Alchemy
     careers_url: https://jobs.ashbyhq.com/Alchemy
-    domains: [web3, infra, devtools]
+    domains: [crypto, cloud-infra, devtools]
   - name: QuickNode
     careers_url: https://jobs.ashbyhq.com/QuickNode
-    domains: [web3, infra, devtools]
+    domains: [crypto, cloud-infra, devtools]
   - name: Goldsky
     careers_url: https://jobs.ashbyhq.com/goldsky
-    domains: [web3, infra, devtools]
+    domains: [crypto, cloud-infra, devtools]
   - name: Dune Analytics
     careers_url: https://jobs.ashbyhq.com/Dune
-    domains: [web3, infra, ai]
+    domains: [crypto, cloud-infra, ai-ml]
   - name: Nansen
     careers_url: https://boards.greenhouse.io/nansen
-    domains: [web3, infra]
+    domains: [crypto, cloud-infra]
   - name: Helius
     careers_url: https://jobs.ashbyhq.com/Helius
-    domains: [web3, infra, devtools]
+    domains: [crypto, cloud-infra, devtools]
   - name: Syndica
     careers_url: https://jobs.ashbyhq.com/Syndica
-    domains: [web3, infra]
+    domains: [crypto, cloud-infra]
   - name: Blockdaemon
     careers_url: https://jobs.ashbyhq.com/Blockdaemon
-    domains: [web3, infra]
+    domains: [crypto, cloud-infra]
   - name: Figment
     careers_url: https://boards.greenhouse.io/figment
-    domains: [web3, infra]
+    domains: [crypto, cloud-infra]
   - name: Pyth Network
     careers_url: https://jobs.ashbyhq.com/dourolabs.xyz
-    domains: [web3, defi, infra]
+    domains: [crypto, cloud-infra]
   - name: Risk Labs
     careers_url: https://jobs.ashbyhq.com/risklabs
-    domains: [web3, defi]
+    domains: [crypto]
   - name: ConsenSys
     careers_url: https://boards.greenhouse.io/consensys
-    domains: [web3, infra, devtools]
+    domains: [crypto, cloud-infra, devtools]
   - name: Phantom
     careers_url: https://jobs.ashbyhq.com/Phantom
-    domains: [web3]
+    domains: [crypto]
   - name: Ledger
     careers_url: https://jobs.ashbyhq.com/Ledger
-    domains: [web3]
+    domains: [crypto]
   - name: Trust Wallet
     careers_url: https://jobs.ashbyhq.com/trust-wallet
-    domains: [web3]
+    domains: [crypto]
   - name: Turnkey
     careers_url: https://jobs.ashbyhq.com/turnkey
-    domains: [web3, infra, devtools]
+    domains: [crypto, cloud-infra, devtools]
   - name: Fireblocks
     careers_url: https://boards.greenhouse.io/fireblocks
-    domains: [web3, infra, fintech]
+    domains: [crypto, cloud-infra, fintech]
   - name: Chainalysis
     careers_url: https://jobs.ashbyhq.com/chainalysis-careers
-    domains: [web3, fintech]
+    domains: [crypto, fintech]
   - name: Elliptic
     careers_url: https://jobs.ashbyhq.com/Elliptic
-    domains: [web3, fintech]
+    domains: [crypto, fintech]
   - name: Paxos
     careers_url: https://jobs.ashbyhq.com/Paxos
-    domains: [web3, fintech, payments]
+    domains: [crypto, fintech]
 
   # ----- exchanges -------------------------------------------------------------
   - name: Binance
     careers_url: https://jobs.lever.co/binance
-    domains: [web3, exchange]
+    domains: [crypto]
   - name: Bybit
     careers_url: https://boards.greenhouse.io/bybit
-    domains: [web3, exchange]
+    domains: [crypto]
   - name: OKX
     careers_url: https://boards.greenhouse.io/okx
-    domains: [web3, exchange]
+    domains: [crypto]
   - name: Crypto.com
     careers_url: https://jobs.lever.co/crypto
-    domains: [web3, exchange]
+    domains: [crypto]
   - name: Kraken
     careers_url: https://jobs.ashbyhq.com/kraken.com
-    domains: [web3, exchange]
+    domains: [crypto]
   - name: Gemini
     careers_url: https://boards.greenhouse.io/gemini
-    domains: [web3, exchange]
+    domains: [crypto]
   - name: Ripple
     careers_url: https://boards.greenhouse.io/ripple
-    domains: [web3, payments]
+    domains: [crypto, fintech]
   - name: Bitpanda
     careers_url: https://boards.greenhouse.io/bitpanda
-    domains: [web3, exchange]
+    domains: [crypto]
   - name: Bitso
     careers_url: https://boards.greenhouse.io/bitso
-    domains: [web3, exchange]
+    domains: [crypto]
 
   # ----- fintech / payments -----------------------------------------------------
   - name: BVNK
     careers_url: https://boards.greenhouse.io/bvnk
-    domains: [fintech, payments, web3]
+    domains: [fintech, crypto]
   - name: MoonPay
     careers_url: https://jobs.lever.co/moonpay
-    domains: [web3, fintech, payments]
+    domains: [crypto, fintech]
   - name: Nium
     careers_url: https://jobs.lever.co/nium
-    domains: [fintech, payments]
+    domains: [fintech]
   - name: Airwallex
     careers_url: https://jobs.ashbyhq.com/airwallex
-    domains: [fintech, payments]
+    domains: [fintech]
   - name: Thunes
     careers_url: https://boards.greenhouse.io/thunes
-    domains: [fintech, payments]
+    domains: [fintech]
   - name: dLocal
     careers_url: https://jobs.lever.co/dlocal
-    domains: [fintech, payments]
+    domains: [fintech]
   - name: Cobre
     careers_url: https://boards.greenhouse.io/cobre
-    domains: [fintech, payments]
+    domains: [fintech]
   - name: Mesh
     careers_url: https://boards.greenhouse.io/mesh
-    domains: [web3, fintech]
+    domains: [crypto, fintech]
   - name: Squads
     careers_url: https://jobs.ashbyhq.com/squads
-    domains: [web3, fintech]
+    domains: [crypto, fintech]
   - name: Highnote
     careers_url: https://boards.greenhouse.io/highnote
-    domains: [fintech, payments]
+    domains: [fintech]
   - name: Lithic
     careers_url: https://boards.greenhouse.io/lithic
-    domains: [fintech, payments]
+    domains: [fintech]
   - name: Marqeta
     careers_url: https://boards.greenhouse.io/marqeta
-    domains: [fintech, payments]
+    domains: [fintech]
   - name: Unit
     careers_url: https://jobs.ashbyhq.com/unit
     domains: [fintech]
@@ -273,7 +270,7 @@ companies:
     domains: [fintech]
   - name: Modern Treasury
     careers_url: https://jobs.ashbyhq.com/moderntreasury
-    domains: [fintech, payments]
+    domains: [fintech]
   - name: Column
     careers_url: https://jobs.ashbyhq.com/column
     domains: [fintech]
@@ -281,13 +278,13 @@ companies:
   # ----- MENA -------------------------------------------------------------------
   - name: Careem
     careers_url: https://boards.greenhouse.io/careem
-    domains: [fintech, payments]
+    domains: [fintech]
   - name: Tamara
     careers_url: https://boards.greenhouse.io/tamara
     domains: [fintech]
   - name: Ziina
     careers_url: https://jobs.ashbyhq.com/ziina
-    domains: [fintech, payments]
+    domains: [fintech]
   - name: Lean Technologies
     careers_url: https://jobs.ashbyhq.com/leantech
     domains: [fintech]
@@ -295,7 +292,7 @@ companies:
   # ----- India --------------------------------------------------------------------
   - name: Razorpay
     careers_url: https://boards.greenhouse.io/razorpaysoftwareprivatelimited
-    domains: [fintech, payments]
+    domains: [fintech]
   - name: CRED
     careers_url: https://jobs.lever.co/cred
     domains: [fintech]
@@ -304,7 +301,7 @@ companies:
     domains: [fintech]
   - name: PhonePe
     careers_url: https://boards.greenhouse.io/phonepe
-    domains: [fintech, payments]
+    domains: [fintech]
   - name: Zeta
     careers_url: https://jobs.lever.co/zeta
     domains: [fintech]
@@ -312,7 +309,7 @@ companies:
   # ----- AI / dev-infra --------------------------------------------------------------
   - name: Vercel
     careers_url: https://boards.greenhouse.io/vercel
-    domains: [ai, devtools]
+    domains: [ai-ml, devtools]
   - name: Supabase
     careers_url: https://jobs.ashbyhq.com/supabase
     domains: [devtools]
@@ -330,37 +327,37 @@ companies:
     domains: [devtools]
   - name: Browserbase
     careers_url: https://jobs.ashbyhq.com/browserbase
-    domains: [ai, devtools]
+    domains: [ai-ml, devtools]
   - name: LangChain
     careers_url: https://jobs.ashbyhq.com/langchain
-    domains: [ai, devtools]
+    domains: [ai-ml, devtools]
   - name: Replit
     careers_url: https://jobs.ashbyhq.com/replit
-    domains: [ai, devtools]
+    domains: [ai-ml, devtools]
   - name: Cursor (Anysphere)
     careers_url: https://jobs.ashbyhq.com/cursor
-    domains: [ai, devtools]
+    domains: [ai-ml, devtools]
   - name: Cognition (Windsurf)
     careers_url: https://jobs.ashbyhq.com/cognition
-    domains: [ai, devtools]
+    domains: [ai-ml, devtools]
   - name: ElevenLabs
     careers_url: https://jobs.ashbyhq.com/elevenlabs
-    domains: [ai]
+    domains: [ai-ml]
   - name: Modal
     careers_url: https://jobs.ashbyhq.com/modal
-    domains: [ai, devtools]
+    domains: [ai-ml, devtools]
   - name: Baseten
     careers_url: https://jobs.ashbyhq.com/baseten
-    domains: [ai, devtools]
+    domains: [ai-ml, devtools]
   - name: Together AI
     careers_url: https://boards.greenhouse.io/togetherai
-    domains: [ai]
+    domains: [ai-ml]
   - name: Fal
     careers_url: https://boards.greenhouse.io/fal
-    domains: [ai]
+    domains: [ai-ml]
   - name: E2B
     careers_url: https://jobs.ashbyhq.com/e2b
-    domains: [ai, devtools]
+    domains: [ai-ml, devtools]
   - name: Railway
     careers_url: https://jobs.ashbyhq.com/railway
     domains: [devtools]

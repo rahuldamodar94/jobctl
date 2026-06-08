@@ -276,6 +276,24 @@ export function loadCategories(): CategoriesConfig {
   return { order: c.order, fallback: c.fallback, keywords: lowercaseValueArrays(c.keywords) };
 }
 
+// Canonical software-industry domain vocabulary (config/domains.yaml). Drives the
+// onboarding/Settings domain picker and validates registry/profile domain tags.
+const domainSchema = z.object({
+  id: z.string().min(1),
+  label: z.string().min(1),
+  description: z.string().default(''),
+});
+const domainsFileSchema = z.object({ domains: z.array(domainSchema).min(1) });
+export interface DomainConfig {
+  id: string;
+  label: string;
+  description: string;
+}
+
+export function loadDomains(): DomainConfig[] {
+  return loadYaml(join(CONFIG_DIR, 'domains.yaml'), domainsFileSchema, 'domains.yaml').domains;
+}
+
 export function profileDir(): string {
   return PROFILE_DIR;
 }

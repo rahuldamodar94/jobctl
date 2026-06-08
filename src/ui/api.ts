@@ -147,6 +147,8 @@ export interface AppConfig {
   sources: string[];
   availableSources: string[];
   categories: string[];
+  /** canonical software-industry domain vocabulary (for the domain picker) */
+  domains: { id: string; label: string; description: string }[];
   uiPrefs: { defaultMinScore?: number; defaultPostedWithin?: number };
   judgeEnabled: boolean;
 }

@@ -1,13 +1,16 @@
-# Default categorization rules (committed). First match in `order` wins.
-# Override per-user by placing a categories.yaml in your profile/ dir.
+# Default job-categorization rules (committed). First match in `order` wins.
+# These ids align with the domain vocabulary in config/domains.yaml. Only the
+# domains with reliable keyword signal are classified here today; everything else
+# falls back to `saas` (general software). Override per-user by placing a
+# categories.yaml in your profile/ dir.
 
-order: [ai, defi, web3, fintech, web2]
+order: [ai-ml, crypto, fintech, saas]
 
-# Category assigned when nothing in `keywords` matches (web2 = "general tech").
-fallback: web2
+# Category assigned when nothing in `keywords` matches (general software).
+fallback: saas
 
 keywords:
-  ai:
+  ai-ml:
     - llm
     - openai
     - anthropic
@@ -21,10 +24,9 @@ keywords:
     - gpt
     # NOTE: bare "machine learning" removed — a fintech JD mentioning an ML
     # fraud model is not an AI company (corpus audit: mislabeled Razorpay etc.)
-  # DeFi terms must be protocol-specific: bare "liquidity"/"yield"/"swap" are
-  # everyday TradFi vocabulary (FX swaps, liquidity management) and mislabeled
-  # hundreds of payments-company jobs as defi (2026-06-07 corpus audit).
-  defi:
+  crypto:
+    # protocol-specific terms — bare "liquidity"/"yield"/"swap" are everyday
+    # TradFi vocabulary and mislabeled hundreds of payments jobs (2026-06-07 audit)
     - defi
     - lending protocol
     - dex
@@ -35,7 +37,6 @@ keywords:
     - yield farming
     - liquidity pool
     - liquidity mining
-  web3:
     - web3
     - blockchain
     - ethereum

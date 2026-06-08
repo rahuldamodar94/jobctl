@@ -1,0 +1,46 @@
+# Canonical software-industry domain vocabulary (committed).
+#
+# Companies in config/companies.yaml are tagged with these ids; the onboarding
+# wizard and Settings let users SELECT from this list (no free-typing). Keep it
+# tight and reliable — add a domain only when we can actually deliver jobs for it
+# (curated registry coverage + a source). New domains go through a PR.
+#
+# `id` is the tag used in companies.yaml and profile.yaml `companies.domains`.
+
+domains:
+  - id: ai-ml
+    label: AI / ML
+    description: AI/ML labs, model infrastructure, AI-native products
+  - id: fintech
+    label: Fintech & payments
+    description: banking, lending, cards, payments, treasury, stablecoin rails
+  - id: crypto
+    label: Crypto / web3
+    description: blockchain protocols, wallets, infra, DeFi, exchanges
+  - id: cloud-infra
+    label: Cloud & infrastructure
+    description: compute/storage/networking, DevOps, platform & SRE
+  - id: devtools
+    label: Developer tools & platforms
+    description: IDEs, CI/CD, observability, APIs & SDKs
+  - id: security
+    label: Cybersecurity
+    description: appsec, cloud & network security, identity, threat detection
+  - id: data
+    label: Data & analytics
+    description: data platforms, warehousing, pipelines, BI
+  - id: saas
+    label: SaaS / B2B software
+    description: general business software (broad fallback bucket)
+  - id: gaming
+    label: Gaming
+    description: studios, engines, gaming platforms
+  - id: consumer
+    label: Consumer, social & media
+    description: mass-market consumer apps, social, media, creator economy
+  - id: ecommerce
+    label: E-commerce & retail tech
+    description: storefronts, marketplaces, retail infrastructure
+  - id: healthtech
+    label: Healthtech
+    description: digital health, care delivery, health data (software)

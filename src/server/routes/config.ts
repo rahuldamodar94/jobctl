@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { loadCategories, loadProfile, loadRoles, loadSources } from '../../config/load.js';
+import { loadCategories, loadDomains, loadProfile, loadRoles, loadSources, type DomainConfig } from '../../config/load.js';
 import { ATS_SOURCE_IDS } from '../../scraper/run.js';
 import { claudeAvailable } from '../../resume/generate.js';
 
@@ -18,6 +18,8 @@ export interface AppConfigPayload {
   /** ALL available source ids incl. 'ats' (for the onboarding wizard) */
   availableSources: string[];
   categories: string[];
+  /** canonical software-industry domain vocabulary (onboarding/Settings picker) */
+  domains: DomainConfig[];
   /** default triage-filter prefs that seed the UI's default view */
   uiPrefs: { defaultMinScore?: number; defaultPostedWithin?: number };
   /** is the advisory fit-judge turned on? (UI shows verdict chips + re-judge) */
@@ -67,6 +69,12 @@ export function buildConfigPayload(): AppConfigPayload {
   } catch {
     /* committed sources.yaml unreadable — wizard source list degrades */
   }
+  let domains: DomainConfig[] = [];
+  try {
+    domains = loadDomains();
+  } catch {
+    /* committed domains.yaml unreadable — domain picker degrades */
+  }
   // "configured" = a usable setup: the app needs both a profile and ≥1 role.
   return {
     resumeGeneration: claudeAvailable(),
@@ -75,6 +83,7 @@ export function buildConfigPayload(): AppConfigPayload {
     sources,
     availableSources,
     categories,
+    domains,
     uiPrefs,
     judgeEnabled,
   };
