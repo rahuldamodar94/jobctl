@@ -45,6 +45,10 @@ Daily workflow: open UI → Run scrape → triage `new, score≥30` list → don
 config/                          # COMMITTED — community value
 ├── companies.yaml               # registry: name + careers_url + domains tags
 ├── companies-unsupported.md     # researched-but-unreachable + false-positive blocklist
+├── domains.yaml                 # canonical software-industry domain vocabulary
+                                 # (picker source; validates registry/profile tags)
+├── role-templates.yaml          # curated role searches (all roles) the picker
+                                 # prefills into roles.yaml; every one is a valid role
 ├── sources.yaml                 # board definitions
 └── categories.yaml              # category taxonomy: free strings, first match
                                  # in `order` wins, `fallback` when nothing hits

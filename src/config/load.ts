@@ -42,6 +42,15 @@ const roleSchema = z.object({
 
 export const rolesFileSchema = z.object({ roles: z.array(roleSchema).min(1) });
 
+// Role templates (config/role-templates.yaml) are roles plus two picker-only
+// fields. A template is, by construction, a valid roles.yaml entry — picking one
+// prefills a role the user then edits.
+const roleTemplateSchema = roleSchema.extend({
+  group: z.string().min(1).default('Other'),
+  description: z.string().default(''),
+});
+export const roleTemplatesFileSchema = z.object({ templates: z.array(roleTemplateSchema).min(1) });
+
 const companySchema = z.object({
   name: z.string().min(1),
   careers_url: z.string().url(),
@@ -298,6 +307,41 @@ export interface DomainConfig {
 
 export function loadDomains(): DomainConfig[] {
   return loadYaml(join(CONFIG_DIR, 'domains.yaml'), domainsFileSchema, 'domains.yaml').domains;
+}
+
+// Curated role-search templates (config/role-templates.yaml) — seed data the
+// onboarding/Settings picker copies into roles.yaml. Keywords are kept
+// AS-AUTHORED (not lowercased) for readable prefill; loadRoles lowercases when
+// the chosen template becomes a real role. Optional file → [] when absent.
+export interface RoleTemplateConfig {
+  id: string;
+  label: string;
+  group: string;
+  description: string;
+  lane: 'ic' | 'em';
+  titleKeywords: string[];
+  titleExclude: string[];
+  mustHaveStack: string[];
+  niceToHave: Record<string, number>;
+  excludeIfPrimary: string[];
+}
+
+export function loadRoleTemplates(): RoleTemplateConfig[] {
+  const path = join(CONFIG_DIR, 'role-templates.yaml');
+  if (!existsSync(path)) return [];
+  const f = loadYaml(path, roleTemplatesFileSchema, 'config/role-templates.yaml');
+  return f.templates.map((t) => ({
+    id: t.id,
+    label: t.label,
+    group: t.group,
+    description: t.description,
+    lane: t.lane,
+    titleKeywords: t.title_keywords,
+    titleExclude: t.title_exclude,
+    mustHaveStack: t.must_have_stack,
+    niceToHave: t.nice_to_have,
+    excludeIfPrimary: t.exclude_if_primary,
+  }));
 }
 
 export function profileDir(): string {
