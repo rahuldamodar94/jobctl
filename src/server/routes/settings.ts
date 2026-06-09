@@ -3,7 +3,7 @@ import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync, unlinkS
 import { join, sep, dirname } from 'node:path';
 import { parse, stringify } from 'yaml';
 import type { z } from 'zod';
-import { profileDir, profileSchema, rolesFileSchema, categoriesSchema } from '../../config/load.js';
+import { profileDir, profileSchema, rolesFileSchema } from '../../config/load.js';
 import { safeProfilePath } from '../../config/paths.js';
 import { extractResume } from '../../upload/extract.js';
 import { MAX_RESUME_BYTES } from '../../upload/guards.js';
@@ -105,7 +105,6 @@ export function settingsRouter(): Router {
       configured: profileSchema.safeParse(profile).success,
       profile,
       roles: readYaml('roles.yaml'),
-      categories: readYaml('categories.yaml'),
       skill: readText(SKILL_FILE),
       rubric: readText(RUBRIC_FILE),
     });
@@ -113,9 +112,6 @@ export function settingsRouter(): Router {
 
   r.put('/profile', (req, res) => putYaml(profileSchema, 'profile.yaml', 'profile.yaml', req.body, res));
   r.put('/roles', (req, res) => putYaml(rolesFileSchema, 'roles.yaml', 'roles.yaml', req.body, res));
-  r.put('/categories', (req, res) =>
-    putYaml(categoriesSchema, 'categories.yaml', 'categories.yaml (profile override)', req.body, res)
-  );
 
   // Free-text markdown artifacts (no schema — passed to the LLM verbatim).
   r.get('/skill', (_req, res) => res.json({ text: readText(SKILL_FILE) ?? '' }));

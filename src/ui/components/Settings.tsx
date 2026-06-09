@@ -5,14 +5,13 @@
  * file is never corrupted). Docs (resume rules, judge rubric) and resume files
  * are plain markdown.
  */
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { parse, stringify } from 'yaml';
-import { User, Briefcase, Tags, FileText, Scale, Files, Sparkles, X, Check, AlertCircle } from 'lucide-react';
+import { User, Briefcase, FileText, Scale, Files, Sparkles, X, Check, AlertCircle } from 'lucide-react';
 import {
   getSettings,
   saveProfile,
   saveRoles,
-  saveCategories,
   saveSkill,
   saveRubric,
   saveResume,
@@ -25,12 +24,11 @@ import {
 import { Button, cn } from './ui.js';
 import { ResumeUpload } from './ResumeUpload.js';
 
-type Tab = 'profile' | 'ai' | 'roles' | 'categories' | 'skill' | 'rubric' | 'resumes';
+type Tab = 'profile' | 'ai' | 'roles' | 'skill' | 'rubric' | 'resumes';
 const TABS: { id: Tab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { id: 'profile', label: 'Profile', icon: User },
   { id: 'ai', label: 'AI / LLM', icon: Sparkles },
   { id: 'roles', label: 'Roles', icon: Briefcase },
-  { id: 'categories', label: 'Categories', icon: Tags },
   { id: 'skill', label: 'Resume rules', icon: FileText },
   { id: 'rubric', label: 'Judge rubric', icon: Scale },
   { id: 'resumes', label: 'Resumes', icon: Files },
@@ -40,9 +38,19 @@ export function Settings({ config, onClose, onSaved }: { config: AppConfig | nul
   const [snap, setSnap] = useState<SettingsSnapshot | null>(null);
   const [tab, setTab] = useState<Tab>('profile');
 
-  useEffect(() => {
+  const loadSnap = useCallback(() => {
     getSettings().then(setSnap).catch(() => setSnap(null));
   }, []);
+  useEffect(() => {
+    loadSnap();
+  }, [loadSnap]);
+  // After any save, re-fetch the snapshot so a subsequent tab (which spreads the
+  // full profile) writes fresh data instead of clobbering this save — then reload
+  // the app (config + jobs).
+  const handleSaved = useCallback(() => {
+    loadSnap();
+    onSaved();
+  }, [loadSnap, onSaved]);
 
   return (
     <div className="fixed inset-0 z-40 flex flex-col bg-bg animate-fade-in">
@@ -77,21 +85,17 @@ export function Settings({ config, onClose, onSaved }: { config: AppConfig | nul
           {!snap ? (
             <p className="text-sm text-faint">Loading…</p>
           ) : tab === 'profile' ? (
-            // key per tab: these are all YamlEditor — without a distinct key
-            // React reuses the instance across tabs and keeps stale text state.
-            <YamlEditor key="profile" title="profile.yaml" hint="Your identity, enabled sources, company selection, ui_prefs." initial={snap.profile} save={saveProfile} onSaved={onSaved} />
+            <ProfileForm key="profile" profile={snap.profile} config={config} onSaved={handleSaved} />
           ) : tab === 'ai' ? (
-            <AiSettings key="ai" profile={snap.profile} claudeAvailable={config?.claudeAvailable ?? false} onSaved={onSaved} />
+            <AiSettings key="ai" profile={snap.profile} claudeAvailable={config?.claudeAvailable ?? false} onSaved={handleSaved} />
           ) : tab === 'roles' ? (
-            <YamlEditor key="roles" title="roles.yaml" hint="Your role search: title_keywords (substring matches), must_have_stack, weighted nice_to_have, excludes." initial={snap.roles} save={saveRoles} onSaved={onSaved} />
-          ) : tab === 'categories' ? (
-            <YamlEditor key="categories" title="categories.yaml (override)" hint="Your own job taxonomy (order + fallback + keywords). Optional — overrides the committed default." initial={snap.categories ?? { order: ['web2', 'other'], fallback: 'other', keywords: {} }} save={saveCategories} onSaved={onSaved} />
+            <YamlEditor key="roles" title="roles.yaml" hint="Your role search: title_keywords (substring matches), must_have_stack, weighted nice_to_have, excludes." initial={snap.roles} save={saveRoles} onSaved={handleSaved} />
           ) : tab === 'skill' ? (
-            <AuthoredDocTab key="skill" target="skill" title="Resume generation rules" hint="How the resume generator tailors your resume per job. Generate it from your resume, then refine." initial={snap.skill ?? ''} hasResume={Boolean((snap.profile as { resumes?: unknown[] } | null)?.resumes?.length)} save={saveSkill} onSaved={onSaved} />
+            <AuthoredDocTab key="skill" target="skill" title="Resume generation rules" hint="How the resume generator tailors your resume per job. Generate it from your resume, then refine." initial={snap.skill ?? ''} hasResume={Boolean((snap.profile as { resumes?: unknown[] } | null)?.resumes?.length)} save={saveSkill} onSaved={handleSaved} />
           ) : tab === 'rubric' ? (
-            <AuthoredDocTab key="rubric" target="rubric" title="Judge rubric" hint="How the fit-judge scores a JD against you. Generate it from your resume, then refine." initial={snap.rubric ?? ''} hasResume={Boolean((snap.profile as { resumes?: unknown[] } | null)?.resumes?.length)} save={saveRubric} onSaved={onSaved} />
+            <AuthoredDocTab key="rubric" target="rubric" title="Judge rubric" hint="How the fit-judge scores a JD against you. Generate it from your resume, then refine." initial={snap.rubric ?? ''} hasResume={Boolean((snap.profile as { resumes?: unknown[] } | null)?.resumes?.length)} save={saveRubric} onSaved={handleSaved} />
           ) : (
-            <ResumesTab snap={snap} onSaved={onSaved} />
+            <ResumesTab snap={snap} onSaved={handleSaved} />
           )}
         </div>
       </div>
@@ -173,6 +177,178 @@ function YamlEditor({ title, hint, initial, save, onSaved }: { title: string; hi
         spellCheck={false}
       />
       <SaveBar result={result} dirty={dirty} onSave={onSave} saving={saving} />
+    </div>
+  );
+}
+
+/** Reusable chip multi-select (sources, domains, locations). */
+function Chips({
+  options,
+  selected,
+  onToggle,
+}: {
+  options: { id: string; label: string }[];
+  selected: Set<string>;
+  onToggle: (id: string) => void;
+}) {
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {options.map((o) => {
+        const on = selected.has(o.id);
+        return (
+          <button
+            key={o.id}
+            onClick={() => onToggle(o.id)}
+            className={cn(
+              'rounded-full border px-2.5 py-1 text-xs font-medium transition-all',
+              on ? 'border-accent bg-accent/10 text-accent' : 'border-line bg-surface-2/40 text-muted hover:border-line-strong'
+            )}
+          >
+            {o.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+const COMMON_LOCATIONS = ['Remote', 'United States', 'Europe', 'United Kingdom', 'India', 'MENA', 'Dubai', 'Singapore'];
+
+/** Form over the general profile.yaml fields (replaces the raw-YAML editor).
+ *  Writes the FULL profile (spread + overrides) so the AI/LLM block etc. survive;
+ *  the validated PUT strips any legacy keys. */
+function ProfileForm({ profile, config, onSaved }: { profile: Record<string, unknown> | null; config: AppConfig | null; onSaved: () => void }) {
+  const p = (profile ?? {}) as Record<string, any>;
+  const [name, setName] = useState<string>(p.name ?? '');
+  const [sources, setSources] = useState<Set<string>>(new Set<string>(p.enabled_sources ?? []));
+  const [domains, setDomains] = useState<Set<string>>(new Set<string>(p.companies?.domains ?? []));
+  const [geoPriority, setGeoPriority] = useState<Set<string>>(new Set<string>(p.geo_priority ?? []));
+  const [relocationOk, setRelocationOk] = useState<Set<string>>(new Set<string>(p.geo_relocation_ok ?? []));
+  const [customLoc, setCustomLoc] = useState('');
+  const [maxAge, setMaxAge] = useState<number>(p.max_age_days ?? 30);
+  const [inactiveAfter, setInactiveAfter] = useState<number>(p.inactive_after_days ?? 14);
+  const [minScore, setMinScore] = useState<number>(p.ui_prefs?.default_min_score ?? 30);
+  const [postedWithin, setPostedWithin] = useState<number>(p.ui_prefs?.default_posted_within ?? 14);
+  const [dirty, setDirty] = useState(false);
+  const [result, setResult] = useState<SaveResult | null>(null);
+  const [saving, setSaving] = useState(false);
+  const touch = () => setDirty(true);
+
+  const toggler = (setSet: React.Dispatch<React.SetStateAction<Set<string>>>) => (id: string) => {
+    setSet((prev) => {
+      const n = new Set(prev);
+      n.has(id) ? n.delete(id) : n.add(id);
+      return n;
+    });
+    touch();
+  };
+  const addCustomLoc = () => {
+    const v = customLoc.trim();
+    if (!v) return;
+    setGeoPriority((prev) => new Set(prev).add(v));
+    setCustomLoc('');
+    touch();
+  };
+
+  const sourceOpts = (config?.availableSources ?? [...sources]).map((s) => ({ id: s, label: s }));
+  const domainOpts = (config?.domains ?? []).map((d) => ({ id: d.id, label: d.label }));
+  const locOpts = [...new Set([...COMMON_LOCATIONS, ...geoPriority, ...relocationOk])].map((l) => ({ id: l, label: l }));
+
+  async function onSave() {
+    setResult(null);
+    if (!name.trim()) return setResult({ ok: false, error: 'Name is required.' });
+    if (sources.size === 0) return setResult({ ok: false, error: 'Pick at least one source.' });
+    setSaving(true);
+    const next = {
+      ...p,
+      name: name.trim(),
+      enabled_sources: [...sources],
+      geo_priority: [...geoPriority],
+      geo_relocation_ok: [...relocationOk],
+      max_age_days: maxAge,
+      inactive_after_days: inactiveAfter,
+      ui_prefs: { default_min_score: minScore, default_posted_within: postedWithin },
+      companies: { ...(p.companies ?? {}), domains: [...domains] },
+    };
+    const r = await saveProfile(next);
+    setResult(r);
+    setSaving(false);
+    if (r.ok) {
+      setDirty(false);
+      onSaved();
+    }
+  }
+
+  const lbl = 'mb-1.5 block text-sm font-medium text-ink';
+  const sub = 'mb-1.5 block text-xs text-faint';
+  const fld = 'rounded-lg border border-line bg-surface-2/60 px-3 py-2 text-sm text-ink placeholder-faint outline-none focus:border-accent';
+  const num = (v: number, set: (n: number) => void, min = 1) => (
+    <input type="number" min={min} className={cn(fld, 'w-24')} value={v} onChange={(e) => { set(Math.max(min, Math.round(Number(e.target.value) || min))); touch(); }} />
+  );
+
+  return (
+    <div className="max-w-2xl">
+      <EditorHead title="Profile" hint="Your identity, what to scrape, where you want to work, and the default triage view." />
+      <div className="space-y-5">
+        <label className="block">
+          <span className={lbl}>Your name <span className="font-normal text-faint">(appears on generated resumes)</span></span>
+          <input className={cn(fld, 'w-full max-w-sm')} value={name} onChange={(e) => { setName(e.target.value); touch(); }} placeholder="Jane Doe" />
+        </label>
+
+        <div>
+          <span className={lbl}>Sources</span>
+          <span className={sub}>Which job boards / the company-ATS registry to scrape.</span>
+          <Chips options={sourceOpts} selected={sources} onToggle={toggler(setSources)} />
+        </div>
+
+        {sources.has('ats') && (
+          <div>
+            <span className={lbl}>Company domains</span>
+            <span className={sub}>Which slices of the committed company registry to include (ATS source).</span>
+            <Chips options={domainOpts} selected={domains} onToggle={toggler(setDomains)} />
+          </div>
+        )}
+
+        <div>
+          <span className={lbl}>Preferred locations</span>
+          <span className={sub}>+15 to the score; 'Remote' is a normal entry.</span>
+          <Chips options={locOpts} selected={geoPriority} onToggle={toggler(setGeoPriority)} />
+          <div className="mt-2 flex gap-2">
+            <input className={cn(fld, 'w-48')} value={customLoc} placeholder="Add a location…" onChange={(e) => setCustomLoc(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addCustomLoc(); } }} />
+            <Button variant="secondary" size="sm" onClick={addCustomLoc} disabled={!customLoc.trim()}>Add</Button>
+          </div>
+        </div>
+
+        <div>
+          <span className={lbl}>Open to relocating to <span className="font-normal text-faint">(+10)</span></span>
+          <Chips options={locOpts} selected={relocationOk} onToggle={toggler(setRelocationOk)} />
+        </div>
+
+        <div className="flex flex-wrap gap-6">
+          <label className="block">
+            <span className={lbl}>Drop board jobs older than</span>
+            <span className="flex items-center gap-2">{num(maxAge, setMaxAge)}<span className="text-xs text-faint">days</span></span>
+          </label>
+          <label className="block">
+            <span className={lbl}>Deactivate unseen jobs after</span>
+            <span className="flex items-center gap-2">{num(inactiveAfter, setInactiveAfter)}<span className="text-xs text-faint">days</span></span>
+          </label>
+        </div>
+
+        <div className="flex flex-wrap gap-6">
+          <label className="block">
+            <span className={lbl}>Default triage: min score</span>
+            <span className="flex items-center gap-2">{num(minScore, setMinScore, 0)}</span>
+          </label>
+          <label className="block">
+            <span className={lbl}>Default triage: posted within</span>
+            <span className="flex items-center gap-2">{num(postedWithin, setPostedWithin)}<span className="text-xs text-faint">days</span></span>
+          </label>
+        </div>
+      </div>
+      <div className="mt-5">
+        <SaveBar result={result} dirty={dirty} onSave={onSave} saving={saving} />
+      </div>
     </div>
   );
 }

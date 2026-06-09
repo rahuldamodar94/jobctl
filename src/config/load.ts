@@ -292,10 +292,9 @@ export function loadSources(): SourceConfig[] {
 }
 
 export function loadCategories(): CategoriesConfig {
-  // profile override wins over the committed default
-  const override = join(PROFILE_DIR, 'categories.yaml');
-  const path = existsSync(override) ? override : join(CONFIG_DIR, 'categories.yaml');
-  const c = loadYaml(path, categoriesSchema, 'categories.yaml');
+  // The committed taxonomy drives the auto-detected Domain column. It is not
+  // user-editable (the confusing per-profile override was removed).
+  const c = loadYaml(join(CONFIG_DIR, 'categories.yaml'), categoriesSchema, 'categories.yaml');
   return { order: c.order, fallback: c.fallback, keywords: lowercaseValueArrays(c.keywords) };
 }
 

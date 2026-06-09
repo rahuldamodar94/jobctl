@@ -294,7 +294,6 @@ export interface SettingsSnapshot {
   configured: boolean;
   profile: Record<string, unknown> | null;
   roles: Record<string, unknown> | null;
-  categories: Record<string, unknown> | null;
   skill: string | null;
   rubric: string | null;
 }
@@ -368,7 +367,6 @@ export async function generateAuthoring(
 
 export const saveProfile = (obj: unknown) => putConfig('profile', obj);
 export const saveRoles = (obj: unknown) => putConfig('roles', obj);
-export const saveCategories = (obj: unknown) => putConfig('categories', obj);
 export const saveSkill = (text: string) => putConfig('skill', { text });
 export const saveRubric = (text: string) => putConfig('rubric', { text });
 
