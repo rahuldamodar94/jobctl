@@ -2,6 +2,7 @@ import { Router } from 'express';
 import type Database from 'better-sqlite3';
 import type { Repo } from '../../db/repo.js';
 import { runScrape, requestScrapeStop } from '../../scraper/run.js';
+import { manualJudgeRunning } from './judge.js';
 import { loadProfile } from '../../config/load.js';
 
 /**
@@ -22,6 +23,11 @@ export function scrapeRouter(db: Database.Database, repo: Repo): Router {
     }
     if (repo.latestRun()?.status === 'running') {
       return res.status(409).json({ error: 'scrape already running' });
+    }
+    // A scrape ends with its own judge phase — don't run it concurrently with a
+    // manual "Judge jobs" run (double-spend + a racing progress count).
+    if (manualJudgeRunning()) {
+      return res.status(409).json({ error: 'a manual judge run is in progress — wait for it to finish, then scrape.' });
     }
     // runScrape acquires the DB lock itself; a race between two POSTs resolves
     // there (the loser throws and is logged — nothing is left half-started).

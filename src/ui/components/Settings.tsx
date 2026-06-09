@@ -558,7 +558,7 @@ function AiSettings({
             max={100}
             className={cn(fld, 'w-28')}
             value={minScore}
-            onChange={(e) => { setMinScore(Math.max(0, Math.min(100, Number(e.target.value) || 0))); touch(); }}
+            onChange={(e) => { setMinScore(Math.round(Math.max(0, Math.min(100, Number(e.target.value) || 0)))); touch(); }}
           />
           <span className={sub}>Default 50. The Re-judge button bypasses this floor.</span>
         </label>

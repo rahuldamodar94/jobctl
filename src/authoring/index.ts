@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
-import { loadProfile, profileDir } from '../config/load.js';
+import { loadProfile } from '../config/load.js';
+import { safeProfileSubpath } from '../config/paths.js';
 import { claudeAvailable, runClaudeCli } from '../llm/claude-cli.js';
 import { checkApiKeyEnv, checkLlmBaseUrl } from '../llm/safety.js';
 import type { LlmBackendConfig } from '../shared/types.js';
@@ -69,8 +69,8 @@ export async function generateAuthoring(
   // resume (the source of truth)
   const entry = profile.resumes[0];
   if (!entry) return { error: 'Add your resume first (Settings → Resume) — generation learns from it.' };
-  const resumePath = join(profileDir(), 'resumes', entry.file.replace(/^resumes\//, ''));
-  if (!existsSync(resumePath)) return { error: 'Resume file not found — re-save it in the Resume tab.' };
+  const resumePath = safeProfileSubpath('resumes', entry.file.replace(/^resumes\//, '')); // boundary-guarded
+  if (!resumePath || !existsSync(resumePath)) return { error: 'Resume file not found — re-save it in the Resume tab.' };
   const resume = readFileSync(resumePath, 'utf8').trim();
   if (!resume) return { error: 'Your resume is empty — add content in the Resume tab.' };
 

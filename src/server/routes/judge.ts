@@ -11,6 +11,13 @@ import { judgePending, getJudgeContext } from '../../judge/index.js';
  */
 const judgeRun = { running: false, done: 0, total: 0, failed: 0, cancelRequested: false };
 
+/** Is a manual "Judge jobs" run in flight? The scrape route checks this so its
+ *  own end-of-run judge phase can't double-spend the backend against a manual
+ *  run (symmetric to judge/pending 409ing against a running scrape). */
+export function manualJudgeRunning(): boolean {
+  return judgeRun.running;
+}
+
 /**
  * Fit-judge HTTP surface:
  *  - POST /api/jobs/:id/judge — re-judge ONE job on demand (the "Re-judge"

@@ -24,6 +24,11 @@ import type { LlmBackendConfig } from '../../shared/types.js';
 const SKILL_FILE = 'RESUME_GENERATION_SKILL.md';
 const RUBRIC_FILE = 'judge-rubric.md';
 
+// Single-flight guard for the blocking LLM routes (/llm/test, /generate): each
+// can spawn a long `claude` child or a 2-min fetch, so without this a flood of
+// requests would fork-bomb the box. Single-user, in-process — a boolean suffices.
+let llmBusy = false;
+
 /** Resolve a path under profile/resumes/ (the only user-file write zone).
  *  Built on the shared safeProfilePath boundary guard (src/config/paths.ts). */
 function safeResumePath(rel: string): string | null {
@@ -142,13 +147,6 @@ export function settingsRouter(): Router {
     if (!path || !existsSync(path)) return res.status(404).json({ error: 'not found' });
     res.json({ markdown: readFileSync(path, 'utf8') });
   });
-  r.delete('/resume', (req, res) => {
-    const path = safeResumePath(String((req.query as { file?: string }).file ?? ''));
-    if (!path) return res.status(400).json({ error: 'file must be under resumes/' });
-    if (existsSync(path)) unlinkSync(path);
-    res.json({ ok: true });
-  });
-
   // POST /resume/extract?filename=cv.pdf — convert an uploaded docx/pdf to
   // Markdown for review in the editor. EXTRACT ONLY: it never writes (the user
   // edits, then saves through the validated PUT /resume above). Raw bytes via a
@@ -168,7 +166,13 @@ export function settingsRouter(): Router {
     if (cfg?.engine !== 'claude-cli' && cfg?.engine !== 'openai-compatible') {
       return res.status(400).json({ ok: false, latencyMs: 0, error: 'engine must be claude-cli or openai-compatible' });
     }
-    res.json(await testLlmConnection(cfg as LlmBackendConfig));
+    if (llmBusy) return res.status(409).json({ ok: false, latencyMs: 0, error: 'another LLM request is in progress — try again in a moment.' });
+    llmBusy = true;
+    try {
+      res.json(await testLlmConnection(cfg as LlmBackendConfig));
+    } finally {
+      llmBusy = false;
+    }
   });
 
   // POST /api/settings/generate — author the judge rubric / resume-gen rules FROM
@@ -183,7 +187,13 @@ export function settingsRouter(): Router {
     if (target !== 'rubric' && target !== 'skill') {
       return res.status(400).json({ error: 'target must be "rubric" or "skill"' });
     }
-    res.json(await generateAuthoring(target, { instruction, currentDraft }));
+    if (llmBusy) return res.status(409).json({ error: 'another LLM request is in progress — try again in a moment.' });
+    llmBusy = true;
+    try {
+      res.json(await generateAuthoring(target, { instruction, currentDraft }));
+    } finally {
+      llmBusy = false;
+    }
   });
 
   return r;

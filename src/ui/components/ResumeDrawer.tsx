@@ -1,7 +1,6 @@
 /**
- * Right-side drawer rendering the markdown resumes from profile/resumes/ —
- * reference-only while triaging (e.g. comparing a JD against the IC vs EM
- * framing). Click outside or ✕ to close.
+ * Right-side drawer rendering the markdown resume(s) from profile/resumes/ —
+ * reference-only while triaging a job. Click outside or ✕ to close.
  */
 import React, { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
@@ -16,14 +15,18 @@ export function ResumeDrawer({ onClose }: { onClose: () => void }) {
   const [content, setContent] = useState('');
 
   useEffect(() => {
-    listResumes().then((r) => {
-      setResumes(r);
-      if (r[0]) setActive(r[0].id);
-    });
+    listResumes()
+      .then((r) => {
+        setResumes(r);
+        if (r[0]) setActive(r[0].id);
+      })
+      .catch(() => setResumes([]));
   }, []);
 
   useEffect(() => {
-    if (active) getResume(active).then(setContent);
+    // getResume throws on a non-ok response — catch so the drawer shows a message
+    // instead of an unhandled rejection / stale content.
+    if (active) getResume(active).then(setContent).catch(() => setContent('Could not load this resume.'));
   }, [active]);
 
   return (

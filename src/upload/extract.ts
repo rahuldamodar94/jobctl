@@ -13,7 +13,7 @@
  */
 import mammoth from 'mammoth';
 import TurndownService from 'turndown';
-import { MAX_RESUME_BYTES, withTimeout } from './guards.js';
+import { MAX_RESUME_BYTES, checkZipBudget, withTimeout } from './guards.js';
 
 export type ResumeKind = 'docx' | 'pdf';
 
@@ -106,6 +106,8 @@ export async function extractResume(buf: Buffer, filename: string): Promise<Extr
 
   try {
     if (kind === 'docx') {
+      const bombErr = checkZipBudget(buf); // bound uncompressed size BEFORE mammoth inflates
+      if (bombErr) return fail(bombErr);
       const markdown = await withTimeout(extractDocx(buf), 15_000, 'docx extraction');
       if (!markdown.trim()) return fail('Could not read any text from this document. Paste your resume as text below.');
       return { markdown, approximate: false, empty: false };

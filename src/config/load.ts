@@ -80,7 +80,12 @@ export const profileSchema = z.object({
       z.object({
         id: z.string(),
         label: z.string(),
-        file: z.string(),
+        // a simple name under resumes/ — no separators / traversal (the resume
+        // generator + authoring read this path; defense-in-depth at write time).
+        file: z
+          .string()
+          .regex(/^(resumes\/)?[A-Za-z0-9._-]+$/, 'resume file must be a simple name, optionally under resumes/')
+          .refine((f) => !f.includes('..'), 'resume file must not contain ".."'),
       })
     )
     .default([]),

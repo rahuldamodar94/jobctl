@@ -224,6 +224,7 @@ export default function App() {
    *  before/during its judge phase). Background run — poll status for progress. */
   const onJudge = async () => {
     setNotice(null);
+    setJudgeStopping(false); // clear any stale "Stopping…" from a prior run
     const { ok, error } = await startJudge();
     if (ok) {
       getJudgeStatus().then(setJudge).catch(() => {}); // flip to running → starts the poll
@@ -582,6 +583,12 @@ export default function App() {
                     </tr>
                   ))
                 : jobs.map((j) => (
+                    // JobRow is React.memo'd and its comparator IGNORES these
+                    // callback props — safe ONLY because the handlers below route
+                    // through App's behavior-stable, filtersRef-reading callbacks.
+                    // Do NOT capture a live `filters.*` value in these wrappers
+                    // (it would go stale on a memoized row); pass ids and let the
+                    // stable handler read filtersRef.current.
                     <JobRow
                       key={j.id}
                       job={j}

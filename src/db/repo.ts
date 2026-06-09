@@ -479,7 +479,9 @@ export class Repo {
       startedAt: row.started_at,
       completedAt: row.completed_at,
       status: row.status as ScrapeRunSummary['status'],
-      sources: JSON.parse(row.sources),
+      // degrade a corrupt/partial sources cell to [] rather than throwing out of
+      // the 2s-polled read path (the documented never-throw invariant)
+      sources: safeJsonParse(row.sources, [], row.id, 'sources'),
       totalNew: row.total_new,
       sourcesDone: row.sources_done,
       sourcesTotal: row.sources_total,

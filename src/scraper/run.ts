@@ -281,6 +281,7 @@ export async function runScrape(db: Database.Database, opts: ScrapeOptions = {})
           profile,
           shouldCancel: cancelled,
           onProgress: (done, total) => {
+            if (total === 0) return; // nothing to judge → don't flash "judge:0/0" on the pill
             try {
               repo.updateRunProgress(runId, sourcesDone, judgeProgressLabel(done, total), totalNew);
             } catch {

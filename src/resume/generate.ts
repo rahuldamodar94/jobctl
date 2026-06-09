@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import type Database from 'better-sqlite3';
 import { Repo } from '../db/repo.js';
 import { loadProfile, profileDir } from '../config/load.js';
+import { safeProfileSubpath } from '../config/paths.js';
 import { claudeAvailable, runClaudeCli } from '../llm/claude-cli.js';
 import { assembleResumePrompt, extractEmail, validateResumeOutput } from './prompt.js';
 import { parseResumeMarkdown } from './parse.js';
@@ -108,8 +109,8 @@ export async function generateResume(
   if (!resumeFile) {
     throw new Error('no resume configured — add your resume in Settings → Resume first');
   }
-  const resumePath = join(profileDir(), 'resumes', resumeFile);
-  if (!existsSync(resumePath)) {
+  const resumePath = safeProfileSubpath('resumes', resumeFile); // boundary-guarded (no traversal)
+  if (!resumePath || !existsSync(resumePath)) {
     throw new Error(`base resume not found (profile/resumes/${resumeFile})`);
   }
   const resume = readFileSync(resumePath, 'utf8');
