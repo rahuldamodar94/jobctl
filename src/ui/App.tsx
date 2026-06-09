@@ -14,13 +14,16 @@ import {
   filtersToParams,
   getConfig,
   getDemoCount,
+  getJudgeStatus,
   getStats,
   latestRun,
   loadDemoJobs,
   patchJob,
+  startJudge,
   startScrape,
   type AppConfig,
   type Filters,
+  type JudgeStatus,
   type RunSummary,
   type Stats,
   type UiJob,
@@ -33,7 +36,7 @@ import { Onboarding } from './components/Onboarding.js';
 import { Settings } from './components/Settings.js';
 import { Button, Skeleton } from './components/ui.js';
 import { JOB_STATUSES } from '../shared/types.js';
-import { Play, Download, FileText, Settings as SettingsIcon, Crosshair, SearchX, Sparkles } from 'lucide-react';
+import { Play, Download, FileText, Settings as SettingsIcon, Crosshair, SearchX, Sparkles, Gavel } from 'lucide-react';
 
 // Bulk actions target every status EXCEPT 'new' (you don't bulk-reset to new —
 // it's the untriaged default). Sourced from the shared vocab, not re-listed.
@@ -59,10 +62,18 @@ const ICON_BTN =
 
 export default function App() {
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
+  // Always-current filters for behavior-stable callbacks: reload and the row
+  // handlers read filtersRef.current instead of closing over `filters`, so they
+  // keep a stable identity. That's what lets JobRow be memoized (a memoized row
+  // retains an old handler closure, but it routes through these ref-reading
+  // callbacks, so it never acts on stale filters).
+  const filtersRef = useRef(filters);
+  filtersRef.current = filters;
   const [jobs, setJobs] = useState<UiJob[]>([]);
   const [total, setTotal] = useState(0);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [run, setRun] = useState<RunSummary | null>(null);
+  const [judge, setJudge] = useState<JudgeStatus | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [showResume, setShowResume] = useState(false);
   const [demoCount, setDemoCount] = useState(0);
@@ -82,6 +93,7 @@ export default function App() {
   const [config, setConfig] = useState<AppConfig | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const judgePollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const seededRef = useRef(false); // seed default filters from ui_prefs once
 
   // Server state is the single source of truth for "running" — survives page
@@ -104,7 +116,7 @@ export default function App() {
     (opts: { keepSelection?: boolean } = {}) => {
       const epoch = ++epochRef.current;
       loadingRef.current = false; // any in-flight loadMore is now stale — unblock
-      fetchJobs(filters).then((r) => {
+      fetchJobs(filtersRef.current).then((r) => {
         if (epoch !== epochRef.current) return; // filters changed mid-flight
         setHasLoaded(true);
         setJobs(r.jobs);
@@ -115,9 +127,9 @@ export default function App() {
       });
       // pipeline counts can shift on any reload (status changes, new scrape).
       // Pass filters so each pill's count == what clicking it shows (WYSIWYG).
-      getStats(filters).then(setStats).catch(() => {});
+      getStats(filtersRef.current).then(setStats).catch(() => {});
     },
-    [filters]
+    []
   );
 
   const loadMore = useCallback(() => {
@@ -126,7 +138,7 @@ export default function App() {
     const epoch = epochRef.current;
     // OFFSET from the STABLE consumed counter, not jobs.length (which shrinks
     // when a triaged row leaves the view → would skip/dupe at a page boundary).
-    fetchJobs(filters, serverConsumedRef.current)
+    fetchJobs(filtersRef.current, serverConsumedRef.current)
       .then((r) => {
         if (epoch === epochRef.current) {
           serverConsumedRef.current += r.jobs.length;
@@ -137,7 +149,7 @@ export default function App() {
       .finally(() => {
         loadingRef.current = false;
       });
-  }, [filters]);
+  }, []);
 
   // Reload on filter change. Debounce ONLY the free-text inputs (search + location,
   // 250ms, so we don't fire a request per keystroke); discrete controls — status
@@ -207,7 +219,20 @@ export default function App() {
     latestRun().then(setRun);
     loadConfig();
     getDemoCount().then(setDemoCount).catch(() => {});
+    getJudgeStatus().then(setJudge).catch(() => {});
   }, [loadConfig]);
+
+  /** Judge the whole un-judged backlog ≥ floor (recovers a scrape that died
+   *  before/during its judge phase). Background run — poll status for progress. */
+  const onJudge = async () => {
+    setNotice(null);
+    const { ok, error } = await startJudge();
+    if (ok) {
+      getJudgeStatus().then(setJudge).catch(() => {}); // flip to running → starts the poll
+    } else {
+      setNotice(error ?? 'Could not start judging.');
+    }
+  };
 
   const onLoadDemo = async () => {
     setNotice(null);
@@ -240,7 +265,12 @@ export default function App() {
         const r = await latestRun();
         if (!r) return; // transient failure — keep polling, leave the strip as-is
         setRun(r);
-        if (r.status !== 'running') reload({ keepSelection: true });
+        if (r.status !== 'running') {
+          reload({ keepSelection: true });
+          // the scrape ran its own judge phase — refresh the backlog count so the
+          // "Judge jobs" button reflects anything it couldn't finish.
+          getJudgeStatus().then(setJudge).catch(() => {});
+        }
       } catch {
         /* keep polling */
       }
@@ -250,16 +280,30 @@ export default function App() {
     };
   }, [scraping, reload]);
 
+  // Poll judge progress while a background "Judge jobs" run is in flight; when it
+  // finishes, refresh the job list (new verdicts) and the backlog count.
+  useEffect(() => {
+    if (!judge?.running) return;
+    judgePollRef.current = setInterval(async () => {
+      try {
+        const s = await getJudgeStatus();
+        if (!s) return; // transient failure — keep polling
+        setJudge(s);
+        if (!s.running) reload({ keepSelection: true });
+      } catch {
+        /* keep polling */
+      }
+    }, 2000);
+    return () => {
+      if (judgePollRef.current) clearInterval(judgePollRef.current);
+    };
+  }, [judge?.running, reload]);
+
   const onScrape = async () => {
     setNotice(null);
-    // A first scrape pulls the whole ATS registry (~570 boards) sequentially and
-    // takes minutes — tell the user up front so the running spinner doesn't read
-    // as "frozen". (Only when there's no completed run yet.)
-    const firstScrape = !run || (run.status !== 'completed' && run.totalNew === 0 && run.sourcesTotal === 0);
+    // The "this takes minutes / runs in background" hint now lives as a hover
+    // tooltip on the status pill (RunStatusStrip), not a banner here.
     if (await startScrape()) {
-      if (firstScrape) {
-        setNotice('First scrape pulls ~570 company boards — this takes a few minutes. It runs in the background, so keep working; progress shows in the status pill.');
-      }
       setRun(await latestRun()); // flips status to running → starts the poll
     } else {
       setNotice('Scrape not started — one is already running.');
@@ -276,57 +320,67 @@ export default function App() {
     [reload]
   );
 
-  const onStatus = async (id: number, status: string) => {
-    // optimistic: status + Updated column reflect the change instantly
-    setJobs((js) =>
-      js.map((j) => (j.id === id ? { ...j, status, status_updated_at: new Date().toISOString() } : j))
-    );
-    try {
-      await patchJob(id, { status });
-    } catch (e) {
-      onMutationError(e);
-    }
-  };
+  const onStatus = useCallback(
+    async (id: number, status: string) => {
+      // optimistic: status + Updated column reflect the change instantly
+      setJobs((js) =>
+        js.map((j) => (j.id === id ? { ...j, status, status_updated_at: new Date().toISOString() } : j))
+      );
+      try {
+        await patchJob(id, { status });
+      } catch (e) {
+        onMutationError(e);
+      }
+    },
+    [onMutationError]
+  );
 
   /** Does a status still belong in the current view? Mirrors the server's
-   *  status-filter semantics (all = everything; empty hides dismissed). */
-  const statusVisible = (status: string): boolean => {
-    const f = filters.status;
+   *  status-filter semantics (all = everything; empty hides dismissed).
+   *  Reads filtersRef so it stays stable (memoized rows call it). */
+  const statusVisible = useCallback((status: string): boolean => {
+    const f = filtersRef.current.status;
     if (f === 'all') return true;
     if (!f) return status !== 'dismissed';
     return f.split(',').includes(status);
-  };
+  }, []);
 
   /** Called by the row when the status interaction fully settles (after the
    *  note popover, if any). Rows that left the filter fade out, then go. */
   const [leavingIds, setLeavingIds] = useState<Set<number>>(new Set());
-  const onSettled = (id: number, status: string) => {
-    if (statusVisible(status)) return; // still belongs — keep it in place
-    setLeavingIds((s) => new Set(s).add(id));
-    setTimeout(() => {
-      setJobs((js) => js.filter((j) => j.id !== id));
-      setTotal((t) => Math.max(0, t - 1));
-      setSelected((s) => {
-        const next = new Set(s);
-        next.delete(id);
-        return next;
-      });
-      setLeavingIds((s) => {
-        const next = new Set(s);
-        next.delete(id);
-        return next;
-      });
-    }, 320); // just past the 300ms opacity transition
-  };
+  const onSettled = useCallback(
+    (id: number, status: string) => {
+      if (statusVisible(status)) return; // still belongs — keep it in place
+      setLeavingIds((s) => new Set(s).add(id));
+      setTimeout(() => {
+        setJobs((js) => js.filter((j) => j.id !== id));
+        setTotal((t) => Math.max(0, t - 1));
+        setSelected((s) => {
+          const next = new Set(s);
+          next.delete(id);
+          return next;
+        });
+        setLeavingIds((s) => {
+          const next = new Set(s);
+          next.delete(id);
+          return next;
+        });
+      }, 320); // just past the 300ms opacity transition
+    },
+    [statusVisible]
+  );
 
-  const onNotes = async (id: number, notes: string) => {
-    setJobs((js) => js.map((j) => (j.id === id ? { ...j, user_notes: notes } : j)));
-    try {
-      await patchJob(id, { notes });
-    } catch (e) {
-      onMutationError(e);
-    }
-  };
+  const onNotes = useCallback(
+    async (id: number, notes: string) => {
+      setJobs((js) => js.map((j) => (j.id === id ? { ...j, user_notes: notes } : j)));
+      try {
+        await patchJob(id, { notes });
+      } catch (e) {
+        onMutationError(e);
+      }
+    },
+    [onMutationError]
+  );
 
   const onBulk = async (status: string) => {
     const ids = [...selected];
@@ -338,12 +392,21 @@ export default function App() {
     }
   };
 
-  const toggle = (id: number) =>
-    setSelected((s) => {
-      const next = new Set(s);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
+  const toggle = useCallback(
+    (id: number) =>
+      setSelected((s) => {
+        const next = new Set(s);
+        next.has(id) ? next.delete(id) : next.add(id);
+        return next;
+      }),
+    []
+  );
+
+  // Stable per-row verdict merge (passed straight to a memoized JobRow).
+  const onJudged = useCallback(
+    (updated: UiJob) => setJobs((js) => js.map((x) => (x.id === updated.id ? updated : x))),
+    []
+  );
 
   // first-run: no usable config yet → guided setup (unless the user opened
   // Settings to configure manually)
@@ -382,6 +445,25 @@ export default function App() {
             </span>
           )}
           <div className="ml-auto flex items-center gap-2">
+            {/* Appears only when the judge is enabled AND there's un-judged work
+                ≥ the score floor (or a run is in flight) — e.g. recovering a
+                scrape that died before its judge phase finished. */}
+            {judge?.enabled && (judge.running || judge.pending > 0) && (
+              <Button
+                variant="secondary"
+                onClick={onJudge}
+                loading={judge.running}
+                disabled={scraping || judge.running}
+                title="Judge un-judged matched jobs above your score floor — no re-scrape needed"
+              >
+                {!judge.running && <Gavel className="h-4 w-4" />}
+                {judge.running
+                  ? judge.total > 0
+                    ? `Judging ${judge.done}/${judge.total}…`
+                    : 'Judging…'
+                  : `Judge ${judge.pending} job${judge.pending === 1 ? '' : 's'}`}
+              </Button>
+            )}
             <Button variant="primary" onClick={onScrape} loading={scraping}>
               {!scraping && <Play className="h-4 w-4" />}
               {scraping ? 'Scraping…' : 'Run scrape'}
@@ -484,7 +566,7 @@ export default function App() {
                       onStatus={(s) => onStatus(j.id, s)}
                       onNotes={(n) => onNotes(j.id, n)}
                       onSettled={(s) => onSettled(j.id, s)}
-                      onJudged={(updated) => setJobs((js) => js.map((x) => (x.id === updated.id ? updated : x)))}
+                      onJudged={onJudged}
                     />
                   ))}
               {hasLoaded && jobs.length === 0 && (

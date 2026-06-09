@@ -9,7 +9,7 @@ import {
 } from '../config/load.js';
 import { PoliteHttp, scopeHttp, type HttpClient } from '../sources/http.js';
 import type { BoardAdapter, ScrapeContext } from '../sources/types.js';
-import type { CompanyConfig, RawJob, SourceRunResult } from '../shared/types.js';
+import { judgeProgressLabel, type CompanyConfig, type RawJob, type SourceRunResult } from '../shared/types.js';
 import { dedupeKey, findFuzzyMatch } from '../matcher/dedupe.js';
 import { normCompany, normTitle } from '../matcher/normalize.js';
 import { geoBucket } from '../matcher/geo.js';
@@ -250,9 +250,20 @@ export async function runScrape(db: Database.Database, opts: ScrapeOptions = {})
 
     // Optional advisory LLM fit-judge over newly-matched / changed jobs.
     // Best-effort: judgePending never throws, so a backend outage can't fail
-    // the scrape or touch match/status.
+    // the scrape or touch match/status. Its progress rides on the still-running
+    // row's currentSource (judge:done/total) so the UI pill shows "Judging fit…
+    // X/Y" instead of a frozen "Scraping… N/N" through the (slow) judge phase.
     if (profile.llm.judge.enabled) {
-      await judgePending(repo, log, { profile });
+      await judgePending(repo, log, {
+        profile,
+        onProgress: (done, total) => {
+          try {
+            repo.updateRunProgress(runId, sourcesDone, judgeProgressLabel(done, total), totalNew);
+          } catch {
+            /* progress is best-effort — never fail a scrape over a status write */
+          }
+        },
+      });
     }
 
     repo.completeRun(runId, results, totalNew);

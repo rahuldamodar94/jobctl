@@ -204,6 +204,42 @@ llm:
     expect(r.judged).toBe(0);
   });
 
+  test('onProgress reports (0,total) up front then one tick per job; countJudgePending tracks the backlog', async () => {
+    writeFileSync(
+      join(dir, 'profile', 'profile.yaml'),
+      `name: T
+enabled_sources: [jobstash]
+llm:
+  backends:
+    cloud:
+      engine: openai-compatible
+      base_url: https://example.test/v1
+  judge:
+    enabled: true
+    backend: cloud
+    min_score: 50
+`
+    );
+    const repo = new Repo(db);
+    repo.insert(makeInput({ dedupeKey: 'k-a', matchScore: 80 }));
+    const bId = repo.insert(makeInput({ dedupeKey: 'k-b', matchScore: 80 }));
+    // matched-but-below-floor and unmatched rows are NOT in the backlog
+    repo.insert(makeInput({ dedupeKey: 'k-low', matchScore: 10 }));
+    repo.insert(makeInput({ dedupeKey: 'k-unmatched', isMatch: false, matchScore: 0 }));
+    expect(repo.countJudgePending(50)).toBe(2); // two matched ≥50, never judged
+
+    mockFetch('{"verdict":"DECENT","summary":"ok","reasons":[],"blockers":[],"dimensions":[]}');
+    const { judgePending } = await freshJudge();
+    const ticks: Array<[number, number]> = [];
+    const r = await judgePending(repo, () => {}, { onProgress: (d, t) => ticks.push([d, t]) });
+
+    expect(r.judged).toBe(2);
+    expect(ticks[0]).toEqual([0, 2]); // total known before the first backend call
+    expect(ticks).toEqual([[0, 2], [1, 2], [2, 2]]);
+    expect(repo.countJudgePending(50)).toBe(0); // backlog cleared
+    expect(repo.findById(bId)!.llmVerdict).toBe('DECENT');
+  });
+
   test('min_score gates the auto run, but the Re-judge button (ids) bypasses it', async () => {
     writeFileSync(
       join(dir, 'profile', 'profile.yaml'),

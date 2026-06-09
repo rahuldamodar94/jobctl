@@ -4,8 +4,9 @@
  * silently-broken scraper should never go unnoticed.
  */
 import React from 'react';
-import { Loader2, CheckCircle2, AlertTriangle, History } from 'lucide-react';
+import { Loader2, CheckCircle2, AlertTriangle, History, Info, Gavel } from 'lucide-react';
 import type { RunSummary } from '../api.js';
+import { parseJudgeProgress } from '../../shared/types.js';
 import { cn } from './ui.js';
 
 function relativeTime(iso: string): string {
@@ -20,6 +21,18 @@ function relativeTime(iso: string): string {
 
 export function RunStatusStrip({ run, scraping }: { run: RunSummary | null; scraping: boolean }) {
   if (scraping || run?.status === 'running') {
+    // The scrape's judge phase (sources all done, run not yet completed) reports
+    // progress via currentSource — show "Judging fit… X/Y" so the pill doesn't
+    // read as a frozen "Scraping… N/N" through the slow LLM pass.
+    const judging = parseJudgeProgress(run?.currentSource);
+    if (judging && judging.total > 0) {
+      return (
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-2.5 py-1 text-xs font-medium text-accent ring-1 ring-inset ring-accent/25">
+          <Gavel className="h-3.5 w-3.5 animate-pulse" />
+          Judging fit… <span className="tnum">{judging.done}/{judging.total}</span>
+        </span>
+      );
+    }
     // Show live progress when the running row reports a total (it always does
     // after setRunTotal); fall back to a plain spinner before the first tick.
     const total = run?.sourcesTotal ?? 0;
@@ -27,7 +40,7 @@ export function RunStatusStrip({ run, scraping }: { run: RunSummary | null; scra
     return (
       <span
         className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-2.5 py-1 text-xs font-medium text-accent ring-1 ring-inset ring-accent/25"
-        title={run?.currentSource ? `Scraping ${run.currentSource}…` : undefined}
+        title={run?.currentSource && !parseJudgeProgress(run.currentSource) ? `Scraping ${run.currentSource}…` : undefined}
       >
         <Loader2 className="h-3.5 w-3.5 animate-spin" />
         {total > 0 ? (
@@ -44,6 +57,17 @@ export function RunStatusStrip({ run, scraping }: { run: RunSummary | null; scra
         ) : (
           'Scraping…'
         )}
+        {/* Replaces the old amber "first scrape takes minutes" banner: a quiet
+            ⓘ whose explanation appears on hover only (CSS group-hover, no JS). */}
+        <span className="group relative inline-flex">
+          <Info className="h-3 w-3 cursor-help text-accent/60 transition-colors hover:text-accent" />
+          <span
+            role="tooltip"
+            className="pointer-events-none absolute left-1/2 top-full z-50 mt-2 w-60 -translate-x-1/2 rounded-lg border border-line bg-surface-3 px-3 py-2 text-[11px] font-normal leading-relaxed text-muted opacity-0 shadow-raised transition-opacity duration-150 group-hover:opacity-100"
+          >
+            Pulls ~570 company boards — a few minutes. Runs in the background, so keep working; progress shows here.
+          </span>
+        </span>
       </span>
     );
   }

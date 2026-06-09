@@ -207,6 +207,18 @@ export class Repo {
     return rows.map(rowToJob);
   }
 
+  /** How many matched, active jobs at/above the floor have never been judged —
+   *  the un-judged backlog the "Judge jobs" button mops up (e.g. a scrape that
+   *  died before its judge phase finished). Cheap COUNT, not a row load. */
+  countJudgePending(minScore = 0): number {
+    const row = this.db
+      .prepare(
+        'SELECT COUNT(*) AS n FROM jobs WHERE is_active = 1 AND is_match = 1 AND match_score >= ? AND llm_judged_hash IS NULL'
+      )
+      .get(minScore) as { n: number };
+    return row.n;
+  }
+
   /** Insert a brand-new job row (caller has already dedup-checked). */
   insert(j: NewJobInput): number {
     const today = todayISO();

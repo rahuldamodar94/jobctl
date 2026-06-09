@@ -200,8 +200,12 @@ CONFIG (yaml)                  SCRAPE PIPELINE (src/scraper/run.ts)
   per-company `onProgress`), `completeRun` writes the authoritative final
   `sources`/`total_new` and clears `current_source`. `latestRun` surfaces them so
   RunStatusStrip shows "Scraping… 40/120 sources · N new" (the polling UI already
-  refetches every 2s); a first scrape shows a one-time "~570 boards, a few
-  minutes, runs in the background" notice. Crash-safety unchanged (the orphan
+  refetches every 2s); the "~570 boards, runs in the background" hint is a quiet
+  hover-tooltip (ⓘ) on the running pill, not a banner. The judge phase (after all
+  sources finish, before the run completes) rides on the same `currentSource`
+  field as a `judge:done/total` sentinel (`judgeProgressLabel`/`parseJudgeProgress`
+  in shared/types) so the pill flips to "Judging fit… X/Y" instead of a frozen
+  "Scraping… N/N"; `completeRun` clears it. Crash-safety unchanged (the orphan
   reconciliation still owns running-state).
 - Corrupt JSON in a DB row degrades to defaults (safeJsonParse), never throws.
 
@@ -288,6 +292,17 @@ verdict gets an amber score ring + warning dot + the top blocker inline, so a
 green-looking score next to a SKIP chip is self-explanatory, not confusing.
 Config: profile `llm.{backends,judge,resume}`; enabled via `llm.judge.enabled`.
 Keys in ENV (`api_key_env`), never in yaml. CLI: `npm run judge [-- --all|--id N]`.
+**Progress + manual run:** `judgePending` logs per-job `judge X/Y: Company →
+VERDICT` (no more silent multi-minute stretch) and takes an `onProgress(done,
+total)` hook. The **"Judge jobs" button** (`POST /api/judge/pending`) judges the
+un-judged backlog ≥ floor in the background — recovering a scrape that died
+before/during its judge phase, no re-scrape needed — and `GET /api/judge/status`
+({enabled, pending, running, done, total, failed}) drives the button label +
+"Judging X/Y" progress (UI polls it like a scrape; the button hides when nothing
+is pending). Run state is in-memory and intentionally un-persisted: written
+verdicts survive a crash, and the un-judged remainder is just re-offered — the
+floor-gated `judgePending` skips fresh verdicts, so it's resumable by clicking
+again (a scrape-in-progress 409s it — the scrape judges automatically).
 **Privacy:** resume gen must use a non-training backend (paid/local); free judge
 tiers (train on input) are fine for semi-public job data only. Model-choice
 guide: `docs/model-tradeoffs.md`.

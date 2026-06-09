@@ -76,18 +76,7 @@ const NO_NOTE_STATUSES = new Set(['applied', 'new']);
 // Status dropdown values come from the shared vocab (display label == value here).
 const STATUS_OPTIONS = JOB_STATUSES;
 
-export function JobRow({
-  job,
-  selected,
-  resumeGenEnabled,
-  judgeEnabled,
-  leaving,
-  onToggle,
-  onStatus,
-  onNotes,
-  onSettled,
-  onJudged,
-}: {
+type JobRowProps = {
   job: UiJob;
   selected: boolean;
   /** true only when the server has a usable claude CLI (host machine with the CLI installed) */
@@ -103,7 +92,20 @@ export function JobRow({
    *  remove the row from a view it no longer matches */
   onSettled: (status: string) => void;
   onJudged: (updated: UiJob) => void;
-}) {
+};
+
+function JobRowImpl({
+  job,
+  selected,
+  resumeGenEnabled,
+  judgeEnabled,
+  leaving,
+  onToggle,
+  onStatus,
+  onNotes,
+  onSettled,
+  onJudged,
+}: JobRowProps) {
   const [open, setOpen] = useState(false);
   const [resumeInfo, setResumeInfo] = useState<GeneratedResumeInfo | null>(null);
   const [generating, setGenerating] = useState(false);
@@ -462,3 +464,23 @@ export function JobRow({
     </>
   );
 }
+
+// Re-render a row only when its OWN data changes — not when the parent re-renders
+// for an unrelated reason (a /api/stats refresh, another row's selection, a status
+// pill switch). The optimistic updates and reloads in App preserve object identity
+// for untouched rows (map/filter return the same ref), so `job` reference equality
+// is the right signal. Callbacks are intentionally excluded from the compare: App
+// keeps them behavior-stable (they read the current filters via a ref), so a
+// memoized row's retained handler never goes stale. This is the fix for the
+// pill-switch lag — ~200 heavy rows no longer re-render 3× per switch.
+function jobRowPropsEqual(a: JobRowProps, b: JobRowProps): boolean {
+  return (
+    a.job === b.job &&
+    a.selected === b.selected &&
+    a.leaving === b.leaving &&
+    a.judgeEnabled === b.judgeEnabled &&
+    a.resumeGenEnabled === b.resumeGenEnabled
+  );
+}
+
+export const JobRow = React.memo(JobRowImpl, jobRowPropsEqual);

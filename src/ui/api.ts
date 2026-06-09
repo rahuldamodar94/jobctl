@@ -203,6 +203,38 @@ export async function judgeJob(id: number): Promise<VerdictPatch> {
   return body;
 }
 
+export interface JudgeStatus {
+  /** judge configured + backend available (button hidden when false) */
+  enabled: boolean;
+  /** un-judged matched jobs ≥ the score floor — the button's backlog count */
+  pending: number;
+  /** live background-run progress (running=false when idle/done) */
+  running: boolean;
+  done: number;
+  total: number;
+  failed: number;
+}
+
+/** Capability + un-judged backlog + live progress for the "Judge jobs" button. */
+export async function getJudgeStatus(): Promise<JudgeStatus | null> {
+  try {
+    const res = await fetch('/api/judge/status');
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+/** Kick off a background judge of the whole un-judged backlog ≥ floor.
+ *  Returns the server error (409 busy / 503 disabled) instead of throwing. */
+export async function startJudge(): Promise<{ ok: boolean; error?: string }> {
+  const res = await fetch('/api/judge/pending', { method: 'POST' });
+  if (res.status === 202) return { ok: true };
+  const body = await res.json().catch(() => ({} as { error?: string }));
+  return { ok: false, error: body.error };
+}
+
 /** Last successfully-fetched config — returned if a later fetch fails so the UI
  *  keeps its dropdown vocabulary instead of showing an error body as data. */
 let lastConfig: AppConfig | null = null;
