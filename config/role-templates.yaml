@@ -98,12 +98,14 @@ templates:
       - java
       - golang
       - node.js
-      - node
       - nodejs
       - typescript
       - ruby
       - c#
       - rust
+      # NOTE: bare "node" deliberately omitted — it word-boundary-matches k8s
+      # "worker/compute node" and blockchain "node" in non-Node.js JDs (a gate
+      # false-positive); "node.js"/"nodejs" cover real runtime mentions.
     nice_to_have:
       microservices: 5
       distributed systems: 5
@@ -245,11 +247,11 @@ templates:
       - react
       - typescript
       - node.js
-      - node
       - nodejs
       - javascript
       - python
       - postgresql
+      # bare "node" omitted (k8s/blockchain "node" false-positive) — see backend.
     nice_to_have:
       next.js: 4
       graphql: 4
@@ -828,8 +830,10 @@ templates:
       - senior platform engineer
       - staff platform engineer
       - api platform engineer
-      - software engineer
-      - backend engineer
+      # NOTE: bare "software engineer"/"backend engineer" deliberately omitted —
+      # they made this specialized role a near-duplicate of backend_engineer
+      # (any backend SWE whose JD says "API" matched). The API/devtools-specific
+      # titles above are the real signal; pick backend_engineer for generic SWE.
     title_exclude:
       - junior
       - intern
@@ -846,12 +850,12 @@ templates:
     must_have_stack:
       - typescript
       - node.js
-      - node
       - nodejs
       - python
       - golang
       - api
       - rest
+      # bare "node" omitted (k8s/blockchain "node" false-positive) — see backend.
     nice_to_have:
       sdk: 5
       developer experience: 5
@@ -2432,7 +2436,8 @@ templates:
     must_have_stack:
       - solutions engineering
       - pre-sales
-      - technical
+      - presales
+      - sales engineering
       - api
       - customer
     nice_to_have:
