@@ -182,13 +182,13 @@ export default function App() {
         seededRef.current = true;
         const ms = c.uiPrefs?.defaultMinScore;
         const pw = c.uiPrefs?.defaultPostedWithin;
-        if (ms !== undefined || pw !== undefined) {
-          setFilters((f) => ({
-            ...f,
-            minScore: ms !== undefined ? String(ms) : f.minScore,
-            postedWithin: pw !== undefined ? String(pw) : f.postedWithin,
-          }));
-        }
+        setFilters((f) => ({
+          ...f,
+          minScore: ms !== undefined ? String(ms) : f.minScore,
+          postedWithin: pw !== undefined ? String(pw) : f.postedWithin,
+          // fit-judge on → default the triage view to best-fit-first (STRONG→SKIP)
+          sort: c.judgeEnabled ? 'verdict' : f.sort,
+        }));
       }
     });
   }, []);
@@ -395,7 +395,7 @@ export default function App() {
         <FilterBar
           filters={filters}
           onChange={setFilters}
-          defaults={DEFAULT_FILTERS}
+          defaults={config?.judgeEnabled ? { ...DEFAULT_FILTERS, sort: 'verdict' } : DEFAULT_FILTERS}
           vocab={vocab}
           stats={stats}
           judgeEnabled={config?.judgeEnabled ?? false}
