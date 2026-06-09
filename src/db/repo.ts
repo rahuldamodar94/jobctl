@@ -442,12 +442,17 @@ export class Repo {
       .run(sourcesDone, currentSource, totalNew, runId);
   }
 
-  completeRun(runId: number, sources: SourceRunResult[], totalNew: number, failed = false): void {
+  completeRun(
+    runId: number,
+    sources: SourceRunResult[],
+    totalNew: number,
+    status: 'completed' | 'failed' | 'cancelled' = 'completed'
+  ): void {
     this.db
       .prepare(
         'UPDATE scrape_runs SET completed_at = ?, status = ?, sources = ?, total_new = ?, current_source = NULL WHERE id = ?'
       )
-      .run(new Date().toISOString(), failed ? 'failed' : 'completed', JSON.stringify(sources), totalNew, runId);
+      .run(new Date().toISOString(), status, JSON.stringify(sources), totalNew, runId);
   }
 
   latestRun(): ScrapeRunSummary | null {

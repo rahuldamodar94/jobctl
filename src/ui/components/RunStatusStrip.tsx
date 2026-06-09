@@ -4,7 +4,7 @@
  * silently-broken scraper should never go unnoticed.
  */
 import React from 'react';
-import { Loader2, CheckCircle2, AlertTriangle, History, Info, Gavel } from 'lucide-react';
+import { Loader2, CheckCircle2, AlertTriangle, History, Info, Gavel, Square } from 'lucide-react';
 import type { RunSummary } from '../api.js';
 import { parseJudgeProgress } from '../../shared/types.js';
 import { cn } from './ui.js';
@@ -76,6 +76,25 @@ export function RunStatusStrip({ run, scraping }: { run: RunSummary | null; scra
       <span className="inline-flex items-center gap-1.5 text-xs text-faint">
         <History className="h-3.5 w-3.5" />
         No scrapes yet
+      </span>
+    );
+  }
+
+  // A user-stopped run: it kept whatever it found before stopping.
+  if (run.status === 'cancelled') {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-2/80 px-2.5 py-1 text-xs text-muted ring-1 ring-inset ring-line">
+        <Square className="h-3.5 w-3.5 text-faint" />
+        <span>Stopped</span>
+        <span className="text-line-strong">·</span>
+        <span>{relativeTime(run.completedAt ?? run.startedAt)}</span>
+        {run.totalNew > 0 && (
+          <>
+            <span className="text-line-strong">·</span>
+            <span className="tnum font-semibold text-ink">{run.totalNew}</span>
+            <span>new</span>
+          </>
+        )}
       </span>
     );
   }

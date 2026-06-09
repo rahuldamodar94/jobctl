@@ -240,6 +240,25 @@ llm:
     expect(repo.findById(bId)!.llmVerdict).toBe('DECENT');
   });
 
+  test('shouldCancel stops between jobs; verdicts already written persist, the rest stay pending', async () => {
+    const repo = new Repo(db);
+    const aId = repo.insert(makeInput({ dedupeKey: 'c-a', matchScore: 80 }));
+    const bId = repo.insert(makeInput({ dedupeKey: 'c-b', matchScore: 80 }));
+    const cId = repo.insert(makeInput({ dedupeKey: 'c-c', matchScore: 80 }));
+    mockFetch('{"verdict":"DECENT","summary":"ok","reasons":[],"blockers":[],"dimensions":[]}');
+    const { judgePending } = await freshJudge();
+
+    // cancel after the first job: false before job 1, true before job 2
+    let checks = 0;
+    const r = await judgePending(repo, () => {}, { shouldCancel: () => checks++ >= 1 });
+
+    expect(r.judged).toBe(1); // only the first job ran before the stop
+    const verdicts = [aId, bId, cId].map((id) => repo.findById(id)!.llmVerdict).filter(Boolean);
+    expect(verdicts).toHaveLength(1); // exactly one verdict written
+    // the remaining two are still un-judged → back in the backlog (resumable)
+    expect(repo.countJudgePending(0)).toBe(2);
+  });
+
   test('min_score gates the auto run, but the Re-judge button (ids) bypasses it', async () => {
     writeFileSync(
       join(dir, 'profile', 'profile.yaml'),

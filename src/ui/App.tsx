@@ -21,6 +21,8 @@ import {
   patchJob,
   startJudge,
   startScrape,
+  stopJudge,
+  stopScrape,
   type AppConfig,
   type Filters,
   type JudgeStatus,
@@ -36,7 +38,7 @@ import { Onboarding } from './components/Onboarding.js';
 import { Settings } from './components/Settings.js';
 import { Button, Skeleton } from './components/ui.js';
 import { JOB_STATUSES } from '../shared/types.js';
-import { Play, Download, FileText, Settings as SettingsIcon, Crosshair, SearchX, Sparkles, Gavel } from 'lucide-react';
+import { Play, Download, FileText, Settings as SettingsIcon, Crosshair, SearchX, Sparkles, Gavel, Square } from 'lucide-react';
 
 // Bulk actions target every status EXCEPT 'new' (you don't bulk-reset to new —
 // it's the untriaged default). Sourced from the shared vocab, not re-listed.
@@ -72,6 +74,8 @@ export default function App() {
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [run, setRun] = useState<RunSummary | null>(null);
   const [judge, setJudge] = useState<JudgeStatus | null>(null);
+  const [stopping, setStopping] = useState(false); // scrape-stop click in flight
+  const [judgeStopping, setJudgeStopping] = useState(false); // judge-stop click in flight
   const [notice, setNotice] = useState<string | null>(null);
   const [showResume, setShowResume] = useState(false);
   const [demoCount, setDemoCount] = useState(0);
@@ -260,6 +264,7 @@ export default function App() {
         if (!r) return; // transient failure — keep polling, leave the strip as-is
         setRun(r);
         if (r.status !== 'running') {
+          setStopping(false);
           reload({ keepSelection: true });
           // the scrape ran its own judge phase — refresh the backlog count so the
           // "Judge jobs" button reflects anything it couldn't finish.
@@ -283,7 +288,10 @@ export default function App() {
         const s = await getJudgeStatus();
         if (!s) return; // transient failure — keep polling
         setJudge(s);
-        if (!s.running) reload({ keepSelection: true });
+        if (!s.running) {
+          setJudgeStopping(false);
+          reload({ keepSelection: true });
+        }
       } catch {
         /* keep polling */
       }
@@ -295,6 +303,7 @@ export default function App() {
 
   const onScrape = async () => {
     setNotice(null);
+    setStopping(false);
     // The "this takes minutes / runs in background" hint now lives as a hover
     // tooltip on the status pill (RunStatusStrip), not a banner here.
     if (await startScrape()) {
@@ -302,6 +311,17 @@ export default function App() {
     } else {
       setNotice('Scrape not started — one is already running.');
     }
+  };
+
+  /** Cooperative stop — the scrape halts at the next source/company/judge job and
+   *  completes as 'cancelled'. The poll reflects the real state. */
+  const onStopScrape = async () => {
+    setStopping(true);
+    await stopScrape();
+  };
+  const onStopJudge = async () => {
+    setJudgeStopping(true);
+    await stopJudge();
   };
 
   /** A failed mutation reverts to server truth: reload + a visible notice —
@@ -458,10 +478,22 @@ export default function App() {
                   : `Judge ${judge.pending} job${judge.pending === 1 ? '' : 's'}`}
               </Button>
             )}
+            {judge?.enabled && judge.running && (
+              <Button variant="ghost" onClick={onStopJudge} disabled={judgeStopping} title="Stop judging — verdicts already written are kept">
+                <Square className="h-3.5 w-3.5" />
+                {judgeStopping ? 'Stopping…' : 'Stop'}
+              </Button>
+            )}
             <Button variant="primary" onClick={onScrape} loading={scraping}>
               {!scraping && <Play className="h-4 w-4" />}
               {scraping ? 'Scraping…' : 'Run scrape'}
             </Button>
+            {scraping && (
+              <Button variant="ghost" onClick={onStopScrape} disabled={stopping} title="Stop the scrape — it halts at the next source and keeps what it found">
+                <Square className="h-3.5 w-3.5" />
+                {stopping ? 'Stopping…' : 'Stop'}
+              </Button>
+            )}
             <div className="flex items-center gap-1">
               <a
                 href={`/api/export.csv?${filtersToParams(filters)}`}

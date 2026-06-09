@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import type Database from 'better-sqlite3';
 import type { Repo } from '../../db/repo.js';
-import { runScrape } from '../../scraper/run.js';
+import { runScrape, requestScrapeStop } from '../../scraper/run.js';
 import { loadProfile } from '../../config/load.js';
 
 /**
@@ -29,6 +29,15 @@ export function scrapeRouter(db: Database.Database, repo: Repo): Router {
       console.error('[scrape] failed:', (e as Error).message)
     );
     res.status(202).json({ started: true });
+  });
+
+  // POST /api/scrape/stop — cooperative cancel of the running scrape. Flags the
+  // running run id; runScrape stops at the next source / company / judge job and
+  // completes the run as 'cancelled'. No-op (200) when nothing is running.
+  r.post('/stop', (_req, res) => {
+    const run = repo.latestRun();
+    if (run?.status === 'running') requestScrapeStop(run.id);
+    res.json({ stopping: run?.status === 'running' });
   });
 
   return r;

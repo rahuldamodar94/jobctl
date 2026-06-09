@@ -9,7 +9,7 @@ import { judgePending, getJudgeContext } from '../../judge/index.js';
  * re-offered by the button (judgePending skips fresh verdicts) — resumable by
  * design, no orphaned-run bookkeeping needed.
  */
-const judgeRun = { running: false, done: 0, total: 0, failed: 0 };
+const judgeRun = { running: false, done: 0, total: 0, failed: 0, cancelRequested: false };
 
 /**
  * Fit-judge HTTP surface:
@@ -30,7 +30,8 @@ export function judgeRouter(repo: Repo): Router {
     const { ctx, error } = getJudgeContext();
     const enabled = !!ctx;
     const pending = ctx ? repo.countJudgePending(ctx.minScore) : 0;
-    res.json({ enabled, pending, ...judgeRun, ...(enabled ? {} : { error }) });
+    const { running, done, total, failed } = judgeRun; // cancelRequested stays internal
+    res.json({ enabled, pending, running, done, total, failed, ...(enabled ? {} : { error }) });
   });
 
   // Judge the un-judged backlog ≥ floor in the background; the UI polls
@@ -48,7 +49,9 @@ export function judgeRouter(repo: Repo): Router {
     judgeRun.done = 0;
     judgeRun.total = 0;
     judgeRun.failed = 0;
+    judgeRun.cancelRequested = false;
     judgePending(repo, (m) => console.log(`[judge] ${m}`), {
+      shouldCancel: () => judgeRun.cancelRequested,
       onProgress: (done, total) => {
         judgeRun.done = done;
         judgeRun.total = total;
@@ -62,6 +65,14 @@ export function judgeRouter(repo: Repo): Router {
         judgeRun.running = false;
       });
     res.status(202).json({ started: true });
+  });
+
+  // POST /api/judge/stop — cooperative cancel of a running manual judge. Stops
+  // between jobs; verdicts already written persist (the rest stays in the
+  // backlog, re-offered by the button). No-op (200) when nothing is running.
+  r.post('/judge/stop', (_req, res) => {
+    if (judgeRun.running) judgeRun.cancelRequested = true;
+    res.json({ stopping: judgeRun.running });
   });
 
   r.post('/jobs/:id/judge', async (req, res) => {

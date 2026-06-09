@@ -55,6 +55,17 @@ export const ATS_SOURCE_IDS = [
   'ats:smartrecruiters',
 ];
 
+// Cooperative cancellation: POST /api/scrape/stop flags the running run id here;
+// runScrape checks it between sources, inside the ATS fan-out, and in the judge
+// phase, then completes the run as 'cancelled'. Module-level because the scrape
+// is in-process and single (DB-lock-guarded). A Set tolerates a stop arriving a
+// hair before the run id is known (it just no-ops).
+const stopRequested = new Set<number>();
+/** Flag the running scrape for cooperative stop (no-op if it already finished). */
+export function requestScrapeStop(runId: number): void {
+  stopRequested.add(runId);
+}
+
 export interface ScrapeOptions {
   /** Limit to a single source id (debugging). */
   only?: string;
@@ -86,6 +97,8 @@ export async function runScrape(db: Database.Database, opts: ScrapeOptions = {})
   if (runId === null) {
     throw new Error('A scrape is already running (or use the UI to watch it). Try again in a minute.');
   }
+  stopRequested.delete(runId); // clear any stale flag before we start
+  const cancelled = () => stopRequested.has(runId);
 
   const http = new PoliteHttp();
   const now = new Date();
@@ -94,7 +107,7 @@ export async function runScrape(db: Database.Database, opts: ScrapeOptions = {})
 
   const enabled = profile.enabledSources.filter((s) => !opts.only || s === opts.only);
   if (enabled.length === 0) {
-    repo.completeRun(runId, [], 0, true);
+    repo.completeRun(runId, [], 0, 'failed');
     throw new Error(
       opts.only
         ? `source "${opts.only}" is not in profile.yaml enabled_sources (${profile.enabledSources.join(', ')})`
@@ -137,6 +150,10 @@ export async function runScrape(db: Database.Database, opts: ScrapeOptions = {})
 
   try {
     for (const sourceId of enabled) {
+      if (cancelled()) {
+        log('scrape stopped by user');
+        break;
+      }
       // "ats" is a pseudo-source: it fans out to every company in
       // profile/companies.yaml via the greenhouse/lever/ashby adapters.
       if (sourceId === 'ats') {
@@ -151,7 +168,8 @@ export async function runScrape(db: Database.Database, opts: ScrapeOptions = {})
           (companyDone, name) => {
             sourcesDone = atsBase + companyDone;
             reportProgress(name);
-          }
+          },
+          cancelled
         );
         results.push(...atsResults.results);
         totalNew += atsResults.totalNew;
@@ -228,47 +246,58 @@ export async function runScrape(db: Database.Database, opts: ScrapeOptions = {})
       reportProgress(sourceId);
     }
 
-    // Rescore ALL active rows against current config — roles.yaml edits take
-    // effect every run; scores stay globally consistent.
-    rescoreAll(repo, roles, categories, log);
+    // A user stop mid-source-loop skips the tail entirely: a PARTIAL scrape must
+    // NOT decay (it would deactivate jobs from sources it never re-saw) and must
+    // not spend the LLM. Rescore is also skipped — the jobs ingested so far are
+    // already scored at insert. The run completes as 'cancelled' below.
+    if (!cancelled()) {
+      // Rescore ALL active rows against current config — roles.yaml edits take
+      // effect every run; scores stay globally consistent.
+      rescoreAll(repo, roles, categories, log);
 
-    // Decay: only for sources that succeeded this run (a broken scraper must
-    // not erase its own jobs).
-    // Local-date cutoff to match last_seen stamps (also local) — using UTC here
-    // would skew decay by a day for non-UTC users.
-    const cutoff = localDateISO(new Date(now.getTime() - profile.inactiveAfterDays * 86_400_000));
-    for (const r of results) {
-      if (r.status !== 'success') continue;
-      // ATS rows carry per-provider source ids (ats:greenhouse etc.)
-      const ids = r.sourceId === 'ats' ? ATS_SOURCE_IDS : [r.sourceId];
-      for (const id of ids) {
-        const n = repo.deactivateStale(id, cutoff);
-        if (n > 0) log(`  ${id}: ${n} stale jobs deactivated (not seen since ${cutoff})`);
+      // Decay: only for sources that succeeded this run (a broken scraper must
+      // not erase its own jobs).
+      // Local-date cutoff to match last_seen stamps (also local) — using UTC here
+      // would skew decay by a day for non-UTC users.
+      const cutoff = localDateISO(new Date(now.getTime() - profile.inactiveAfterDays * 86_400_000));
+      for (const r of results) {
+        if (r.status !== 'success') continue;
+        // ATS rows carry per-provider source ids (ats:greenhouse etc.)
+        const ids = r.sourceId === 'ats' ? ATS_SOURCE_IDS : [r.sourceId];
+        for (const id of ids) {
+          const n = repo.deactivateStale(id, cutoff);
+          if (n > 0) log(`  ${id}: ${n} stale jobs deactivated (not seen since ${cutoff})`);
+        }
+      }
+
+      // Optional advisory LLM fit-judge over newly-matched / changed jobs.
+      // Best-effort: judgePending never throws, so a backend outage can't fail
+      // the scrape or touch match/status. Its progress rides on the still-running
+      // row's currentSource (judge:done/total) so the UI pill shows "Judging fit…
+      // X/Y" instead of a frozen "Scraping… N/N" through the (slow) judge phase.
+      // A stop during the judge phase halts it between jobs (shouldCancel).
+      if (profile.llm.judge.enabled) {
+        await judgePending(repo, log, {
+          profile,
+          shouldCancel: cancelled,
+          onProgress: (done, total) => {
+            try {
+              repo.updateRunProgress(runId, sourcesDone, judgeProgressLabel(done, total), totalNew);
+            } catch {
+              /* progress is best-effort — never fail a scrape over a status write */
+            }
+          },
+        });
       }
     }
 
-    // Optional advisory LLM fit-judge over newly-matched / changed jobs.
-    // Best-effort: judgePending never throws, so a backend outage can't fail
-    // the scrape or touch match/status. Its progress rides on the still-running
-    // row's currentSource (judge:done/total) so the UI pill shows "Judging fit…
-    // X/Y" instead of a frozen "Scraping… N/N" through the (slow) judge phase.
-    if (profile.llm.judge.enabled) {
-      await judgePending(repo, log, {
-        profile,
-        onProgress: (done, total) => {
-          try {
-            repo.updateRunProgress(runId, sourcesDone, judgeProgressLabel(done, total), totalNew);
-          } catch {
-            /* progress is best-effort — never fail a scrape over a status write */
-          }
-        },
-      });
-    }
-
-    repo.completeRun(runId, results, totalNew);
+    const status = cancelled() ? 'cancelled' : 'completed';
+    repo.completeRun(runId, results, totalNew, status);
+    stopRequested.delete(runId);
     return { runId, sources: results, totalNew };
   } catch (e) {
-    repo.completeRun(runId, results, totalNew, true);
+    repo.completeRun(runId, results, totalNew, 'failed');
+    stopRequested.delete(runId);
     throw e;
   }
 }
@@ -374,7 +403,8 @@ async function runAtsSources(
   categories: ReturnType<typeof loadCategories>,
   log: (m: string) => void,
   preloadedCompanies?: CompanyConfig[],
-  onProgress?: (companyDone: number, company: string) => void
+  onProgress?: (companyDone: number, company: string) => void,
+  shouldCancel?: () => boolean
 ): Promise<{ results: SourceRunResult[]; totalNew: number }> {
   // runScrape resolves the company list up front (to set the progress total);
   // reuse it to avoid a second YAML read. Fall back to loading if called directly.
@@ -387,7 +417,7 @@ async function runAtsSources(
     };
   }
 
-  const companyResults = await fetchAtsCompanies(http, companies, log, onProgress);
+  const companyResults = await fetchAtsCompanies(http, companies, log, onProgress, shouldCancel);
   const raw = companyResults.flatMap((r) => r.jobs);
   // NOTE: no max-age filter for ATS sources — a posting returned by the
   // company's own board API is open by definition, even if it was first

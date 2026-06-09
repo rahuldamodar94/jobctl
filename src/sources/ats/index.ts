@@ -40,11 +40,18 @@ export async function fetchAtsCompanies(
   http: PoliteHttp,
   companies: CompanyConfig[],
   log: (m: string) => void,
-  onProgress?: (done: number, company: string) => void
+  onProgress?: (done: number, company: string) => void,
+  /** cooperative cancellation — checked before each company so a Stop click
+   *  halts the (longest) ATS fan-out promptly without a torn write. */
+  shouldCancel?: () => boolean
 ): Promise<AtsCompanyResult[]> {
   const results: AtsCompanyResult[] = [];
   let done = 0;
   for (const c of companies) {
+    if (shouldCancel?.()) {
+      log(`  ats: stopped by user after ${done}/${companies.length} companies`);
+      break;
+    }
     const detected = detectAts(c.careersUrl);
     const provider = c.provider ?? detected?.provider ?? null;
     const slug = detected?.slug;

@@ -230,7 +230,7 @@ export interface ScrapeRunSummary {
   id: number;
   startedAt: string;
   completedAt: string | null;
-  status: 'running' | 'completed' | 'failed';
+  status: 'running' | 'completed' | 'failed' | 'cancelled';
   sources: SourceRunResult[];
   totalNew: number;
   /** live progress (only meaningful while status==='running') */

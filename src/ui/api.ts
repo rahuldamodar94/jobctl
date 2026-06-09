@@ -50,7 +50,7 @@ export interface RunSummary {
   id: number;
   startedAt: string;
   completedAt: string | null;
-  status: 'running' | 'completed' | 'failed';
+  status: 'running' | 'completed' | 'failed' | 'cancelled';
   sources: { sourceId: string; status: string; jobsFound: number; jobsNew: number; error?: string }[];
   totalNew: number;
   /** live progress while scraping (0/0 once not running) */
@@ -143,6 +143,15 @@ export async function startScrape(): Promise<boolean> {
   return res.status === 202;
 }
 
+/** Request a cooperative stop of the running scrape (best-effort, never throws). */
+export async function stopScrape(): Promise<void> {
+  try {
+    await fetch('/api/scrape/stop', { method: 'POST' });
+  } catch {
+    /* the poll will reflect the real state regardless */
+  }
+}
+
 export async function latestRun(): Promise<RunSummary | null> {
   // Polled every 2s during a scrape — a transient 5xx / non-JSON body must not
   // reject (an unhandled rejection in the poll can strand the run strip).
@@ -229,6 +238,15 @@ export async function startJudge(): Promise<{ ok: boolean; error?: string }> {
   if (res.status === 202) return { ok: true };
   const body = await res.json().catch(() => ({} as { error?: string }));
   return { ok: false, error: body.error };
+}
+
+/** Request a cooperative stop of the running manual judge (best-effort). */
+export async function stopJudge(): Promise<void> {
+  try {
+    await fetch('/api/judge/stop', { method: 'POST' });
+  } catch {
+    /* the poll will reflect the real state regardless */
+  }
 }
 
 /** Last successfully-fetched config — returned if a later fetch fails so the UI
