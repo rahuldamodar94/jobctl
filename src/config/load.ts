@@ -117,12 +117,24 @@ export const profileSchema = z.object({
           })
         )
         .default({}),
+      // min_score gates the auto/scrape judge run to higher-match jobs — the LLM
+      // is the costly layer. Default 50: in this corpus STRONG verdicts appear as
+      // low as score 56, so a higher floor would starve real fits; the matcher
+      // score only weakly predicts the verdict. The Re-judge button bypasses this.
       judge: z
-        .object({ enabled: z.boolean().default(false), backend: z.string().default('claude-cli') })
-        .default({ enabled: false, backend: 'claude-cli' }),
+        .object({
+          enabled: z.boolean().default(false),
+          backend: z.string().default('claude-cli'),
+          min_score: z.number().int().nonnegative().default(50),
+        })
+        .default({ enabled: false, backend: 'claude-cli', min_score: 50 }),
       resume: z.object({ backend: z.string().default('claude-cli') }).default({ backend: 'claude-cli' }),
     })
-    .default({ backends: {}, judge: { enabled: false, backend: 'claude-cli' }, resume: { backend: 'claude-cli' } }),
+    .default({
+      backends: {},
+      judge: { enabled: false, backend: 'claude-cli', min_score: 50 },
+      resume: { backend: 'claude-cli' },
+    }),
   // Which slices of the committed company registry to scrape, plus personal
   // additions/removals. Empty domains + empty include = ats source is a no-op.
   companies: z

@@ -258,9 +258,18 @@ audit); verdict frozen per JD hash (`llm_judged_hash`; re-judged on JD change or
 the Re-judge button — switching backends/shape does NOT auto-refresh); the
 overall verdict/summary/reasons/blockers are unchanged so the chip+sort keep
 working; `judgePending` is **best-effort** — a per-job/backend failure is logged
-and skipped, NEVER fails the scrape or touches match/status. Config: profile
-`llm.{backends,judge,resume}`; enabled via `llm.judge.enabled`. Keys in ENV
-(`api_key_env`), never in yaml. CLI: `npm run judge [-- --all|--id N]`.
+and skipped, NEVER fails the scrape or touches match/status. **Auto-run floor:**
+`llm.judge.min_score` (default 50) gates the auto/scrape run to matched jobs at
+or above that keyword score — the LLM is the costly layer. The explicit Re-judge
+`ids` path AND the `--all`/`--id` CLI bypass the floor (per-job intent). The
+floor is deliberately low: the matcher score only weakly predicts the verdict
+(STRONG verdicts appear as low as ~56), so a high floor would starve real fits —
+which is exactly why the judge exists as a second layer. The UI flags
+**score↔verdict divergence**: a matched job with `match_score≥70` but a SKIP/WEAK
+verdict gets an amber score ring + warning dot + the top blocker inline, so a
+green-looking score next to a SKIP chip is self-explanatory, not confusing.
+Config: profile `llm.{backends,judge,resume}`; enabled via `llm.judge.enabled`.
+Keys in ENV (`api_key_env`), never in yaml. CLI: `npm run judge [-- --all|--id N]`.
 **Privacy:** resume gen must use a non-training backend (paid/local); free judge
 tiers (train on input) are fine for semi-public job data only. Model-choice
 guide: `docs/model-tradeoffs.md`.
@@ -271,15 +280,15 @@ guide: `docs/model-tradeoffs.md`.
 npm run scrape [-- --source X]   # scrape (lock-guarded; UI button same path)
 npm run judge [-- --all|--id N]  # optional fit-judge over matched jobs
 npm run dev | build | start      # UI dev / production
-npm test                         # vitest — 252 tests
+npm test                         # vitest — 276 tests
 ```
 
 ## Status
 
 v1 complete + post-review hardening (2026-06-06): 7 build phases, dual
 line-by-line review (50 findings triaged), community-registry restructure.
-Live (v1 snapshot): ~2,900 active jobs. Current registry: 328 company boards
-across 12 domains + 8 job-board adapters (see the v3 note below).
+Live (v1 snapshot): ~2,900 active jobs. Current registry: 569 company boards
+across 12 domains + 8 job-board adapters + 10 ATS providers (see the v3 note below).
 
 **v2 — software-industry pivot (2026-06-08), 7 phases, per-phase review +
 security-review, all pushed:** repositioned to the software industry / all roles
@@ -308,10 +317,23 @@ jobs **diverse** (crypto 12%, ai-ml 23%, devtools 16%, data 14% … all 12 domai
 — was 57% crypto). REMAINING (deferred): opt-in LLM-assisted AI setup (judge
 rubric + resume skill), friendlier Settings forms.
 
+**Final hardening pass (2026-06-09, after a fresh judged run):** added the
+`llm.judge.min_score` auto-run floor (default 50) + the score↔verdict divergence
+UI cue; fixed a matcher false-positive (bare `backend` / incidental lone
+"JavaScript" was inflating Java/Spring roles to 80-100 — EM lane now requires a
+real JS-family token + JVM anti-signals); verified the backup→current
+status migration lost no source-backed triage data; comment cleanup (dropped
+dated curation/process noise, kept reasoning + navigation). Dual final review
+(code + security): zero HIGH/regressions, ship-approved. A UX review flagged 3
+deferred P0s for a future pass — judge/LLM not enableable from the UI (YAML-only),
+the custom-role path still caps score at 60 (template path was fixed in v3), and
+the multi-minute scrape gives no progress feedback.
+
 ## v2+ roadmap (architecture accommodates, zero code today)
 
-Telegram channels, liveness/expiry classifier, cover-letter tooling, N+1 ATS
-adapters (SmartRecruiters/Workable/Workday via title-gated JD enrichment), and a
+Telegram channels, liveness/expiry classifier, cover-letter tooling, the Workday
+adapter (per-company {shard,site} discovery + N+1 JD) and SmartRecruiters
+title-gated JD enrichment (the SmartRecruiters/Workable list adapters now ship), a
 **user-driven LinkedIn/Indeed import** (paste/extract from your own session +
 optional browser-extension capture — design-gated; the v2 attempt was removed).
 (LLM fit-judge, multi-source expansion — shipped above.)

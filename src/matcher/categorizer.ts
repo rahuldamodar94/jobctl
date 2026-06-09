@@ -4,7 +4,7 @@ import { containsTerm } from './matcher.js';
 /**
  * Rule-based categorization: first category in `order` with a keyword hit wins.
  * Word-boundary matched — substring matching mislabeled payments companies as
- * defi via 'dex'⊂"index" and 'amm'⊂"programming" (2026-06-07 corpus audit).
+ * defi via 'dex'⊂"index" and 'amm'⊂"programming".
  */
 export function categorize(
   title: string,

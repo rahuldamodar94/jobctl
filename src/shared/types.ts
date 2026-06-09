@@ -183,7 +183,7 @@ export interface ProfileConfig {
   /** Optional LLM features (resume gen + fit-judge). */
   llm: {
     backends: Record<string, LlmBackendConfig>;
-    judge: { enabled: boolean; backend: string };
+    judge: { enabled: boolean; backend: string; min_score: number };
     resume: { backend: string };
   };
   /** Selection over the committed company registry + personal additions. */

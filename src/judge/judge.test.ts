@@ -128,6 +128,7 @@ llm:
   judge:
     enabled: true
     backend: cloud
+    min_score: 0
 `
     );
     writeFileSync(join(dir, 'profile', 'judge-rubric.md'), '# Rubric\nprefer TS backend');
@@ -201,5 +202,39 @@ llm:
     const r = await judgePending(repo, () => {});
     expect(r.skipped).toMatch(/disabled/);
     expect(r.judged).toBe(0);
+  });
+
+  test('min_score gates the auto run, but the Re-judge button (ids) bypasses it', async () => {
+    writeFileSync(
+      join(dir, 'profile', 'profile.yaml'),
+      `name: T
+enabled_sources: [jobstash]
+llm:
+  backends:
+    cloud:
+      engine: openai-compatible
+      base_url: https://example.test/v1
+  judge:
+    enabled: true
+    backend: cloud
+    min_score: 70
+`
+    );
+    const repo = new Repo(db);
+    const lowId = repo.insert(makeInput({ dedupeKey: 'k-low', matchScore: 60 }));
+    const highId = repo.insert(makeInput({ dedupeKey: 'k-high', matchScore: 80 }));
+    mockFetch('{"verdict":"DECENT","summary":"ok","reasons":[],"blockers":[],"dimensions":[]}');
+    const { judgePending } = await freshJudge();
+
+    // auto run: only the >=70 job is judged; the score-60 job is left untouched
+    const auto = await judgePending(repo, () => {});
+    expect(auto.judged).toBe(1);
+    expect(repo.findById(highId)!.llmVerdict).toBe('DECENT');
+    expect(repo.findById(lowId)!.llmVerdict).toBeNull();
+
+    // explicit Re-judge by id ignores the floor — the score-60 job gets judged
+    const byId = await judgePending(repo, () => {}, { ids: [lowId] });
+    expect(byId.judged).toBe(1);
+    expect(repo.findById(lowId)!.llmVerdict).toBe('DECENT');
   });
 });

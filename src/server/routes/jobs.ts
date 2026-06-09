@@ -200,7 +200,7 @@ export function jobsRouter(db: Database.Database, repo: Repo): Router {
     }
     // one transaction → all-or-nothing + a single WAL commit for up to 1000 rows.
     // Sum the rows actually changed so the response reflects reality — bad/
-    // non-existent ids update nothing and shouldn't inflate the count (L1).
+    // non-existent ids update nothing and shouldn't inflate the count.
     let updated = 0;
     repo.transaction(() => {
       for (const id of ids) updated += repo.setStatus(Number(id), status as never);

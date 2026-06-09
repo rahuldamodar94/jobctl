@@ -1,8 +1,8 @@
 # Default job-categorization rules (committed). First match in `order` wins, so
 # the list is ordered most-distinctive → most-general. These ids are the domain
 # vocabulary in config/domains.yaml. Keywords are DISTINCTIVE on purpose — bare
-# generic terms ("liquidity", "data", "cloud") mislabel hundreds of jobs (corpus
-# audits 2026-06). Anything unmatched falls back to `saas` (general software).
+# generic terms ("liquidity", "data", "cloud") mislabel hundreds of jobs.
+# Anything unmatched falls back to `saas` (general software).
 # Override per-user by placing a categories.yaml in your profile/ dir.
 
 # `saas` is last (most-general) and has no keyword list — jobs reach it only via
@@ -15,7 +15,7 @@ fallback: saas
 keywords:
   crypto:
     # protocol-specific — bare "liquidity"/"yield"/"swap" are everyday TradFi
-    # vocabulary and mislabeled hundreds of payments jobs (2026-06-07 audit)
+    # vocabulary and mislabel payments jobs as crypto
     - defi
     - lending protocol
     - dex

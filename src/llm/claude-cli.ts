@@ -8,9 +8,9 @@ import { tmpdir } from 'node:os';
  * — that's the cheap path while preserving subscription auth).
  *
  * NOTE: do NOT use `--bare` — it bypasses the logged-in subscription session
- * and demands ANTHROPIC_API_KEY, which breaks the no-API-key design (verified
- * 2026-06-08: `claude -p --bare` → "Not logged in"). The flag is deliberately
- * unsupported here (no opt), so it can't be wired in by accident.
+ * and demands ANTHROPIC_API_KEY (`claude -p --bare` → "Not logged in"), which
+ * breaks the no-API-key design. The flag is deliberately unsupported here (no
+ * opt), so it can't be wired in by accident.
  */
 
 const DEFAULT_TIMEOUT_MS = 180_000;

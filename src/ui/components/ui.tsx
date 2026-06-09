@@ -97,15 +97,21 @@ export function Badge({
 }
 
 // ── Score ring ───────────────────────────────────────────────────────────────
-/** Compact 0-100 keyword-score dial: colored arc + tabular number, band-tinted. */
-export function ScoreRing({ score }: { score: number }) {
+/** Compact 0-100 keyword-score dial: colored arc + tabular number, band-tinted.
+ *  `diverged` = the keyword score is high but the fit-judge disagrees (SKIP/WEAK);
+ *  we tint amber + flag a dot so a green-looking score doesn't read as "great." */
+export function ScoreRing({ score, diverged = false }: { score: number; diverged?: boolean }) {
   const pct = Math.max(0, Math.min(100, score));
   const r = 13;
   const c = 2 * Math.PI * r;
-  const stroke =
-    score >= 70 ? 'rgb(var(--accent))' : score >= 40 ? 'rgb(245 200 80)' : 'rgb(var(--text-faint))';
+  const stroke = diverged
+    ? 'rgb(245 158 66)'
+    : score >= 70 ? 'rgb(var(--accent))' : score >= 40 ? 'rgb(245 200 80)' : 'rgb(var(--text-faint))';
   return (
-    <span className="relative inline-flex h-8 w-8 items-center justify-center">
+    <span
+      className="relative inline-flex h-8 w-8 items-center justify-center"
+      title={diverged ? 'High keyword score, but the fit-judge flagged this — see Verify below' : undefined}
+    >
       <svg className="h-8 w-8 -rotate-90" viewBox="0 0 32 32" aria-hidden>
         <circle cx="16" cy="16" r={r} fill="none" stroke="rgb(var(--line))" strokeWidth="3" />
         <circle
@@ -127,6 +133,12 @@ export function ScoreRing({ score }: { score: number }) {
       >
         {score}
       </span>
+      {diverged && (
+        <span
+          className="absolute right-0 top-0 h-2 w-2 rounded-full bg-amber-400 ring-2 ring-surface-2"
+          aria-hidden
+        />
+      )}
     </span>
   );
 }

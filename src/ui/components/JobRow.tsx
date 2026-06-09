@@ -197,6 +197,16 @@ export function JobRow({
   const isManual = !job.source_id;
   const showManual = isManual && (!job.is_match || job.match_score === 0);
 
+  // Score↔verdict divergence: a high keyword score the fit-judge disputes. Flag
+  // it so a green-looking score next to a SKIP chip is self-explanatory, not
+  // confusing — the matcher measures keywords, the judge measures fit.
+  const diverged = Boolean(
+    judgeEnabled &&
+      job.is_match &&
+      job.match_score >= 70 &&
+      (job.llm_verdict === 'SKIP' || job.llm_verdict === 'WEAK')
+  );
+
   const updated = job.status_updated_at ?? job.first_seen;
   const updatedTitle = job.status_updated_at
     ? `status updated ${new Date(job.status_updated_at).toLocaleString()}`
@@ -228,7 +238,7 @@ export function JobRow({
           {showManual ? (
             <Badge tone="muted" title="manually added — not keyword-scored">manual</Badge>
           ) : job.is_match ? (
-            <ScoreRing score={job.match_score} />
+            <ScoreRing score={job.match_score} diverged={diverged} />
           ) : (
             <span className="font-mono text-xs text-faint" title="did not match any role">—</span>
           )}
@@ -241,6 +251,11 @@ export function JobRow({
             </Badge>
           )}
           <span className="text-ink/90">{job.title}</span>
+          {diverged && job.llm_blockers.length > 0 && (
+            <span className="ml-1.5 text-[11px] text-amber-300/80" title={job.llm_blockers.join(' · ')}>
+              ⚠ {job.llm_blockers[0]}
+            </span>
+          )}
         </td>
         <td className={cn(TD, 'truncate text-muted')}>{job.location ?? '—'}</td>
         <td className={TD}>

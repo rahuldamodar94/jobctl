@@ -2,10 +2,12 @@
 # COMMUNITY COMPANY REGISTRY (committed — PRs welcome)
 #
 # Companies whose ATS job boards this tool can pull directly via a public API
-# (Greenhouse / Lever / Ashby / Recruitee). Every entry is live-verified — the
-# ATS API returned real job JSON. Re-verify when adding; URL patterns are in
-# CLAUDE.md. Companies on other ATSes (Workday/iCIMS/custom portals) and known
-# same-name false positives live in config/companies-unsupported.md.
+# (the supported providers are listed in CLAUDE.md — Greenhouse, Lever, Ashby,
+# Recruitee, Workable, Teamtailor, Personio, Breezy, Pinpoint, SmartRecruiters).
+# Every entry is live-verified — the ATS API returned real job JSON. Re-verify
+# when adding; URL patterns are in CLAUDE.md. Companies on other ATSes
+# (Workday/iCIMS/custom portals) and known same-name false positives live in
+# config/companies-unsupported.md.
 #
 # Which slices YOU scrape is chosen in profile/profile.yaml:
 #   companies:
@@ -197,7 +199,6 @@ companies:
   - name: Ziina
     careers_url: https://jobs.ashbyhq.com/ziina
     domains: [fintech]
-  # Phase-1 multi-ATS adapters (Pinpoint) — verified 2026-06-09
   - name: Tabby
     careers_url: https://tabby.pinpointhq.com/
     domains: [fintech]
@@ -411,8 +412,6 @@ companies:
   - name: Wormhole Labs
     careers_url: https://jobs.ashbyhq.com/wormholelabs
     domains: [crypto, cloud-infra]
-  # Phase-1 multi-ATS adapters (Workable / Teamtailor / Personio / Breezy) —
-  # all verified 2026-06-09 (returned real job JSON).
   - name: Bitwave
     careers_url: https://bitwave.breezy.hr/
     domains: [crypto, fintech]
@@ -1051,10 +1050,7 @@ companies:
     careers_url: https://boards.greenhouse.io/zocdoc
     domains: [healthtech]
 
-  # =====================================================================
-  # Recovered TS/JS/Node additions (2026-06-09) — live-ATS-verified.
-  # Grouped by primary domain; can fold into the sections above later.
-  # =====================================================================
+  # ----- Additional TS/JS/Node companies (grouped by primary domain) -----
   # --- ai-ml ---
   - name: Bland
     careers_url: https://jobs.ashbyhq.com/bland
@@ -1256,11 +1252,7 @@ companies:
     careers_url: https://boards.greenhouse.io/fingerprint
     domains: [security, devtools]
 
-  # =====================================================================
-  # India + UAE/MENA TS/Node additions (2026-06-09 pass 2) — live-verified.
-  # India-heavy (Bengaluru offices) + Gulf/MENA fintech. Slugs curl-confirmed
-  # against the supported ATS APIs; non-empty job lists at probe time.
-  # =====================================================================
+  # ----- India + Gulf/MENA offices -----
   # --- ai-ml (India offices) ---
   - name: TrueFoundry
     careers_url: https://boards.greenhouse.io/truefoundry
@@ -1326,14 +1318,7 @@ companies:
     careers_url: https://tether.recruitee.com
     domains: [crypto, fintech]
 
-  # =====================================================================
-  # Popular-company sweep (2026-06-09) — broad pass over the best-known /
-  # most-desirable tech employers across all 12 domains. Every entry below
-  # was curl-verified against its supported ATS API and returned a NON-EMPTY
-  # job list at probe time. Slugs confirmed to the real company (generic /
-  # same-name slugs were rejected — see companies-unsupported.md false-pos
-  # table). Grouped by primary domain; can fold into sections above later.
-  # =====================================================================
+  # ----- Popular employers (all domains, grouped by primary domain) -----
   # --- ai-ml / frontier compute / robotics ---
   - name: CoreWeave
     careers_url: https://boards.greenhouse.io/coreweave
@@ -1784,10 +1769,8 @@ companies:
     careers_url: https://jobs.ashbyhq.com/superpower
     domains: [healthtech, consumer]
 
-  # =====================================================================
-  # SmartRecruiters adapter — verified giants (2026-06-09). Case-sensitive
-  # slugs. List-only (no JD): scored on title via the matcher's short-JD path.
-  # =====================================================================
+  # ----- SmartRecruiters (case-sensitive slugs; list-only, no JD — scored on
+  # title via the matcher's short-JD path) -----
   - name: Delivery Hero
     careers_url: https://jobs.smartrecruiters.com/DeliveryHero
     domains: [consumer, ecommerce]

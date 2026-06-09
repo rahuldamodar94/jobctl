@@ -198,9 +198,12 @@ export class Repo {
   }
 
   /** Active + matched only — the judge's working set (avoids loading the full
-   *  table just to filter to the matched subset). */
-  activeMatched(): Job[] {
-    const rows = this.db.prepare('SELECT * FROM jobs WHERE is_active = 1 AND is_match = 1').all() as JobRow[];
+   *  table just to filter to the matched subset). `minScore` gates the auto
+   *  judge run to high-match jobs (default 0 = no floor, e.g. the demo path). */
+  activeMatched(minScore = 0): Job[] {
+    const rows = this.db
+      .prepare('SELECT * FROM jobs WHERE is_active = 1 AND is_match = 1 AND match_score >= ?')
+      .all(minScore) as JobRow[];
     return rows.map(rowToJob);
   }
 

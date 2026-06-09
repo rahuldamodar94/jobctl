@@ -11,7 +11,7 @@ import { parsePostedDate } from '../../matcher/dates.js';
  *
  * LIST-ONLY (no JD body): the per-job endpoints (`/json/{friendly_id}`,
  * `/{friendly_id}/json`) 302-redirect to `/` and so fail under redirect:'error'
- * (verified 2026-06-09) — there is no public per-job JSON. Title + location
+ * — there is no public per-job JSON. Title + location
  * still satisfy the matcher's short-JD path (it matches on title+tags and flags
  * absent stack evidence), so list-only is acceptable for v1.
  */
