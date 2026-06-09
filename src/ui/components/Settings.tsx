@@ -17,6 +17,7 @@ import {
   saveRubric,
   saveResume,
   testLlmConnection,
+  generateAuthoring,
   type AppConfig,
   type SaveResult,
   type SettingsSnapshot,
@@ -86,9 +87,9 @@ export function Settings({ config, onClose, onSaved }: { config: AppConfig | nul
           ) : tab === 'categories' ? (
             <YamlEditor key="categories" title="categories.yaml (override)" hint="Your own job taxonomy (order + fallback + keywords). Optional — overrides the committed default." initial={snap.categories ?? { order: ['web2', 'other'], fallback: 'other', keywords: {} }} save={saveCategories} onSaved={onSaved} />
           ) : tab === 'skill' ? (
-            <MarkdownEditor key="skill" title="RESUME_GENERATION_SKILL.md" hint="Rules the resume generator follows. Free text." initial={snap.skill ?? ''} save={saveSkill} onSaved={onSaved} />
+            <AuthoredDocTab key="skill" target="skill" title="Resume generation rules" hint="How the resume generator tailors your resume per job. Generate it from your resume, then refine." initial={snap.skill ?? ''} hasResume={Boolean((snap.profile as { resumes?: unknown[] } | null)?.resumes?.length)} save={saveSkill} onSaved={onSaved} />
           ) : tab === 'rubric' ? (
-            <MarkdownEditor key="rubric" title="judge-rubric.md" hint="How the fit-judge evaluates a JD against you. Free text." initial={snap.rubric ?? ''} save={saveRubric} onSaved={onSaved} />
+            <AuthoredDocTab key="rubric" target="rubric" title="Judge rubric" hint="How the fit-judge scores a JD against you. Generate it from your resume, then refine." initial={snap.rubric ?? ''} hasResume={Boolean((snap.profile as { resumes?: unknown[] } | null)?.resumes?.length)} save={saveRubric} onSaved={onSaved} />
           ) : (
             <ResumesTab snap={snap} onSaved={onSaved} />
           )}
@@ -176,11 +177,33 @@ function YamlEditor({ title, hint, initial, save, onSaved }: { title: string; hi
   );
 }
 
-function MarkdownEditor({ title, hint, initial, save, onSaved }: { title: string; hint: string; initial: string; save: (t: string) => Promise<SaveResult>; onSaved: () => void }) {
+/** A markdown doc (judge rubric / resume-gen rules) that can be GENERATED from the
+ *  user's resume and refined in plain language — or hand-edited. Generation never
+ *  auto-saves: it fills the editor and the user reviews, then Saves. */
+function AuthoredDocTab({
+  target,
+  title,
+  hint,
+  initial,
+  hasResume,
+  save,
+  onSaved,
+}: {
+  target: 'rubric' | 'skill';
+  title: string;
+  hint: string;
+  initial: string;
+  hasResume: boolean;
+  save: (t: string) => Promise<SaveResult>;
+  onSaved: () => void;
+}) {
   const [text, setText] = useState(initial);
   const [result, setResult] = useState<SaveResult | null>(null);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [genError, setGenError] = useState<string | null>(null);
+  const [instruction, setInstruction] = useState('');
 
   async function onSave() {
     setSaving(true);
@@ -193,11 +216,57 @@ function MarkdownEditor({ title, hint, initial, save, onSaved }: { title: string
     }
   }
 
+  async function onGenerate() {
+    setGenerating(true);
+    setGenError(null);
+    const r = await generateAuthoring(target, {
+      instruction: instruction.trim() || undefined,
+      currentDraft: text.trim() || undefined,
+    });
+    setGenerating(false);
+    if (r.error || !r.markdown) {
+      setGenError(r.error ?? 'Generation returned nothing — try again.');
+      return;
+    }
+    setText(r.markdown);
+    setDirty(true);
+    setInstruction('');
+  }
+
+  const ctrl = 'h-8 flex-1 min-w-[12rem] rounded-lg border border-line bg-surface-2/60 px-2.5 text-xs text-ink placeholder-faint outline-none focus:border-accent disabled:opacity-50';
+
   return (
     <div>
       <EditorHead title={title} hint={hint} />
+      {hasResume ? (
+        <div className="mb-2.5 flex flex-wrap items-center gap-2">
+          <Button variant="secondary" size="sm" onClick={onGenerate} loading={generating} disabled={generating}>
+            {!generating && <Sparkles className="h-3.5 w-3.5" />}
+            {text.trim() ? 'Regenerate from resume' : 'Generate from my resume'}
+          </Button>
+          <input
+            className={ctrl}
+            placeholder='Refine: e.g. "stricter on location", "emphasize fintech"'
+            value={instruction}
+            onChange={(e) => setInstruction(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !generating) {
+                e.preventDefault();
+                onGenerate();
+              }
+            }}
+            disabled={generating}
+          />
+        </div>
+      ) : (
+        <p className="mb-2.5 text-xs text-muted">
+          Add your resume first (Resume tab) to generate this from it — or write it by hand below.
+        </p>
+      )}
+      {generating && <p className="mb-2 text-xs text-faint">Generating from your resume… this can take up to a minute.</p>}
+      {genError && <p className="mb-2 text-xs text-amber-300">{genError}</p>}
       <textarea
-        className={`${ta} h-[60vh]`}
+        className={`${ta} h-[50vh]`}
         value={text}
         onChange={(e) => {
           setText(e.target.value);

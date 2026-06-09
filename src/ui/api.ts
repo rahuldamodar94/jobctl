@@ -348,6 +348,24 @@ export async function testLlmConnection(
   }
 }
 
+/** Generate the judge rubric / resume-gen rules from the resume (+ optional
+ *  refinement instruction). Runs the LLM server-side — can take 30-120s. */
+export async function generateAuthoring(
+  target: 'rubric' | 'skill',
+  opts: { instruction?: string; currentDraft?: string } = {}
+): Promise<{ markdown?: string; error?: string }> {
+  try {
+    const res = await fetch('/api/settings/generate', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ target, ...opts }),
+    });
+    return await res.json();
+  } catch (e) {
+    return { error: (e as Error).message };
+  }
+}
+
 export const saveProfile = (obj: unknown) => putConfig('profile', obj);
 export const saveRoles = (obj: unknown) => putConfig('roles', obj);
 export const saveCategories = (obj: unknown) => putConfig('categories', obj);

@@ -1,5 +1,6 @@
 import { spawnSync } from 'node:child_process';
 import { runClaudeCli } from './claude-cli.js';
+import { checkApiKeyEnv, checkLlmBaseUrl } from './safety.js';
 import type { LlmBackendConfig } from '../shared/types.js';
 
 /**
@@ -19,11 +20,14 @@ export interface ConnectionTestResult {
 const TEST_PROMPT = 'Reply with exactly: OK';
 const HTTP_TIMEOUT_MS = 20_000;
 
-function httpHint(status: number, body: string): string {
-  if (status === 401 || status === 403) return `Auth rejected (HTTP ${status}) — check the API key. ${body}`.trim();
-  if (status === 404) return `Not found (HTTP 404) — check base_url and model. ${body}`.trim();
-  if (status === 400 && /model/i.test(body)) return `Bad request — the model may be invalid. ${body}`.trim();
-  return `HTTP ${status}: ${body}`.trim();
+// Status-based hint only — the upstream response body is NOT echoed back (it
+// could carry internal-service content if base_url were ever pointed inward).
+function httpHint(status: number): string {
+  if (status === 401 || status === 403) return `Auth rejected (HTTP ${status}) — check the API key.`;
+  if (status === 404) return 'Not found (HTTP 404) — check base_url and model.';
+  if (status >= 300 && status < 400) return `Unexpected redirect (HTTP ${status}) — check base_url.`;
+  if (status === 400) return 'Bad request (HTTP 400) — the model may be invalid.';
+  return `HTTP ${status}.`;
 }
 
 export async function testLlmConnection(cfg: LlmBackendConfig): Promise<ConnectionTestResult> {
@@ -41,22 +45,27 @@ export async function testLlmConnection(cfg: LlmBackendConfig): Promise<Connecti
       return { ok: true, latencyMs: Date.now() - t0 };
     }
 
-    // openai-compatible
-    if (!cfg.base_url) return fail('Missing base_url.');
+    // openai-compatible — guard the user-supplied config before reading any env
+    // secret or making the request (credential-exfil / SSRF protection).
+    const urlErr = checkLlmBaseUrl(cfg.base_url);
+    if (urlErr) return fail(urlErr);
     if (!cfg.model) return fail('Missing model.');
+    const keyErr = checkApiKeyEnv(cfg.api_key_env);
+    if (keyErr) return fail(keyErr);
     const key = cfg.api_key_env ? process.env[cfg.api_key_env] : undefined;
     if (cfg.api_key_env && !key) return fail(`The env var "${cfg.api_key_env}" is not set on the server — export your API key there.`);
 
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), HTTP_TIMEOUT_MS);
     try {
-      const res = await fetch(`${cfg.base_url.replace(/\/$/, '')}/chat/completions`, {
+      const res = await fetch(`${cfg.base_url!.replace(/\/$/, '')}/chat/completions`, {
         method: 'POST',
         headers: { 'content-type': 'application/json', ...(key ? { authorization: `Bearer ${key}` } : {}) },
         body: JSON.stringify({ model: cfg.model, temperature: 0, max_tokens: 16, messages: [{ role: 'user', content: TEST_PROMPT }] }),
         signal: ctrl.signal,
+        redirect: 'manual', // a 3xx must not bounce the Bearer token to another host
       });
-      if (!res.ok) return fail(httpHint(res.status, (await res.text().catch(() => '')).slice(0, 180)));
+      if (!res.ok) return fail(httpHint(res.status));
       const j = (await res.json().catch(() => null)) as { choices?: { message?: unknown }[] } | null;
       if (!j?.choices?.[0]?.message) return fail('The endpoint responded, but not in OpenAI chat-completions shape.');
       return { ok: true, latencyMs: Date.now() - t0 };

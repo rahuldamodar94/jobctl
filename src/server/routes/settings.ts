@@ -8,6 +8,7 @@ import { safeProfilePath } from '../../config/paths.js';
 import { extractResume } from '../../upload/extract.js';
 import { MAX_RESUME_BYTES } from '../../upload/guards.js';
 import { testLlmConnection } from '../../llm/test-connection.js';
+import { generateAuthoring } from '../../authoring/index.js';
 import type { LlmBackendConfig } from '../../shared/types.js';
 
 /**
@@ -168,6 +169,21 @@ export function settingsRouter(): Router {
       return res.status(400).json({ ok: false, latencyMs: 0, error: 'engine must be claude-cli or openai-compatible' });
     }
     res.json(await testLlmConnection(cfg as LlmBackendConfig));
+  });
+
+  // POST /api/settings/generate — author the judge rubric / resume-gen rules FROM
+  // the user's resume (+ optional refinement). Returns markdown for the editor;
+  // the user reviews and saves via PUT /skill|/rubric. Blocks while the LLM runs.
+  r.post('/generate', async (req, res) => {
+    const { target, instruction, currentDraft } = req.body as {
+      target?: string;
+      instruction?: string;
+      currentDraft?: string;
+    };
+    if (target !== 'rubric' && target !== 'skill') {
+      return res.status(400).json({ error: 'target must be "rubric" or "skill"' });
+    }
+    res.json(await generateAuthoring(target, { instruction, currentDraft }));
   });
 
   return r;
