@@ -235,36 +235,6 @@ export async function clearDemoJobs(): Promise<number> {
 }
 
 // ---------------------------------------------------------------------------
-// Import — user-driven (paste / Claude extension). See docs/linkedin-import.md.
-export interface ImportResult {
-  received: number;
-  inserted: number;
-  merged: number;
-}
-
-/** POST a normalized import payload (object OR raw JSON string the user pasted). */
-export async function importJobs(payload: unknown): Promise<ImportResult> {
-  const res = await fetch('/api/import', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: typeof payload === 'string' ? payload : JSON.stringify(payload),
-  });
-  await ensureOk(res, 'import');
-  return res.json();
-}
-
-/** The config-generated Claude-extension prompt (null if not configured yet). */
-export async function getImportPrompt(): Promise<string | null> {
-  try {
-    const res = await fetch('/api/import/prompt');
-    if (!res.ok) return null;
-    return (await res.json()).prompt ?? null;
-  } catch {
-    return null;
-  }
-}
-
-// ---------------------------------------------------------------------------
 // Settings / onboarding — write surface (server zod-validates every write)
 // ---------------------------------------------------------------------------
 

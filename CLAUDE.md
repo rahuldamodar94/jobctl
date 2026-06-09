@@ -109,7 +109,6 @@ CONFIG (yaml)                  SCRAPE PIPELINE (src/scraper/run.ts)
                                 /api/export.csv /api/resumes /api/config
                                 /api/settings (in-app config editor)
                                 /api/demo (sample data)
-                                /api/import (+ /import/prompt — user-driven import)
                                 + dist/ui
                                          │
                                 React triage page (src/ui)
@@ -195,12 +194,15 @@ CONFIG (yaml)                  SCRAPE PIPELINE (src/scraper/run.ts)
   delivery model IS the value. Deep PM research 2026-06-08; a different product.
 - **scraping LinkedIn / Indeed / Naukri / X** — account bans, active LinkedIn
   litigation, killed/paid APIs, anti-bot maintenance treadmill; breaks the
-  no-headless-browser design. Coverage is instead via a **user-driven import of
-  the user's own session** — BUILT (Phase 1+2): `POST /api/import` ingests a
-  normalized payload (manual paste OR the Claude Chrome extension running the
-  config-generated prompt in the user's own browser) through the same dedupe →
-  match → judge pipeline. The server NEVER scrapes LinkedIn. See
-  `docs/linkedin-import.md`.
+  no-headless-browser design. A user-driven import (a `/api/import` endpoint +
+  paste UI + a Claude-for-Chrome harvest prompt) was BUILT and then fully
+  REMOVED on 2026-06-09. Research verdict: the browser extension can't reliably
+  extract full JDs at volume (context/output-budget drops the description field;
+  long-task instability stalls it), the clean alternative (parsing LinkedIn
+  alert emails) adds ongoing upkeep for thin marginal coverage now that the ATS
+  registry is 560+ companies plus the boards, and a generic JSON importer just
+  pushes a hard formatting burden onto the user. Net: not worth the surface area.
+  **Don't re-propose without materially new evidence** (e.g. an official API).
 - **going generic across ALL industries** — scope is the *software industry*
   (any role). Non-tech industries need different boards + non-self-host-capable
   users; out of scope.

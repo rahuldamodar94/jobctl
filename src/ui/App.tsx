@@ -33,8 +33,7 @@ import { Onboarding } from './components/Onboarding.js';
 import { Settings } from './components/Settings.js';
 import { Button, Skeleton } from './components/ui.js';
 import { JOB_STATUSES } from '../shared/types.js';
-import { Play, Download, FileText, Settings as SettingsIcon, Crosshair, SearchX, Sparkles, Import as ImportIcon } from 'lucide-react';
-import { ImportModal } from './components/ImportModal.js';
+import { Play, Download, FileText, Settings as SettingsIcon, Crosshair, SearchX, Sparkles } from 'lucide-react';
 
 // Bulk actions target every status EXCEPT 'new' (you don't bulk-reset to new —
 // it's the untriaged default). Sourced from the shared vocab, not re-listed.
@@ -82,7 +81,6 @@ export default function App() {
   const [hasLoaded, setHasLoaded] = useState(false);
   const [config, setConfig] = useState<AppConfig | null>(null);
   const [showSettings, setShowSettings] = useState(false);
-  const [showImport, setShowImport] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const seededRef = useRef(false); // seed default filters from ui_prefs once
 
@@ -391,9 +389,6 @@ export default function App() {
               <button onClick={() => setShowResume(true)} title="Resume reference drawer" className={ICON_BTN}>
                 <FileText className="h-[17px] w-[17px]" />
               </button>
-              <button onClick={() => setShowImport(true)} title="Import jobs from LinkedIn" className={ICON_BTN}>
-                <ImportIcon className="h-[17px] w-[17px]" />
-              </button>
               <button onClick={() => setShowSettings(true)} title="Settings" className={ICON_BTN}>
                 <SettingsIcon className="h-[17px] w-[17px]" />
               </button>
@@ -533,7 +528,6 @@ export default function App() {
       </main>
 
       {showResume && <ResumeDrawer onClose={() => setShowResume(false)} />}
-      {showImport && <ImportModal onClose={() => setShowImport(false)} onImported={() => reload()} />}
     </div>
   );
 }

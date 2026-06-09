@@ -66,23 +66,18 @@ export interface ScrapeOutcome {
   totalNew: number;
 }
 
-/** Load role configs with the profile's location injected — geo is profile-level
- *  but the matcher reads role.geoPriority/geoRelocationOk. Shared by the scraper
- *  and the import route so this injection can't drift between them. */
-export function loadRolesWithGeo(profile: ReturnType<typeof loadProfile>) {
-  return loadRoles().map((r) => ({
-    ...r,
-    geoPriority: profile.geoPriority,
-    geoRelocationOk: profile.geoRelocationOk,
-  }));
-}
-
 export async function runScrape(db: Database.Database, opts: ScrapeOptions = {}): Promise<ScrapeOutcome> {
   const log = opts.log ?? ((m: string) => console.log(m));
   const repo = new Repo(db);
 
   const profile = loadProfile();
-  const roles = loadRolesWithGeo(profile);
+  // location is profile-level: inject it into every role so the per-role matcher
+  // scores geo from the one profile preference (one job seeker, one location).
+  const roles = loadRoles().map((r) => ({
+    ...r,
+    geoPriority: profile.geoPriority,
+    geoRelocationOk: profile.geoRelocationOk,
+  }));
   const categories = loadCategories();
   const sourceConfigs = loadSources();
 
