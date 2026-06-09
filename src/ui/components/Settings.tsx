@@ -76,11 +76,11 @@ export function Settings({ config, onClose, onSaved }: { config: AppConfig | nul
           ) : tab === 'profile' ? (
             // key per tab: these are all YamlEditor — without a distinct key
             // React reuses the instance across tabs and keeps stale text state.
-            <YamlEditor key="profile" title="profile.yaml" hint="Your identity, enabled sources, company selection, exclude_categories, ui_prefs." initial={snap.profile} save={saveProfile} onSaved={onSaved} />
+            <YamlEditor key="profile" title="profile.yaml" hint="Your identity, enabled sources, company selection, ui_prefs." initial={snap.profile} save={saveProfile} onSaved={onSaved} />
           ) : tab === 'ai' ? (
             <AiSettings key="ai" profile={snap.profile} claudeAvailable={config?.claudeAvailable ?? false} onSaved={onSaved} />
           ) : tab === 'roles' ? (
-            <YamlEditor key="roles" title="roles.yaml" hint="One entry per role you're hunting. title_keywords are substring matches; lane is ic|em." initial={snap.roles} save={saveRoles} onSaved={onSaved} />
+            <YamlEditor key="roles" title="roles.yaml" hint="Your role search: title_keywords (substring matches), must_have_stack, weighted nice_to_have, excludes." initial={snap.roles} save={saveRoles} onSaved={onSaved} />
           ) : tab === 'categories' ? (
             <YamlEditor key="categories" title="categories.yaml (override)" hint="Your own job taxonomy (order + fallback + keywords). Optional — overrides the committed default." initial={snap.categories ?? { order: ['web2', 'other'], fallback: 'other', keywords: {} }} save={saveCategories} onSaved={onSaved} />
           ) : tab === 'skill' ? (

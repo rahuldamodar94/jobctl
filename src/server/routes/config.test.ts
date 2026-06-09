@@ -4,8 +4,9 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
 /**
- * /api/config payload: the UI's dropdown vocabulary (roles/sources/categories)
- * must come from the user's config, never from hardcoded UI constants.
+ * /api/config payload: the UI's dropdown vocabulary (sources/categories) must
+ * come from the user's config, never from hardcoded UI constants. Capability
+ * flags (judgeEnabled, rubricExists, claudeAvailable) gate optional features.
  */
 
 let dir: string;
@@ -30,7 +31,7 @@ async function freshBuild() {
   return buildConfigPayload;
 }
 
-test('payload reflects the user config: roles, ats-expanded sources, category order', async () => {
+test('payload reflects the user config: ats-expanded sources, category order', async () => {
   writeFileSync(
     join(dir, 'profile', 'profile.yaml'),
     'name: Test\nenabled_sources: [jobstash, ats]\n'
@@ -50,7 +51,8 @@ test('payload reflects the user config: roles, ats-expanded sources, category or
   );
 
   const payload = (await freshBuild())();
-  expect(payload.roles).toEqual([{ id: 'gameplay_programmer', label: 'Gameplay Programmer', lane: 'ic' }]);
+  expect(payload.configured).toBe(true); // valid profile + 1 role
+  expect(payload.rubricExists).toBe(false); // no judge-rubric.md in this temp profile
   expect(payload.sources).toEqual([
     'jobstash',
     'ats:greenhouse',
@@ -72,41 +74,21 @@ test('payload reflects the user config: roles, ats-expanded sources, category or
   expect(payload.claudeAvailable).toBe(payload.resumeGeneration);
 });
 
-test('excluded categories are dropped from the dropdown vocabulary', async () => {
-  writeFileSync(
-    join(dir, 'profile', 'profile.yaml'),
-    'name: Test\nenabled_sources: [jobstash]\nexclude_categories: [ai]\n'
-  );
+test('rubricExists flips true when profile/judge-rubric.md is present', async () => {
+  writeFileSync(join(dir, 'profile', 'profile.yaml'), 'name: Test\nenabled_sources: [jobstash]\n');
   writeFileSync(
     join(dir, 'profile', 'roles.yaml'),
     'roles:\n  - id: be\n    label: Backend\n    title_keywords: [backend]\n    must_have_stack: [node]\n'
   );
-  writeFileSync(
-    join(dir, 'config', 'categories.yaml'),
-    'order: [ai, web3, web2]\nkeywords:\n  ai: [llm]\n  web3: [crypto]\n'
-  );
+  writeFileSync(join(dir, 'profile', 'judge-rubric.md'), '# Rubric\nprefer TS backend');
   const payload = (await freshBuild())();
-  expect(payload.categories).toEqual(['web3', 'web2', 'other']); // ai excluded; 'other' fallback always offered
-});
-
-test("the 'other' fallback is itself droppable via exclude_categories (M8)", async () => {
-  writeFileSync(
-    join(dir, 'profile', 'profile.yaml'),
-    'name: Test\nenabled_sources: [jobstash]\nexclude_categories: [other]\n'
-  );
-  writeFileSync(
-    join(dir, 'profile', 'roles.yaml'),
-    'roles:\n  - id: be\n    label: Backend\n    title_keywords: [backend]\n    must_have_stack: [node]\n'
-  );
-  writeFileSync(join(dir, 'config', 'categories.yaml'), 'order: [web3, web2]\nkeywords:\n  web3: [crypto]\n');
-  const payload = (await freshBuild())();
-  expect(payload.categories).toEqual(['web3', 'web2']); // 'other' excluded → not offered
+  expect(payload.rubricExists).toBe(true);
 });
 
 test('unreadable config degrades to empty lists, never throws', async () => {
   // no profile files at all
   const payload = (await freshBuild())();
-  expect(payload.roles).toEqual([]);
+  expect(payload.configured).toBe(false);
   expect(payload.sources).toEqual([]);
   expect(payload.categories).toEqual([]);
 });

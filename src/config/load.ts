@@ -33,8 +33,6 @@ const httpUrl = () => z.string().url().refine((u) => /^https?:\/\//i.test(u), 'm
 const roleSchema = z.object({
   id: z.string().min(1),
   label: z.string().min(1),
-  // career lane — drives the UI's IC/EM role filter (default ic = most roles)
-  lane: z.enum(['ic', 'em']).default('ic'),
   title_keywords: z.array(z.string().min(1)).min(1),
   title_exclude: z.array(z.string()).default([]),
   must_have_stack: z.array(z.string().min(1)).min(1),
@@ -83,17 +81,9 @@ export const profileSchema = z.object({
         id: z.string(),
         label: z.string(),
         file: z.string(),
-        // designates this resume as the IC or EM base for resume generation
-        base: z.enum(['ic', 'em']).optional(),
       })
     )
     .default([]),
-  // categories the user never wants matched (e.g. [ai])
-  exclude_categories: z.array(z.string()).default([]),
-  // resume-generation guardrails (e.g. NDA'd employer names)
-  resume_rules: z
-    .object({ forbidden_terms: z.array(z.string().min(1)).default([]) })
-    .default({ forbidden_terms: [] }),
   // default triage-filter preferences (seed the UI's default view)
   ui_prefs: z
     .object({
@@ -218,7 +208,6 @@ export function loadRoles(): RoleConfig[] {
   return f.roles.map((r) => ({
     id: r.id,
     label: r.label,
-    lane: r.lane,
     titleKeywords: r.title_keywords.map(lc),
     titleExclude: r.title_exclude.map(lc),
     mustHaveStack: r.must_have_stack.map(lc),
@@ -240,8 +229,6 @@ export function loadProfile(): ProfileConfig {
     geoPriority: p.geo_priority.map(lc),
     geoRelocationOk: p.geo_relocation_ok.map(lc),
     resumes: p.resumes,
-    excludeCategories: p.exclude_categories,
-    resumeRules: { forbiddenTerms: p.resume_rules.forbidden_terms },
     uiPrefs: {
       defaultMinScore: p.ui_prefs.default_min_score,
       defaultPostedWithin: p.ui_prefs.default_posted_within,
@@ -334,7 +321,6 @@ export interface RoleTemplateConfig {
   label: string;
   group: string;
   description: string;
-  lane: 'ic' | 'em';
   titleKeywords: string[];
   titleExclude: string[];
   mustHaveStack: string[];
@@ -351,7 +337,6 @@ export function loadRoleTemplates(): RoleTemplateConfig[] {
     label: t.label,
     group: t.group,
     description: t.description,
-    lane: t.lane,
     titleKeywords: t.title_keywords,
     titleExclude: t.title_exclude,
     mustHaveStack: t.must_have_stack,

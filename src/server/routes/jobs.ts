@@ -6,7 +6,7 @@ import { JOB_STATUSES, JUDGE_VERDICTS } from '../../shared/types.js';
 
 /** Query keys buildJobsFilter understands — the export route uses this to tell
  *  "filtered view requested" apart from a bare full-dump backup call. */
-export const FILTER_KEYS = ['q', 'status', 'category', 'minScore', 'source', 'postedWithin', 'role', 'match', 'location', 'verdict'];
+export const FILTER_KEYS = ['q', 'status', 'category', 'minScore', 'postedWithin', 'match', 'location', 'verdict'];
 
 /** escape LIKE wildcards so a user search for "100%" or "node_modules" is literal */
 const likeArg = (s: string) => `%${s.replace(/[\\%_]/g, '\\$&')}%`;
@@ -15,8 +15,8 @@ const likeArg = (s: string) => `%${s.replace(/[\\%_]/g, '\\$&')}%`;
  * Shared filter→WHERE builder for the list route AND the CSV export, so an
  * export always means "exactly what the UI shows". Filters only — paging and
  * sort are the list route's concern (exports return the FULL filtered set).
- * Filters: q, status (csv|all), category, minScore, source, postedWithin
- * (days), role (csv of role ids), match (matched|unmatched|all), location.
+ * Filters: q, status (csv|all), category, minScore, postedWithin (days),
+ * match (matched|unmatched|all), location, verdict.
  *
  * REFINEMENT-ON-NEW-ONLY: score / recency / matched are triage tools for the
  * untriaged queue — they constrain `status = 'new'` rows only. Anything the
@@ -31,7 +31,7 @@ export function buildJobsFilter(
   where: string[];
   params: unknown[];
 } {
-  const { q, status = 'new', category, minScore, source, postedWithin, role, match = 'matched', location, verdict } = query;
+  const { q, status = 'new', category, minScore, postedWithin, match = 'matched', location, verdict } = query;
 
   const where: string[] = ['is_active = 1'];
   const params: unknown[] = [];
@@ -70,18 +70,14 @@ export function buildJobsFilter(
       where.push('category = ?');
       params.push(category);
     }
-    // score / recency / role are "refinement-on-new-only" knobs that only make
-    // sense over the matched queue. The unmatched audit view is all-score-0, so
+    // score / recency are "refinement-on-new-only" knobs that only make sense
+    // over the matched queue. The unmatched audit view is all-score-0, so
     // applying them would wrongly drop rows (a deep-linked/exported URL can carry
     // both match=unmatched AND a leftover minScore) — skip them there.
     const refine = match !== 'unmatched';
     if (minScore && refine) {
       where.push(`(match_score >= ? OR status <> 'new')`);
       params.push(Number(minScore));
-    }
-    if (source) {
-      where.push('source_id = ?');
-      params.push(source);
     }
     if (postedWithin && refine) {
       // "Recent" = recently posted OR recently discovered by us. The OR matters:
@@ -91,14 +87,6 @@ export function buildJobsFilter(
       const cutoff = localDateISO(new Date(Date.now() - Number(postedWithin) * 86_400_000));
       where.push(`((posted_date >= ? OR first_seen >= ?) OR status <> 'new')`);
       params.push(cutoff, cutoff);
-    }
-    if (role && refine) {
-      // csv of role ids → match any (the UI sends all role ids in a lane)
-      const ids = role.split(',').map((s) => s.trim()).filter(Boolean);
-      if (ids.length) {
-        where.push(`(${ids.map(() => 'matched_role_ids LIKE ?').join(' OR ')})`);
-        ids.forEach((id) => params.push(`%"${id}"%`));
-      }
     }
     if (location) {
       where.push("location LIKE ? ESCAPE '\\'");

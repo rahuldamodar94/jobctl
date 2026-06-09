@@ -40,7 +40,6 @@ export function Onboarding({ config, onDone }: { config: AppConfig; onDone: () =
   const [roleGroup, setRoleGroup] = useState('');
   const [templateId, setTemplateId] = useState('');
   const [roleLabel, setRoleLabel] = useState('');
-  const [lane, setLane] = useState<'ic' | 'em'>('ic');
   const [titleKeywords, setTitleKeywords] = useState('');
   const [stack, setStack] = useState('');
   const [niceToHave, setNiceToHave] = useState('');
@@ -74,7 +73,6 @@ export function Onboarding({ config, onDone }: { config: AppConfig; onDone: () =
     const t = config.roleTemplates.find((x) => x.id === id);
     if (!t) return;
     setRoleLabel(t.label);
-    setLane(t.lane);
     setTitleKeywords(t.titleKeywords.join(', '));
     setStack(t.mustHaveStack.join(', '));
   };
@@ -101,7 +99,7 @@ export function Onboarding({ config, onDone }: { config: AppConfig; onDone: () =
     setSaving(true);
     try {
       const resumes = resumeMd.trim()
-        ? [{ id: 'main', label: 'My Resume', file: 'resumes/main.md', base: 'ic' as const }]
+        ? [{ id: 'main', label: 'My Resume', file: 'resumes/main.md' }]
         : [];
       const profile: Record<string, unknown> = {
         name: name.trim(),
@@ -118,7 +116,6 @@ export function Onboarding({ config, onDone }: { config: AppConfig; onDone: () =
         roles: [
           buildRoleEntry({
             label: roleLabel,
-            lane,
             titleKeywords,
             stack,
             niceToHave,

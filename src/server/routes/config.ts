@@ -1,4 +1,6 @@
 import { Router } from 'express';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import {
   loadCategories,
   loadDomains,
@@ -6,6 +8,7 @@ import {
   loadRoles,
   loadRoleTemplates,
   loadSources,
+  profileDir,
   type DomainConfig,
   type RoleTemplateConfig,
 } from '../../config/load.js';
@@ -21,8 +24,7 @@ export interface AppConfigPayload {
   resumeGeneration: boolean;
   /** false on a fresh install (no/invalid profile.yaml) → UI shows onboarding. */
   configured: boolean;
-  roles: { id: string; label: string; lane: 'ic' | 'em' }[];
-  /** enabled source ids (for the source filter dropdown) */
+  /** enabled source ids (exposed for the onboarding wizard) */
   sources: string[];
   /** ALL available source ids incl. 'ats' (for the onboarding wizard) */
   availableSources: string[];
@@ -35,6 +37,9 @@ export interface AppConfigPayload {
   uiPrefs: { defaultMinScore?: number; defaultPostedWithin?: number };
   /** is the advisory fit-judge turned on? (UI shows verdict chips + re-judge) */
   judgeEnabled: boolean;
+  /** does profile/judge-rubric.md exist? — the Fit/verdict filter shows only
+   *  when the judge is on AND a rubric is present. */
+  rubricExists: boolean;
   /** is the local `claude` CLI on PATH? (surfaced in the AI/LLM Settings tab so
    *  the user knows whether the claude-cli backend will work). Same detection as
    *  resumeGeneration, named for its own meaning. */
@@ -44,7 +49,6 @@ export interface AppConfigPayload {
 /** Pure builder (unit-tested); config read errors degrade to empty lists so a
  *  broken roles.yaml doesn't take the whole UI down with a 500. */
 export function buildConfigPayload(): AppConfigPayload {
-  let roles: AppConfigPayload['roles'] = [];
   let sources: string[] = [];
   let categories: string[] = [];
   let uiPrefs: AppConfigPayload['uiPrefs'] = {};
@@ -54,29 +58,24 @@ export function buildConfigPayload(): AppConfigPayload {
   // independent loads — a broken roles.yaml must not blank the profile data
   // (and vice-versa); each degrades on its own.
   try {
-    roles = loadRoles().map((r) => ({ id: r.id, label: r.label, lane: r.lane }));
-    rolesOk = roles.length > 0;
+    rolesOk = loadRoles().length > 0;
   } catch {
-    /* roles unreadable — role filter degrades */
+    /* roles unreadable */
   }
-  let excluded = new Set<string>();
   try {
     const profile = loadProfile();
     profileOk = true;
     uiPrefs = profile.uiPrefs;
     judgeEnabled = profile.llm.judge.enabled;
-    excluded = new Set(profile.excludeCategories);
     // the aggregate `ats` pseudo-source stores per-provider ids on its rows
     sources = profile.enabledSources.flatMap((s) => (s === 'ats' ? ATS_SOURCE_IDS : [s]));
   } catch {
-    /* profile unreadable — source/category filters degrade */
+    /* profile unreadable — source filter degrades */
   }
   try {
     // The dropdown vocabulary = the taxonomy order plus the conventional
-    // 'other' fallback bucket (the DB default for no-description jobs), minus
-    // anything the user excluded. Emitting 'other' here (instead of the UI
-    // re-appending it) means an excluded 'other' is correctly dropped too (M8).
-    categories = [...new Set([...loadCategories().order, 'other'])].filter((c) => !excluded.has(c));
+    // 'other' fallback bucket (the DB default for no-description jobs).
+    categories = [...new Set([...loadCategories().order, 'other'])];
   } catch {
     /* categories unreadable */
   }
@@ -104,7 +103,6 @@ export function buildConfigPayload(): AppConfigPayload {
     resumeGeneration: cliPresent,
     claudeAvailable: cliPresent,
     configured: profileOk && rolesOk,
-    roles,
     sources,
     availableSources,
     categories,
@@ -112,6 +110,7 @@ export function buildConfigPayload(): AppConfigPayload {
     roleTemplates,
     uiPrefs,
     judgeEnabled,
+    rubricExists: existsSync(join(profileDir(), 'judge-rubric.md')),
   };
 }
 

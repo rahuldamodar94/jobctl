@@ -64,10 +64,7 @@ export interface Filters {
   status: string;
   category: string;
   minScore: string;
-  source: string;
   postedWithin: string;
-  /** csv of role ids (the UI sends every role id in the chosen IC/EM lane) */
-  role: string;
   /** matched (default) | unmatched (filter audit) | all */
   match: string;
   /** substring match on the job location */
@@ -162,9 +159,6 @@ export interface AppConfig {
   resumeGeneration: boolean;
   /** false on a fresh install (no profile+roles yet) → show onboarding. */
   configured: boolean;
-  /** The user's config vocabulary — dropdown options come from here, never
-   *  from hardcoded UI constants (role ids etc. are personal data). */
-  roles: { id: string; label: string; lane: 'ic' | 'em' }[];
   sources: string[];
   availableSources: string[];
   categories: string[];
@@ -174,6 +168,9 @@ export interface AppConfig {
   roleTemplates: RoleTemplate[];
   uiPrefs: { defaultMinScore?: number; defaultPostedWithin?: number };
   judgeEnabled: boolean;
+  /** judge-rubric.md present? — the Fit/verdict filter shows only when the judge
+   *  is on AND a rubric exists. */
+  rubricExists: boolean;
   /** is the local `claude` CLI detected on PATH? (AI/LLM Settings tab) */
   claudeAvailable: boolean;
 }
@@ -184,7 +181,6 @@ export interface RoleTemplate {
   label: string;
   group: string;
   description: string;
-  lane: 'ic' | 'em';
   titleKeywords: string[];
   titleExclude: string[];
   mustHaveStack: string[];

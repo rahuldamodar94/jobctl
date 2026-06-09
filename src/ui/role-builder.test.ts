@@ -9,7 +9,6 @@ const TEMPLATE: RoleTemplate = {
   label: 'Backend Engineer',
   group: 'Engineering',
   description: '',
-  lane: 'ic',
   titleKeywords: ['backend engineer'],
   titleExclude: ['junior', 'intern'],
   mustHaveStack: ['python', 'golang'],
@@ -21,7 +20,6 @@ describe('buildRoleEntry', () => {
   test('REGRESSION: a chosen template carries nice_to_have + excludes (else score caps at 60)', () => {
     const role = buildRoleEntry({
       label: 'Backend Engineer',
-      lane: 'ic',
       titleKeywords: 'backend engineer, senior backend',
       stack: 'python, node.js',
       template: TEMPLATE,
@@ -37,7 +35,7 @@ describe('buildRoleEntry', () => {
   });
 
   test('custom (no template) → synthesizes a nice_to_have from the stack (so scores span 0-100, not capped at 60)', () => {
-    const role = buildRoleEntry({ label: 'My Custom Role', lane: 'em', titleKeywords: 'lead', stack: 'go, kubernetes' });
+    const role = buildRoleEntry({ label: 'My Custom Role', titleKeywords: 'lead', stack: 'go, kubernetes' });
     expect(role.id).toBe('my_custom_role');
     expect(role.title_keywords).toEqual(['lead']);
     expect(role.must_have_stack).toEqual(['go', 'kubernetes']);
@@ -51,7 +49,6 @@ describe('buildRoleEntry', () => {
   test('custom + explicit nice_to_have field merges with the stack-derived terms', () => {
     const role = buildRoleEntry({
       label: 'Platform Eng',
-      lane: 'ic',
       titleKeywords: 'platform',
       stack: 'go',
       niceToHave: 'terraform, aws',
@@ -66,14 +63,12 @@ describe('buildRoleEntry', () => {
   test('REGRESSION: a custom role can exceed 60 on a genuinely strong JD (was hard-capped at 60)', () => {
     const entry = buildRoleEntry({
       label: 'Backend Wizard',
-      lane: 'ic',
       titleKeywords: 'backend engineer',
       stack: 'go, kubernetes, postgres',
     });
     const role: RoleConfig = {
       id: entry.id,
       label: entry.label,
-      lane: entry.lane,
       titleKeywords: entry.title_keywords,
       titleExclude: entry.title_exclude ?? [],
       mustHaveStack: entry.must_have_stack,

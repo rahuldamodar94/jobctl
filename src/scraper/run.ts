@@ -147,7 +147,6 @@ export async function runScrape(db: Database.Database, opts: ScrapeOptions = {})
           roles,
           categories,
           log,
-          profile.excludeCategories,
           atsCompanies,
           (companyDone, name) => {
             sourcesDone = atsBase + companyDone;
@@ -190,7 +189,7 @@ export async function runScrape(db: Database.Database, opts: ScrapeOptions = {})
       try {
         const raw = await adapter.fetch(ctx);
         const fresh = raw.filter((j) => !isOlderThan(j.postedDate, profile.maxAgeDays, now));
-        const newCount = ingestBatch(repo, fresh, roles, categories, log, profile.excludeCategories);
+        const newCount = ingestBatch(repo, fresh, roles, categories, log);
         totalNew += newCount;
 
         // A previously-productive source returning 0 jobs = suspect (selector
@@ -231,7 +230,7 @@ export async function runScrape(db: Database.Database, opts: ScrapeOptions = {})
 
     // Rescore ALL active rows against current config — roles.yaml edits take
     // effect every run; scores stay globally consistent.
-    rescoreAll(repo, roles, categories, log, profile.excludeCategories);
+    rescoreAll(repo, roles, categories, log);
 
     // Decay: only for sources that succeeded this run (a broken scraper must
     // not erase its own jobs).
@@ -283,8 +282,7 @@ export function ingestBatch(
   raws: RawJob[],
   roles: ReturnType<typeof loadRoles>,
   categories: ReturnType<typeof loadCategories>,
-  log: (m: string) => void,
-  excludeCategories: string[] = []
+  log: (m: string) => void
 ): number {
   let inserted = 0;
   repo.transaction(() => {
@@ -319,7 +317,6 @@ export function ingestBatch(
         roles
       );
       const category = categorize(raw.title, raw.description, raw.tags, categories);
-      applyCategoryExclusion(match, category, excludeCategories);
       repo.insert({
         ...raw,
         dedupeKey: key,
@@ -338,27 +335,11 @@ export function ingestBatch(
   return inserted;
 }
 
-/** Profile-level category veto: the job stays in the DB (auditably unmatched
- *  with a reason) — deletion would just be undone by the next scrape. */
-function applyCategoryExclusion(
-  match: ReturnType<typeof matchJob>,
-  category: string,
-  excludeCategories: string[]
-): void {
-  if (match.isMatch && excludeCategories.includes(category)) {
-    match.isMatch = false;
-    match.score = 0;
-    match.reasons.roleOutcomes['category'] =
-      `excluded: category '${category}' is in profile exclude_categories`;
-  }
-}
-
 function rescoreAll(
   repo: Repo,
   roles: ReturnType<typeof loadRoles>,
   categories: ReturnType<typeof loadCategories>,
-  log: (m: string) => void,
-  excludeCategories: string[] = []
+  log: (m: string) => void
 ): void {
   const active = repo.allActive();
   repo.transaction(() => {
@@ -372,7 +353,6 @@ function rescoreAll(
         roles
       );
       const cat = categorize(job.title, job.description, job.tags, categories);
-      applyCategoryExclusion(m, cat, excludeCategories);
       repo.updateMatch(job.id, m.isMatch, m.score, m.matchedRoleIds, m.reasons, cat);
     }
   });
@@ -393,7 +373,6 @@ async function runAtsSources(
   roles: ReturnType<typeof loadRoles>,
   categories: ReturnType<typeof loadCategories>,
   log: (m: string) => void,
-  excludeCategories: string[] = [],
   preloadedCompanies?: CompanyConfig[],
   onProgress?: (companyDone: number, company: string) => void
 ): Promise<{ results: SourceRunResult[]; totalNew: number }> {
@@ -415,7 +394,7 @@ async function runAtsSources(
   // published months ago. (Board scrapes DO apply max_age_days: an old listing
   // on an aggregator is probably stale.) The UI date filter shows these via
   // first_seen, so they surface once and then age out of the default view.
-  const jobsNew = ingestBatch(repo, raw, roles, categories, log, excludeCategories);
+  const jobsNew = ingestBatch(repo, raw, roles, categories, log);
 
   const failures = companyResults.filter((r) => r.error);
   const allFailed = failures.length === companyResults.length;

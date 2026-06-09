@@ -1,8 +1,8 @@
 /**
  * Filter bar — status pills (with pipeline counts) on top, refinement controls
- * (search, match, score, recency, source, role, fit, sort) below. Vocabulary
- * (roles/sources/categories) comes from /api/config; counts from /api/stats.
- * Defaults = the daily triage view; refinements narrow the `new` queue only.
+ * (search, match, domain, location, score, recency, fit, sort) below. The Domain
+ * vocabulary comes from /api/config; counts from /api/stats. Defaults = the daily
+ * triage view; refinements narrow the `new` queue only.
  */
 import React from 'react';
 import { Search, RotateCcw } from 'lucide-react';
@@ -32,28 +32,22 @@ export function FilterBar({
   vocab,
   stats,
   judgeEnabled,
+  verdictFilterEnabled,
 }: {
   filters: Filters;
   onChange: (f: Filters) => void;
   defaults: Filters;
-  vocab: Pick<AppConfig, 'roles' | 'sources' | 'categories'>;
+  vocab: Pick<AppConfig, 'categories'>;
   stats: Stats | null;
   judgeEnabled: boolean;
+  /** show the Fit/verdict filter — judge is on AND a rubric exists */
+  verdictFilterEnabled: boolean;
 }) {
   const set = (k: keyof Filters) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     onChange({ ...filters, [k]: e.target.value });
 
-  // role filter as IC/EM lanes: a lane selection maps to the csv of role ids in it
-  const lanes = Array.from(new Set(vocab.roles.map((r) => r.lane)));
-  const idsForLane = (lane: string) => vocab.roles.filter((r) => r.lane === lane).map((r) => r.id).join(',');
-  const currentLane = lanes.find((l) => idsForLane(l) === filters.role) ?? '';
-  const LANE_LABEL: Record<string, string> = { ic: 'IC', em: 'EM' };
-
-  // The server's /api/config already drops excluded categories from
-  // vocab.categories, so its list is authoritative. Only synthesize 'other' when
-  // the server returned NO categories at all (no taxonomy loaded yet) — that way
-  // a deliberately-excluded 'other' can't reappear, while an empty dropdown still
-  // gets the universal fallback. (M8)
+  // The Domain vocabulary from /api/config is authoritative; only synthesize
+  // 'other' when the server returned NO categories at all (no taxonomy loaded yet).
   const cats = vocab.categories.length ? vocab.categories : ['other'];
   const isDefault = JSON.stringify(filters) === JSON.stringify(defaults);
 
@@ -171,35 +165,7 @@ export function FilterBar({
           </select>
         </label>
 
-        {vocab.sources.length > 0 && (
-          <label className="flex items-center gap-1.5">
-            <Label>Source</Label>
-            <select value={filters.source} onChange={set('source')} className={CTRL}>
-              <option value="">all</option>
-              {vocab.sources.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-          </label>
-        )}
-
-        {lanes.length > 1 && (
-          <label className="flex items-center gap-1.5">
-            <Label>Role</Label>
-            <select
-              value={currentLane}
-              onChange={(e) => onChange({ ...filters, role: e.target.value ? idsForLane(e.target.value) : '' })}
-              className={CTRL}
-            >
-              <option value="">all</option>
-              {lanes.map((l) => (
-                <option key={l} value={l}>{LANE_LABEL[l] ?? l.toUpperCase()}</option>
-              ))}
-            </select>
-          </label>
-        )}
-
-        {judgeEnabled && (
+        {verdictFilterEnabled && (
           <label className="flex items-center gap-1.5">
             <Label>Fit</Label>
             <select value={filters.verdict} onChange={set('verdict')} className={CTRL}>

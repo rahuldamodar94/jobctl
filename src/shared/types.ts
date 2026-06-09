@@ -142,8 +142,6 @@ export interface LlmBackendConfig {
 export interface RoleConfig {
   id: string;
   label: string;
-  /** Career lane — drives the UI's IC/EM role filter. */
-  lane: 'ic' | 'em';
   titleKeywords: string[];
   /** Hard-reject titles containing any of these (junior, intern, …). */
   titleExclude?: string[];
@@ -170,14 +168,7 @@ export interface ProfileConfig {
    *  applied to every role. 'remote' is a normal entry. */
   geoPriority: string[];
   geoRelocationOk: string[];
-  resumes: { id: string; label: string; file: string; base?: 'ic' | 'em' }[];
-  /** Categories the user never wants matched (jobs stay in the DB as
-   *  unmatched-with-reason for auditability; deleting them would just get
-   *  them re-inserted by the next scrape). */
-  excludeCategories: string[];
-  /** Resume-generation guardrails — e.g. NDA'd employer names that must
-   *  never appear in generated output. Personal data, so config not code. */
-  resumeRules: { forbiddenTerms: string[] };
+  resumes: { id: string; label: string; file: string }[];
   /** Default triage-filter preferences (seed the UI's default view). */
   uiPrefs: { defaultMinScore?: number; defaultPostedWithin?: number };
   /** Optional LLM features (resume gen + fit-judge). */

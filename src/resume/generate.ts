@@ -96,29 +96,23 @@ export async function generateResume(
   }
   const skill = readFileSync(skillPath, 'utf8');
 
-  // Base resumes: prefer the profile's `resumes[].base` designation (ic|em),
-  // falling back to the legacy fixed filenames for back-compat. Forbidden terms
-  // come from the same profile. A missing/broken profile.yaml degrades to the
-  // legacy filenames + no term guardrails rather than blocking generation.
-  let icFile = 'resume_ic.md';
-  let emFile = 'resume_em.md';
-  let forbiddenTerms: string[] = [];
+  // The single base resume = the first registered entry in profile.resumes
+  // (`file` is relative to profile/, so strip a leading resumes/ for the join).
+  let resumeFile = '';
   try {
-    const profile = loadProfile();
-    forbiddenTerms = profile.resumeRules.forbiddenTerms;
-    const icEntry = profile.resumes.find((x) => x.base === 'ic');
-    const emEntry = profile.resumes.find((x) => x.base === 'em');
-    // entry.file is relative to profile/; strip a leading resumes/ for the join
-    if (icEntry) icFile = icEntry.file.replace(/^resumes\//, '');
-    if (emEntry) emFile = emEntry.file.replace(/^resumes\//, '');
+    const entry = loadProfile().resumes[0];
+    if (entry) resumeFile = entry.file.replace(/^resumes\//, '');
   } catch {
-    /* profile.yaml absent — use legacy filenames, no term guardrails */
+    /* profile.yaml absent/broken — handled by the no-resume error below */
   }
-  const icPath = join(profileDir(), 'resumes', icFile);
-  const emPath = join(profileDir(), 'resumes', emFile);
-  const ic = existsSync(icPath) ? readFileSync(icPath, 'utf8') : '';
-  const em = existsSync(emPath) ? readFileSync(emPath, 'utf8') : ic;
-  if (!ic) throw new Error(`base IC resume not found (profile/resumes/${icFile})`);
+  if (!resumeFile) {
+    throw new Error('no resume configured — add your resume in Settings → Resume first');
+  }
+  const resumePath = join(profileDir(), 'resumes', resumeFile);
+  if (!existsSync(resumePath)) {
+    throw new Error(`base resume not found (profile/resumes/${resumeFile})`);
+  }
+  const resume = readFileSync(resumePath, 'utf8');
 
   const prompt = assembleResumePrompt(
     {
@@ -130,13 +124,11 @@ export async function generateResume(
       url: job.url,
     },
     skill,
-    ic,
-    em,
-    forbiddenTerms
+    resume
   );
 
   const raw = await claudeRunner(prompt);
-  const validated = validateResumeOutput(raw, extractEmail(ic), forbiddenTerms);
+  const validated = validateResumeOutput(raw, extractEmail(resume));
   if (!validated.ok) throw new Error(`generated resume failed validation: ${validated.error}`);
 
   const parsed = parseResumeMarkdown(validated.markdown!);

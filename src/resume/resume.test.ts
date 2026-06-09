@@ -6,15 +6,14 @@ import { parseResumeMarkdown } from './parse.js';
 import { renderResumePdf } from './render-pdf.js';
 
 /**
- * The two real base resumes are the canonical fixtures: the parser and
- * renderer MUST handle them perfectly — generated resumes follow the same
- * structure by contract. Tests skip gracefully if profile/ is absent (CI of
- * a fresh clone), but locally they always run.
+ * A real base resume is the canonical fixture: the parser and renderer MUST
+ * handle it perfectly — generated resumes follow the same structure by contract.
+ * Tests skip gracefully if profile/ is absent (CI of a fresh clone), but locally
+ * they always run.
  */
 const RESUMES_DIR = join(process.cwd(), 'profile', 'resumes');
 const hasFixtures = existsSync(join(RESUMES_DIR, 'resume_ic.md'));
-const icMd = hasFixtures ? readFileSync(join(RESUMES_DIR, 'resume_ic.md'), 'utf8') : '';
-const emMd = hasFixtures ? readFileSync(join(RESUMES_DIR, 'resume_em.md'), 'utf8') : '';
+const baseMd = hasFixtures ? readFileSync(join(RESUMES_DIR, 'resume_ic.md'), 'utf8') : '';
 
 const job = {
   company: 'Ziina',
@@ -26,20 +25,11 @@ const job = {
 };
 
 describe('assembleResumePrompt', () => {
-  const prompt = assembleResumePrompt(job, 'SKILL RULES HERE', '# IC BASE', '# EM BASE');
+  const prompt = assembleResumePrompt(job, 'SKILL RULES HERE', '# BASE RESUME');
 
-  test('forbidden terms render as a hard rule only when configured', () => {
-    const withTerms = assembleResumePrompt(job, 's', '# IC', '# EM', ['SecretCorp', 'OtherCo']);
-    expect(withTerms).toContain('Never mention');
-    expect(withTerms).toContain('SecretCorp');
-    expect(withTerms).toContain('OtherCo');
-    expect(prompt).not.toContain('Never mention'); // no terms → no rule
-  });
-
-  test('contains all four ingredients + the output contract', () => {
+  test('contains the skill doc, the base resume, the job, and the output contract', () => {
     expect(prompt).toContain('SKILL RULES HERE');
-    expect(prompt).toContain('# IC BASE');
-    expect(prompt).toContain('# EM BASE');
+    expect(prompt).toContain('# BASE RESUME');
     expect(prompt).toContain('Ziina');
     expect(prompt).toContain('Senior Backend Engineer');
     expect(prompt).toContain('Build payment services');
@@ -92,16 +82,6 @@ describe('validateResumeOutput', () => {
     expect(r.markdown).toContain('2019-2021 and 2021-2023');
   });
 
-  test('rejects profile-configured forbidden terms (case-insensitive)', () => {
-    const r = validateResumeOutput(valid + ' Built X at SECRETCORP.', EMAIL, ['SecretCorp']);
-    expect(r.ok).toBe(false);
-    expect(r.error).toContain('SecretCorp');
-  });
-
-  test('no forbidden terms configured → nothing rejected on that axis', () => {
-    expect(validateResumeOutput(valid + ' SecretCorp', EMAIL).ok).toBe(true);
-  });
-
   test('rejects output without the contact email', () => {
     const r = validateResumeOutput(valid.replace('jane.doe@example.com', 'someone@else.com'), EMAIL);
     expect(r.ok).toBe(false);
@@ -113,13 +93,13 @@ describe('validateResumeOutput', () => {
   });
 });
 
-describe.skipIf(!hasFixtures)('parseResumeMarkdown on the real base resumes', () => {
+describe.skipIf(!hasFixtures)('parseResumeMarkdown on the real base resume', () => {
   // Assertions are STRUCTURAL (derived from the fixture itself) — committed
   // tests must never hardcode the user's name, employers, or dates.
-  const expectedName = icMd.match(/^# (.+)$/m)?.[1];
+  const expectedName = baseMd.match(/^# (.+)$/m)?.[1];
 
-  test('IC resume parses fully', () => {
-    const p = parseResumeMarkdown(icMd);
+  test('base resume parses fully', () => {
+    const p = parseResumeMarkdown(baseMd);
     expect(p.name).toBe(expectedName);
     expect(p.subtitle.length).toBeGreaterThan(0);
     expect(p.contactLines.length).toBeGreaterThanOrEqual(2);
@@ -127,21 +107,15 @@ describe.skipIf(!hasFixtures)('parseResumeMarkdown on the real base resumes', ()
     const exp = p.sections[1]!;
     const companies = exp.blocks.filter((b) => b.kind === 'company').map((b) => (b as { text: string }).text);
     // every ### company heading in the markdown must come through the parser
-    const mdCompanies = (icMd.match(/^### (.+)$/gm) ?? []).map((l) => l.slice(4));
+    const mdCompanies = (baseMd.match(/^### (.+)$/gm) ?? []).map((l) => l.slice(4));
     expect(companies).toEqual(mdCompanies);
     expect(companies.length).toBeGreaterThanOrEqual(1);
     const bullets = exp.blocks.filter((b) => b.kind === 'bullet');
     expect(bullets.length).toBeGreaterThanOrEqual(8);
   });
 
-  test('EM resume parses fully', () => {
-    const p = parseResumeMarkdown(emMd);
-    expect(p.name).toBe(emMd.match(/^# (.+)$/m)?.[1]);
-    expect(p.sections.map((s) => s.title)).toEqual(['Summary', 'Experience', 'Skills', 'Education']);
-  });
-
   test('role lines carry right-aligned meta (date · location)', () => {
-    const p = parseResumeMarkdown(icMd);
+    const p = parseResumeMarkdown(baseMd);
     const roles = p.sections[1]!.blocks.filter((b) => b.kind === 'role') as { text: string; meta: string }[];
     expect(roles.length).toBeGreaterThanOrEqual(4);
     expect(roles[0]!.text.length).toBeGreaterThan(0);
@@ -178,15 +152,11 @@ describe('ligature canary (ATS text-layer integrity)', () => {
 });
 
 describe.skipIf(!hasFixtures)('renderResumePdf', () => {
-  test('IC base resume renders to exactly one page', async () => {
-    const { buffer, pages } = await renderResumePdf(parseResumeMarkdown(icMd));
+  test('base resume renders to exactly one page', async () => {
+    const { buffer, pages } = await renderResumePdf(parseResumeMarkdown(baseMd));
     expect(pages).toBe(1);
     expect(buffer.length).toBeGreaterThan(3_000);
     expect(buffer.subarray(0, 5).toString()).toBe('%PDF-');
   });
 
-  test('EM base resume renders to exactly one page', async () => {
-    const { pages } = await renderResumePdf(parseResumeMarkdown(emMd));
-    expect(pages).toBe(1);
-  });
 });

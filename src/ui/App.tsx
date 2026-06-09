@@ -47,9 +47,7 @@ const DEFAULT_FILTERS: Filters = {
   status: 'new,interested', // Active view: untriaged queue + things you're tracking
   category: '',
   minScore: '30',
-  source: '',
   postedWithin: '14',
-  role: '',
   match: 'matched',
   location: '',
   sort: 'score',
@@ -78,12 +76,8 @@ export default function App() {
   const [showResume, setShowResume] = useState(false);
   const [demoCount, setDemoCount] = useState(0);
   const [resumeGenEnabled, setResumeGenEnabled] = useState(false);
-  // dropdown vocabulary (roles/sources/categories) — from the user's config
-  const [vocab, setVocab] = useState<Pick<AppConfig, 'roles' | 'sources' | 'categories'>>({
-    roles: [],
-    sources: [],
-    categories: [],
-  });
+  // Domain dropdown vocabulary — from the user's config
+  const [vocab, setVocab] = useState<Pick<AppConfig, 'categories'>>({ categories: [] });
   const [stats, setStats] = useState<Stats | null>(null);
   // How many rows are hidden purely by the Score/Posted refinements — drives the
   // "Show them" rescue when a status looks empty only because its jobs scored low.
@@ -198,7 +192,7 @@ export default function App() {
       if (!c) return; // fetch failed and no last-known config — keep current state
       setConfig(c);
       setResumeGenEnabled(c.resumeGeneration);
-      setVocab({ roles: c.roles ?? [], sources: c.sources ?? [], categories: c.categories ?? [] });
+      setVocab({ categories: c.categories ?? [] });
       // seed the default triage view from the user's saved prefs (once)
       if (!seededRef.current) {
         seededRef.current = true;
@@ -506,6 +500,7 @@ export default function App() {
           vocab={vocab}
           stats={stats}
           judgeEnabled={config?.judgeEnabled ?? false}
+          verdictFilterEnabled={(config?.judgeEnabled ?? false) && (config?.rubricExists ?? false)}
         />
 
         {/* bulk action bar (sticks under the app bar while triaging a selection) */}

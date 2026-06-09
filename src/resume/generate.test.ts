@@ -8,9 +8,9 @@ import { Repo } from '../db/repo.js';
 
 /**
  * generateResume with a mocked claude runner — verifies the full pipeline
- * (skill + bases → prompt → validate → parse → render → files on disk)
- * against a temp profile dir, using the REAL base resumes as the mocked
- * model output (they satisfy the structure contract by definition).
+ * (skill + base resume → prompt → validate → parse → render → files on disk)
+ * against a temp profile dir, using a REAL base resume as the mocked model
+ * output (it satisfies the structure contract by definition).
  */
 
 const REAL_RESUMES = join(process.cwd(), 'profile', 'resumes');
@@ -25,13 +25,12 @@ describe.skipIf(!hasFixtures)('generateResume (mocked claude)', () => {
     dir = mkdtempSync(join(tmpdir(), 'jh-resume-'));
     process.env.PROFILE_DIR = dir;
     mkdirSync(join(dir, 'resumes'), { recursive: true });
-    cpSync(join(REAL_RESUMES, 'resume_ic.md'), join(dir, 'resumes', 'resume_ic.md'));
-    cpSync(join(REAL_RESUMES, 'resume_em.md'), join(dir, 'resumes', 'resume_em.md'));
+    // the single base resume the generator reads (profile.resumes[0].file)
+    cpSync(join(REAL_RESUMES, 'resume_ic.md'), join(dir, 'resumes', 'main.md'));
     writeFileSync(join(dir, 'RESUME_GENERATION_SKILL.md'), '# SKILL\nRules here.');
-    // minimal profile.yaml — exercises the resume_rules.forbidden_terms path
     writeFileSync(
       join(dir, 'profile.yaml'),
-      'name: Test User\nenabled_sources: [jobstash]\nresume_rules:\n  forbidden_terms: [SecretCorp]\n'
+      'name: Test User\nenabled_sources: [jobstash]\nresumes:\n  - id: main\n    label: My Resume\n    file: resumes/main.md\n'
     );
 
     db = new Database(':memory:');
@@ -75,7 +74,7 @@ describe.skipIf(!hasFixtures)('generateResume (mocked claude)', () => {
   test('writes md + pdf + meta under profile/generated and returns paths', async () => {
     const { generateResume } = await freshGenerate();
     const baseIc = readFileSync(join(REAL_RESUMES, 'resume_ic.md'), 'utf8');
-    // mocked model: return the IC base, em-dashes replaced per the output contract
+    // mocked model: return the base resume, em-dashes replaced per the output contract
     const mocked = async () => baseIc.replaceAll('—', '-');
 
     const result = await generateResume(db, jobId, mocked);
@@ -137,14 +136,6 @@ describe.skipIf(!hasFixtures)('generateResume (mocked claude)', () => {
     const result = await generateResume(db, jobId, async () => baseIc);
     expect(result.markdown).not.toMatch(/[—–]/);
     expect(result.pages).toBe(1);
-  });
-
-  test('profile forbidden term in model output is rejected', async () => {
-    const { generateResume } = await freshGenerate();
-    const baseIc = readFileSync(join(REAL_RESUMES, 'resume_ic.md'), 'utf8');
-    await expect(
-      generateResume(db, jobId, async () => baseIc.replaceAll('—', '-') + '\n- Led platform work at SecretCorp')
-    ).rejects.toThrow(/SecretCorp/);
   });
 
   test('truly invalid model output (preamble chatter) is still rejected', async () => {

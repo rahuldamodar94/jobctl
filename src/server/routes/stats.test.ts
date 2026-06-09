@@ -6,7 +6,7 @@ import { buildStats } from './stats.js';
 
 /**
  * Stats mirror the DEFAULT (matched) list lens, not a raw status tally:
- * unmatched jobs are an audit lane (match=unmatched, global) — they must NOT
+ * unmatched jobs are an audit view (match=unmatched, global) — they must NOT
  * inflate the `new` pill. So `new` counts matched rows only; triaged rows
  * always count regardless of match (refinement-on-new-only — same rule as
  * buildJobsFilter). Otherwise the pill screams "2158 new" while the default

@@ -6,7 +6,7 @@ import { buildJobsFilter } from './jobs.js';
  * GET /api/stats — pipeline counts by status over ACTIVE jobs, for the
  * status-pill row. Global (not affected by the other refinement filters) — but
  * it mirrors the DEFAULT (matched) lens: unmatched jobs are an explicit audit
- * lane (match=unmatched), NOT part of the triage pipeline, so they must not
+ * view (match=unmatched), NOT part of the triage pipeline, so they must not
  * inflate the `new` count. Same rule as buildJobsFilter's default:
  *   (is_match = 1 OR status <> 'new')
  * i.e. `new` counts matched rows only; already-triaged rows always count

@@ -7,7 +7,7 @@ import { loadRoleTemplates, rolesFileSchema, loadDomains } from './load.js';
 /**
  * Role templates are committed community seed data. These guards protect the
  * two contracts the picker depends on: every template is a USABLE role, and the
- * file stays internally consistent (unique ids, real lanes).
+ * file stays internally consistent (unique ids).
  */
 
 const RAW = parse(readFileSync(join(process.cwd(), 'config', 'role-templates.yaml'), 'utf8')) as {
@@ -29,7 +29,6 @@ describe('role-templates.yaml', () => {
     for (const t of templates) {
       expect(t.id).toBeTruthy();
       expect(t.label).toBeTruthy();
-      expect(['ic', 'em']).toContain(t.lane);
       expect(t.titleKeywords.length).toBeGreaterThan(0);
       expect(t.mustHaveStack.length).toBeGreaterThan(0);
     }
@@ -48,10 +47,6 @@ describe('role-templates.yaml', () => {
       throw new Error(result.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('\n'));
     }
     expect(result.success).toBe(true);
-  });
-
-  test('at least one engineering-management (em) template exists', () => {
-    expect(templates.some((t) => t.lane === 'em')).toBe(true);
   });
 
   test('missing file degrades to [] (optional convenience, never fatal)', () => {

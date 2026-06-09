@@ -211,19 +211,6 @@ describe('GET /api/jobs WHERE builder', () => {
     expect(r.body.jobs.map((j: any) => j.company)).toEqual(['DubaiCo']);
   });
 
-  test('role filter accepts a csv of ids (lane expansion) and ORs them', async () => {
-    const repo = new Repo(db);
-    repo.insert(makeInput({ company: 'EMCo', matchedRoleIds: ['engineering_manager'], dedupeKey: 'em1' }));
-    // senior_backend OR engineering_manager → both Plasma-style IC rows and EMCo
-    const r = await get(app, '/api/jobs?status=new&role=senior_backend,engineering_manager');
-    const names = r.body.jobs.map((j: any) => j.company);
-    expect(names).toContain('EMCo');
-    expect(names).toContain('Plasma');
-    // a lane with only the EM id returns just EM rows
-    const emOnly = await get(app, '/api/jobs?status=new&role=engineering_manager');
-    expect(emOnly.body.jobs.map((j: any) => j.company)).toEqual(['EMCo']);
-  });
-
   test('sort=date orders by recency; default orders by score', async () => {
     const repo = new Repo(db);
     // give Plasma an old posted_date, a fresh low-score job a recent one

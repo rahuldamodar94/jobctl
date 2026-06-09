@@ -7,7 +7,6 @@ import type { RoleConfig } from '../shared/types.js';
 const seniorBackend: RoleConfig = {
   id: 'senior_backend',
   label: 'Senior Backend Engineer',
-  lane: 'ic',
   titleKeywords: ['senior backend', 'staff backend', 'senior software engineer', 'backend engineer', 'tech lead', 'technical lead'],
   mustHaveStack: ['typescript', 'node.js', 'node', 'javascript'],
   niceToHave: {
@@ -36,7 +35,6 @@ const seniorBackend: RoleConfig = {
 const em: RoleConfig = {
   id: 'engineering_manager',
   label: 'Engineering Manager',
-  lane: 'em',
   titleKeywords: ['engineering manager', 'head of engineering'],
   mustHaveStack: ['typescript', 'node', 'backend'],
   niceToHave: { hiring: 5, 'hands-on': 8, roadmap: 5 },

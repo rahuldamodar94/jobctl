@@ -16,12 +16,8 @@ export interface ResumeJobInput {
 export function assembleResumePrompt(
   job: ResumeJobInput,
   skillText: string,
-  resumeIcMd: string,
-  resumeEmMd: string,
-  /** profile resume_rules.forbidden_terms — e.g. NDA'd employer names. */
-  forbiddenTerms: string[] = []
+  resumeMd: string
 ): string {
-  // numbered dynamically so the list stays consistent when no terms are configured
   const hardRules = [
     [
       'ABSOLUTELY NO em dashes (—) or en dashes (–) anywhere. LLMs habitually write "X — Y";',
@@ -30,9 +26,6 @@ export function assembleResumePrompt(
       '     RIGHT: "shipped the indexer, cutting latency 40%"',
       '   Date ranges and role lines use a plain hyphen: "2019-2021", "**Title** - 2019-2021 · London".',
     ].join('\n'),
-    ...(forbiddenTerms.length
-      ? [`Never mention ${forbiddenTerms.join(', ')} under any circumstances.`]
-      : []),
     'Only skills approved by the skill document; honest content only, never invent facts or metrics.',
     'Keep the exact contact details (email, phone, links) from the base resume.',
   ].map((rule, i) => `${i + 1}. ${rule}`);
@@ -43,11 +36,8 @@ export function assembleResumePrompt(
     '=== SKILL DOCUMENT (rules, canonical facts, hard constraints) ===',
     skillText,
     '',
-    '=== BASE RESUME: IC ===',
-    resumeIcMd,
-    '',
-    '=== BASE RESUME: EM ===',
-    resumeEmMd,
+    '=== BASE RESUME ===',
+    resumeMd,
     '',
     '=== TARGET JOB ===',
     `Company: ${job.company}`,
@@ -60,7 +50,7 @@ export function assembleResumePrompt(
     '',
     '=== OUTPUT CONTRACT ===',
     'Return ONLY the tailored resume as markdown, nothing else: no preamble, no commentary, no code fences.',
-    'Use the EXACT structure of the base resumes:',
+    'Use the EXACT structure of the base resume:',
     '  # Name',
     '  subtitle line',
     '  contact line(s)',
@@ -91,12 +81,10 @@ export function extractEmail(baseResumeMd: string): string | null {
   return baseResumeMd.match(/[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/i)?.[0] ?? null;
 }
 
-/** Sanity-check (and lightly clean) the model output before rendering.
- *  forbiddenTerms come from profile resume_rules — never hardcode them here. */
+/** Sanity-check (and lightly clean) the model output before rendering. */
 export function validateResumeOutput(
   raw: string,
-  expectedEmail?: string | null,
-  forbiddenTerms: string[] = []
+  expectedEmail?: string | null
 ): ValidationResult {
   let md = raw.trim();
 
@@ -115,10 +103,6 @@ export function validateResumeOutput(
   if (!md.includes('\n## ')) return { ok: false, error: 'no "## Section" headings found' };
   if (md.length < 1000) return { ok: false, error: `output too short (${md.length} chars) — truncated?` };
   if (md.length > 8000) return { ok: false, error: `output too long (${md.length} chars) — not one page` };
-  for (const term of forbiddenTerms) {
-    const re = new RegExp(term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
-    if (re.test(md)) return { ok: false, error: `mentions "${term}" (profile forbidden term)` };
-  }
   if (expectedEmail && !md.includes(expectedEmail)) {
     return { ok: false, error: 'contact email missing — output likely malformed' };
   }

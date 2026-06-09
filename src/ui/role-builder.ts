@@ -17,7 +17,6 @@ export const toList = (s: string): string[] => s.split(',').map((x) => x.trim())
 export interface RoleEntry {
   id: string;
   label: string;
-  lane: 'ic' | 'em';
   title_keywords: string[];
   must_have_stack: string[];
   title_exclude?: string[];
@@ -48,19 +47,17 @@ export function deriveCustomNiceToHave(stack: string[], extra: string[] = []): R
 
 export function buildRoleEntry(input: {
   label: string;
-  lane: 'ic' | 'em';
   titleKeywords: string;
   stack: string;
   /** custom-role only: optional comma-separated extra nice-to-have terms */
   niceToHave?: string;
   template?: RoleTemplate;
 }): RoleEntry {
-  const { label, lane, titleKeywords, stack, niceToHave, template } = input;
+  const { label, titleKeywords, stack, niceToHave, template } = input;
   const stackList = toList(stack);
   return {
     id: slug(label),
     label: label.trim(),
-    lane,
     title_keywords: toList(titleKeywords),
     must_have_stack: stackList,
     ...(template

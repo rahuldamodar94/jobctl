@@ -1,7 +1,7 @@
 /**
- * Parse the resume-markdown structure (the exact shape of the base resumes,
+ * Parse the resume-markdown structure (the exact shape of the base resume,
  * which the generation contract requires) into typed blocks for the PDF
- * renderer. Pure function, fixture-tested against the real base resumes.
+ * renderer. Pure function, fixture-tested against the real base resume.
  */
 
 export interface TextRun {

@@ -9,7 +9,6 @@ const ROLES: RoleConfig[] = [
   {
     id: 'senior_backend',
     label: 'SB',
-    lane: 'ic',
     titleKeywords: ['backend engineer'],
     mustHaveStack: ['typescript'],
     niceToHave: {},
@@ -89,21 +88,6 @@ describe('ingestBatch dedup policy (reviewer gap — cross-board)', () => {
     const all = repo.allActive();
     expect(all).toHaveLength(1);
     expect(all[0]!.status).toBe('dismissed');
-  });
-
-  test('profile exclude_categories: ai-category jobs are unmatched with a clear reason', () => {
-    ingestBatch(
-      repo,
-      [raw({ description: 'TypeScript backend for our LLM agent platform. '.repeat(10), externalId: 'ai1' })],
-      ROLES,
-      { order: ['ai', 'web2'], fallback: 'web2', keywords: { ai: ['llm'] } },
-      () => {},
-      ['ai'] // profile-level category exclusion
-    );
-    const j = repo.allActive()[0]!;
-    expect(j.category).toBe('ai');
-    expect(j.isMatch).toBe(false);
-    expect(JSON.stringify(j.matchReasons)).toContain('exclude_categories');
   });
 
   test('company-name suffix variant merges (tether ↔ tether operations)', () => {
