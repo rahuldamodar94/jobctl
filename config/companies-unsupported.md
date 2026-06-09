@@ -32,7 +32,6 @@ here.)
 - **Privy** — https://jobs.ashbyhq.com/privy (posting-api disabled)
 - **Caldera** — https://jobs.ashbyhq.com/caldera (posting-api disabled)
 - **Chainlink Labs** — https://jobs.ashbyhq.com/chainlink-labs (posting-api disabled)
-- **Coinbase** — Greenhouse board exists, API returns 0; jobs live on coinbase.com/careers
 - **dYdX** — former Greenhouse board now 404s; https://dydx.exchange/careers
 - **Clerk** — https://jobs.ashbyhq.com/Clerk (live board, 0 open roles at probe)
 - **Mural Pay** — jobs.ashbyhq.com/muralpay 404'd after initial verification — board removed
@@ -86,7 +85,7 @@ genuinely thin — the wins are the few on Lever/Ashby/Greenhouse already added.
 Most Gulf/Egypt fintech, e-commerce and crypto run on **custom portals,
 Pinpoint, SmartRecruiters, or local boards (Bayt/Wuzzuf)**. Probed 0 / not found
 on Greenhouse/Lever/Ashby/Recruitee: Paymob, MoneyHash, Telda, ValU, Khazna,
-MNT-Halan/Lucky, Foodics, Tabby (Pinpoint, already noted), Tamara (Greenhouse
+MNT-Halan/Lucky, Tabby (Pinpoint, already noted), Tamara (Greenhouse
 **EU** — needs auth), Nymcard, Mamo, Pemo, Qashio, Alaan, Multiply, Floward,
 eyewa, Cartlow, Sarwa, Baraka, Tarabut, Huspy, Wio, Zywa, Flapkap, BitOasis,
 Fuze, CoinMENA, Swvl, Trella, MoneyFellows, Instabug. (Supported-ATS MENA wins

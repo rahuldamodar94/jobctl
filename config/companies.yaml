@@ -1295,6 +1295,9 @@ companies:
     careers_url: https://jobs.lever.co/jumpcloud
     domains: [security, saas]
   # --- fintech (MENA / Gulf / India) ---
+  - name: Foodics
+    careers_url: https://apply.workable.com/foodics
+    domains: [fintech]
   - name: HALA
     careers_url: https://boards.greenhouse.io/hala
     domains: [fintech]
