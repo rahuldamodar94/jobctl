@@ -70,5 +70,7 @@ sources:
       limit: 20
       pages: 5
 
-  # ATS sources (greenhouse/lever/ashby) are NOT listed here — they are driven
-  # by profile/companies.yaml. Enable them via enabled_sources: [ats, ...].
+  # ATS sources (greenhouse/lever/ashby/recruitee/workable/teamtailor/personio/
+  # breezy/pinpoint — 9 providers) are NOT listed here. They are driven by the
+  # committed company registry (config/companies.yaml): each company's careers_url
+  # auto-detects to a provider+slug. Enable them via enabled_sources: [ats, ...].
