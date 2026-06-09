@@ -19,6 +19,7 @@ import { statsRouter } from './routes/stats.js';
 import { settingsRouter } from './routes/settings.js';
 import { judgeRouter } from './routes/judge.js';
 import { demoRouter } from './routes/demo.js';
+import { importRouter } from './routes/import.js';
 
 const PORT = Number(process.env.PORT ?? 3000);
 // Bind loopback only by default — this is a single-user, no-auth tool, so it
@@ -70,6 +71,7 @@ app.use('/api/settings', settingsRouter());
 app.use('/api', resumeGenRouter(db));
 app.use('/api', judgeRouter(repo));
 app.use('/api', demoRouter(repo));
+app.use('/api', importRouter(repo));
 
 // Static UI (production build). In dev, Vite serves the UI with a proxy.
 const uiDist = join(process.cwd(), 'dist', 'ui');

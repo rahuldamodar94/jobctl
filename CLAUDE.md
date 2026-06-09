@@ -109,6 +109,7 @@ CONFIG (yaml)                  SCRAPE PIPELINE (src/scraper/run.ts)
                                 /api/export.csv /api/resumes /api/config
                                 /api/settings (in-app config editor)
                                 /api/demo (sample data)
+                                /api/import (+ /import/prompt — user-driven import)
                                 + dist/ui
                                          │
                                 React triage page (src/ui)
@@ -119,7 +120,9 @@ CONFIG (yaml)                  SCRAPE PIPELINE (src/scraper/run.ts)
 - Board: `{ id, fetch(ctx): Promise<RawJob[]> }` in `src/sources/boards/` + an
   entry in `config/sources.yaml`.
 - ATS: `detect(careersUrl) → {provider, slug}` (greenhouse incl. `?for=` embed
-  form, lever, ashby) + `fetch{Greenhouse,Lever,Ashby}` in `src/sources/ats/`.
+  form, lever, ashby, recruitee, workable, teamtailor, personio, breezy, pinpoint
+  — 9 providers) + a `fetch<Provider>` per provider in `src/sources/ats/` (the
+  `FETCHERS` map in `index.ts`).
 - **Invariant:** ATS adapters write `source_id = 'ats:<provider>'` — the decay
   loop expands the aggregate `ats` result to exactly these ids.
 
@@ -192,9 +195,12 @@ CONFIG (yaml)                  SCRAPE PIPELINE (src/scraper/run.ts)
   delivery model IS the value. Deep PM research 2026-06-08; a different product.
 - **scraping LinkedIn / Indeed / Naukri / X** — account bans, active LinkedIn
   litigation, killed/paid APIs, anti-bot maintenance treadmill; breaks the
-  no-headless-browser design. Coverage of these is intended via a user-driven
-  local *import* of the user's own session (planned, not currently built — a v2
-  import endpoint was removed in v3 as incomplete), never server-side scraping.
+  no-headless-browser design. Coverage is instead via a **user-driven import of
+  the user's own session** — BUILT (Phase 1+2): `POST /api/import` ingests a
+  normalized payload (manual paste OR the Claude Chrome extension running the
+  config-generated prompt in the user's own browser) through the same dedupe →
+  match → judge pipeline. The server NEVER scrapes LinkedIn. See
+  `docs/linkedin-import.md`.
 - **going generic across ALL industries** — scope is the *software industry*
   (any role). Non-tech industries need different boards + non-self-host-capable
   users; out of scope.
@@ -321,17 +327,20 @@ optional browser-extension capture — design-gated; the v2 attempt was removed)
   suggest `nice_to_have` weight changes; deliberately a suggestion-printer, not
   an auto-tuner (weights stay human-owned in config). Needs ~50+ decisions.
 
-- Recruitee: `GET https://{slug}.recruitee.com/api/offers/`
-- SmartRecruiters: `GET https://api.smartrecruiters.com/v1/companies/{slug}/postings?limit=100&offset=N&status=PUBLIC`
-- Workable: `GET https://apply.workable.com/{slug}/jobs.md` (markdown table)
-- Teamtailor: `GET https://{slug}.teamtailor.com/jobs.rss`  ← unlocks Reap + Crossmint
+- SmartRecruiters: `GET https://api.smartrecruiters.com/v1/companies/{slug}/postings?limit=100&offset=N&status=PUBLIC` (no JD in list → N+1 per posting; exact case-sensitive slug)
 - Workday: `POST https://{co}.{shard}.myworkdayjobs.com/wday/cxs/{co}/{site}/jobs`
-  body `{"appliedFacets":{},"limit":20,"offset":0,"searchText":""}`
-- Greenhouse EU (`boards.eu.greenhouse.io`) — public API requires auth; needs research
+  body `{"appliedFacets":{},"limit":20,"offset":0,"searchText":""}` (needs per-company {shard,site} discovery + N+1)
+- Greenhouse EU (`boards.eu.greenhouse.io`) — no public EU API (`boards-api.eu…` is NXDOMAIN; EU board is a JS SPA) → user-import only
 
 ### Current ATS endpoints (in use)
 
 - Greenhouse: `GET https://boards-api.greenhouse.io/v1/boards/{slug}/jobs?content=true`
 - Lever: `GET https://api.lever.co/v0/postings/{slug}?mode=json`
 - Ashby: `GET https://api.ashbyhq.com/posting-api/job-board/{slug}?includeCompensation=true` (30s timeout; slugs case-sensitive)
+- Recruitee: `GET https://{slug}.recruitee.com/api/offers/`
+- Workable: `GET https://apply.workable.com/api/v1/widget/accounts/{slug}?details=true` (JSON, full JD inline — NOT the older `/jobs.md` stub)
+- Teamtailor: `GET https://{slug}.teamtailor.com/jobs.rss` (RSS; full JD in `<description>` CDATA; the whole subdomain incl. region label like `crossmint.na` is the slug)
+- Personio: `GET https://{slug}.jobs.personio.com/xml` (XML; JD in `<jobDescription>` CDATA)
+- Breezy: `GET https://{slug}.breezy.hr/json` (list-only — no public per-job JD; title+location → matcher short-JD path)
+- Pinpoint: `GET https://{slug}.pinpointhq.com/postings.json` (JSON; JD + salary inline; no posted date → first_seen governs)
 - jobstash: `GET https://middleware.jobstash.xyz/jobs/list?page=N&limit=M`
