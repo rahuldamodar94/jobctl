@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:tt="https://teamtailor.com/locations">
+  <channel>
+    <title>Crossmint</title>
+    <description>Open Roles</description>
+    <link>https://crossmint.na.teamtailor.com/jobs</link>
+    <item>
+      <title>Full-stack Engineer - Payments (Spain)</title>
+      <description>&lt;h3&gt;&lt;strong&gt;About Crossmint&lt;/strong&gt;&lt;/h3&gt;&lt;p&gt;We build stablecoin infrastructure. You will work with &lt;strong&gt;TypeScript&lt;/strong&gt; and Node.js.&lt;/p&gt;</description>
+      <pubDate>Tue, 18 Feb 2025 10:41:45 -0500</pubDate>
+      <link>https://crossmint.na.teamtailor.com/jobs/110042-full-stack-engineer-payments-spain</link>
+      <remoteStatus>hybrid</remoteStatus>
+      <guid>23017354-9c3a-4773-aa44-bdeb8b536e71</guid>
+      <tt:locations>
+        <tt:location>
+          <tt:name>Madrid</tt:name>
+          <tt:address>Calle de Serrano, 41</tt:address>
+          <tt:zip>28001</tt:zip>
+          <tt:city>Madrid</tt:city>
+          <tt:country>Spain</tt:country>
+        </tt:location>
+      </tt:locations>
+    </item>
+    <item>
+      <title>Senior Backend Engineer</title>
+      <description>&lt;p&gt;Fully remote role. Work in &lt;strong&gt;Rust&lt;/strong&gt;.&lt;/p&gt;</description>
+      <pubDate>Mon, 02 Jun 2025 09:00:00 -0500</pubDate>
+      <link>https://crossmint.na.teamtailor.com/jobs/110099-senior-backend-engineer</link>
+      <remoteStatus>fully</remoteStatus>
+      <guid>aa017354-1111-2222-3333-bdeb8b536e71</guid>
+      <tt:locations>
+        <tt:location>
+          <tt:name>United Kingdom</tt:name>
+          <tt:address>United Kingdom</tt:address>
+          <tt:zip/>
+          <tt:city>United Kingdom</tt:city>
+          <tt:country>United Kingdom</tt:country>
+        </tt:location>
+      </tt:locations>
+    </item>
+  </channel>
+</rss>

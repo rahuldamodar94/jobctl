@@ -5,12 +5,22 @@ import { fetchGreenhouse } from './greenhouse.js';
 import { fetchLever } from './lever.js';
 import { fetchAshby } from './ashby.js';
 import { fetchRecruitee } from './recruitee.js';
+import { fetchWorkable } from './workable.js';
+import { fetchTeamtailor } from './teamtailor.js';
+import { fetchPersonio } from './personio.js';
+import { fetchBreezy } from './breezy.js';
+import { fetchPinpoint } from './pinpoint.js';
 
 const FETCHERS: Record<AtsProvider, (http: PoliteHttp, slug: string, company: string) => Promise<RawJob[]>> = {
   greenhouse: fetchGreenhouse,
   lever: fetchLever,
   ashby: fetchAshby,
   recruitee: fetchRecruitee,
+  workable: fetchWorkable,
+  teamtailor: fetchTeamtailor,
+  personio: fetchPersonio,
+  breezy: fetchBreezy,
+  pinpoint: fetchPinpoint,
 };
 
 export interface AtsCompanyResult {
@@ -36,7 +46,7 @@ export async function fetchAtsCompanies(
         company: c.name,
         provider: null,
         jobs: [],
-        error: `cannot detect ATS from ${c.careersUrl} — supported: greenhouse/lever/ashby/recruitee board URLs`,
+        error: `cannot detect ATS from ${c.careersUrl} — supported: greenhouse/lever/ashby/recruitee/workable/teamtailor/personio/breezy/pinpoint board URLs`,
       });
       continue;
     }

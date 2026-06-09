@@ -51,7 +51,18 @@ test('payload reflects the user config: roles, ats-expanded sources, category or
 
   const payload = (await freshBuild())();
   expect(payload.roles).toEqual([{ id: 'gameplay_programmer', label: 'Gameplay Programmer', lane: 'ic' }]);
-  expect(payload.sources).toEqual(['jobstash', 'ats:greenhouse', 'ats:lever', 'ats:ashby', 'ats:recruitee']);
+  expect(payload.sources).toEqual([
+    'jobstash',
+    'ats:greenhouse',
+    'ats:lever',
+    'ats:ashby',
+    'ats:recruitee',
+    'ats:workable',
+    'ats:teamtailor',
+    'ats:personio',
+    'ats:breezy',
+    'ats:pinpoint',
+  ]);
   expect(payload.categories).toEqual(['gaming', 'web2', 'other']);
   expect(payload.roleTemplates).toEqual([]); // no role-templates.yaml in this temp config dir
   expect(typeof payload.resumeGeneration).toBe('boolean');

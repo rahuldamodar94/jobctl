@@ -1,0 +1,38 @@
+[
+  {
+    "id": "0af807f96bbb",
+    "friendly_id": "0af807f96bbb-associate-counsel",
+    "name": "Associate Counsel",
+    "url": "https://zero-hash.breezy.hr/p/0af807f96bbb-associate-counsel",
+    "published_date": "2026-05-20T17:36:38.223Z",
+    "type": { "id": "fullTime", "name": "Full-Time" },
+    "location": {
+      "country": { "name": "United States", "id": "US" },
+      "state": { "id": "IL", "name": "Illinois" },
+      "city": "Chicago",
+      "is_remote": true,
+      "remote_details": { "value": "remote", "label": "Fully remote, no location restrictions" },
+      "name": "Chicago, IL"
+    }
+  },
+  {
+    "id": "bbb111",
+    "friendly_id": "bbb111-backend-engineer",
+    "name": "Backend Engineer",
+    "url": "https://zero-hash.breezy.hr/p/bbb111-backend-engineer",
+    "published_date": "2026-06-01T09:00:00.000Z",
+    "type": { "id": "fullTime", "name": "Full-Time" },
+    "location": {
+      "country": { "name": "Singapore", "id": "SG" },
+      "city": "Singapore",
+      "is_remote": false,
+      "remote_details": { "value": "no", "label": "No remote" },
+      "name": "Singapore"
+    }
+  },
+  {
+    "id": "ccc222",
+    "name": "",
+    "url": "https://zero-hash.breezy.hr/p/ccc222"
+  }
+]

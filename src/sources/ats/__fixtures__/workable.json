@@ -1,0 +1,43 @@
+{
+  "name": "Acme",
+  "description": "<p>About Acme</p>",
+  "jobs": [
+    {
+      "title": "Product Manager - Merchant Experience",
+      "shortcode": "2EB3D29E9B",
+      "code": "",
+      "telecommuting": true,
+      "department": "Product",
+      "url": "https://apply.workable.com/j/2EB3D29E9B",
+      "application_url": "https://apply.workable.com/j/2EB3D29E9B/apply",
+      "published_on": "2026-04-27",
+      "created_at": "2026-04-27",
+      "country": "United Kingdom",
+      "city": "",
+      "state": "",
+      "locations": [
+        { "country": "United Kingdom", "countryCode": "GB", "city": "", "region": null },
+        { "country": "Portugal", "countryCode": "PT", "city": "", "region": null }
+      ],
+      "description": "<p>Own the agentic <strong>roadmap</strong>.</p><ul><li>TypeScript</li><li>Node.js</li></ul>"
+    },
+    {
+      "title": "Backend Engineer",
+      "shortcode": "ABC123",
+      "telecommuting": false,
+      "url": "https://apply.workable.com/j/ABC123",
+      "published_on": "2026-05-01",
+      "country": "Germany",
+      "city": "Berlin",
+      "state": "",
+      "locations": [],
+      "description": "<p>Build APIs in Go.</p>"
+    },
+    {
+      "title": "",
+      "shortcode": "SKIP",
+      "url": "https://apply.workable.com/j/SKIP",
+      "description": "<p>no title — skipped</p>"
+    }
+  ]
+}

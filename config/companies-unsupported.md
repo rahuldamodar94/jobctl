@@ -1,27 +1,29 @@
 # Companies considered but not yet supported
 
 Every company researched whose jobs we can't pull via the supported ATS APIs
-(Greenhouse / Lever / Ashby / **Recruitee**) today. Endpoint patterns for the
-next ATS adapters are documented in CLAUDE.md. Re-probe before assuming anything
-here is still unavailable — boards move. (Recruitee is now a supported adapter,
-so former Recruitee entries that have live offers were promoted to
-companies.yaml — e.g. Tether.)
+today. Supported adapters now: **Greenhouse / Lever / Ashby / Recruitee /
+Workable / Teamtailor / Personio / Breezy / Pinpoint**. Endpoint patterns for
+the next ATS adapters (SmartRecruiters / Workday / Comeet) are documented in
+CLAUDE.md. Re-probe before assuming anything here is still unavailable — boards
+move. (When an adapter ships, former entries with live jobs are promoted to
+companies.yaml — e.g. Tether on Recruitee; WalletConnect/Crossmint/Safe/Zero
+Hash/Tabby on the Phase-1 multi-ATS adapters, 2026-06-09.)
 
-## On a known ATS we don't support yet (best v2 adapter targets)
+## On a known ATS we don't support yet (best next-adapter targets)
+
+(WalletConnect/Workable, Crossmint/Teamtailor, Safe + Gnosis Pay/Personio,
+Zero Hash + Bitwave/Breezy, Tabby/Pinpoint were PROMOTED to companies.yaml when
+the Phase-1 multi-ATS adapters shipped — 2026-06-09 — and are no longer listed
+here.)
 
 | Company | ATS | URL |
 |---|---|---|
-| Reap | Teamtailor | https://careers.reap.global/jobs (~23 jobs at probe) |
-| WalletConnect | Workable | https://apply.workable.com/walletconnect/ |
-| Crossmint | Teamtailor | https://crossmint.na.teamtailor.com/ |
-| Zero Hash | Breezy HR | https://zero-hash.breezy.hr/ |
-| Safe | Personio | https://safe-labs.jobs.personio.com |
+| Reap | Teamtailor | reap.teamtailor.com is reachable but shows only "DEMO –" placeholder roles at probe (careers.reap.global is Cloudflare-blocked); re-check for real openings |
 | M2 | Recruitee | https://m2.recruitee.com/ (0 open roles at probe) |
 | Circle | Workday | https://careers.circle.com |
 | StarkWare | Comeet | https://www.comeet.com/jobs/starkware/C6.00E |
 | Ondo Finance | Gem | https://jobs.gem.com/ondo-finance |
 | CoinSwitch | RecruiterFlow | https://recruiterflow.com/coinswitch/jobs |
-| Tabby | Pinpoint | https://tabby.pinpointhq.com/ |
 | Talabat | Delivery Hero | https://careers.deliveryhero.com/talabat |
 | Ramp Network | Greenhouse **EU** | boards.eu.greenhouse.io/rampnetwork — the public boards-api requires auth for EU boards |
 

@@ -85,7 +85,7 @@ companies:
     careers_url: https://boards.greenhouse.io/vercel
     domains: [ai-ml, devtools]
 
-  # ----- Fintech & payments (37) ------------------------------------------
+  # ----- Fintech & payments (38) ------------------------------------------
   - name: Affirm
     careers_url: https://boards.greenhouse.io/affirm
     domains: [fintech]
@@ -197,8 +197,12 @@ companies:
   - name: Ziina
     careers_url: https://jobs.ashbyhq.com/ziina
     domains: [fintech]
+  # Phase-1 multi-ATS adapters (Pinpoint) — verified 2026-06-09
+  - name: Tabby
+    careers_url: https://tabby.pinpointhq.com/
+    domains: [fintech]
 
-  # ----- Crypto / web3 (69) -----------------------------------------------
+  # ----- Crypto / web3 (73) -----------------------------------------------
   - name: 1inch
     careers_url: https://jobs.lever.co/1inch
     domains: [crypto]
@@ -407,6 +411,26 @@ companies:
   - name: Wormhole Labs
     careers_url: https://jobs.ashbyhq.com/wormholelabs
     domains: [crypto, cloud-infra]
+  # Phase-1 multi-ATS adapters (Workable / Teamtailor / Personio / Breezy) —
+  # all verified 2026-06-09 (returned real job JSON).
+  - name: Bitwave
+    careers_url: https://bitwave.breezy.hr/
+    domains: [crypto, fintech]
+  - name: Crossmint
+    careers_url: https://crossmint.na.teamtailor.com/
+    domains: [crypto, fintech]
+  - name: Gnosis Pay
+    careers_url: https://gnosis.jobs.personio.com/
+    domains: [crypto, fintech]
+  - name: Safe
+    careers_url: https://safe-labs.jobs.personio.com/
+    domains: [crypto]
+  - name: WalletConnect
+    careers_url: https://apply.workable.com/walletconnect
+    domains: [crypto]
+  - name: Zero Hash
+    careers_url: https://zero-hash.breezy.hr/
+    domains: [crypto, fintech]
 
   # ----- Developer tools & platforms (13) ---------------------------------
   - name: Composio

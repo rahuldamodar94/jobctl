@@ -1,0 +1,38 @@
+{
+  "data": [
+    {
+      "id": "196855",
+      "title": "Customer Support Representative",
+      "url": "https://tabby.pinpointhq.com/en/postings/53c2f99c-2300-4c56-9b75-5cfe3569b263",
+      "description": "<p>Help customers with <strong>payments</strong>.</p>",
+      "key_responsibilities": "<ul><li>Answer tickets</li><li>Escalate issues</li></ul>",
+      "skills_knowledge_expertise": "<p>Fluent English and Arabic.</p>",
+      "benefits": "<p>Base salary plus bonus.</p>",
+      "employment_type_text": "Full-time",
+      "workplace_type": "onsite",
+      "location": { "id": "25431", "city": "Cairo", "name": "Egypt", "province": "Cairo" },
+      "compensation": "ر.س6,000 - ر.س7,500 / month",
+      "compensation_minimum": 6000,
+      "compensation_maximum": 7500,
+      "compensation_currency": "SAR",
+      "compensation_frequency": "month",
+      "compensation_visible": true
+    },
+    {
+      "id": "196900",
+      "title": "Senior Backend Engineer",
+      "url": "https://tabby.pinpointhq.com/en/postings/aaa",
+      "description": "<p>Build payment APIs in Go.</p>",
+      "workplace_type": "remote",
+      "location": { "id": "1", "city": "Dubai", "name": "United Arab Emirates", "province": "" },
+      "compensation_minimum": null,
+      "compensation_maximum": null,
+      "compensation_visible": false
+    },
+    {
+      "id": "196999",
+      "title": "",
+      "url": "https://tabby.pinpointhq.com/en/postings/skip"
+    }
+  ]
+}
