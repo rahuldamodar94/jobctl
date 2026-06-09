@@ -139,6 +139,28 @@ describe('Repo', () => {
       expect(repo.acquireScrapeLock()).not.toBe(null);
     });
 
+    test('live progress is persisted on the running row and surfaced by latestRun', () => {
+      const run1 = repo.acquireScrapeLock()!;
+      repo.setRunTotal(run1, 120);
+      expect(repo.latestRun()!.sourcesTotal).toBe(120);
+      expect(repo.latestRun()!.sourcesDone).toBe(0);
+
+      repo.updateRunProgress(run1, 40, 'Acme Corp', 7);
+      const mid = repo.latestRun()!;
+      expect(mid.status).toBe('running');
+      expect(mid.sourcesDone).toBe(40);
+      expect(mid.sourcesTotal).toBe(120);
+      expect(mid.currentSource).toBe('Acme Corp');
+      expect(mid.totalNew).toBe(7);
+
+      // completeRun writes the authoritative final total and clears currentSource
+      repo.completeRun(run1, [], 99);
+      const done = repo.latestRun()!;
+      expect(done.status).toBe('completed');
+      expect(done.totalNew).toBe(99);
+      expect(done.currentSource).toBe(null);
+    });
+
     test('stale running row (crashed process) is auto-failed and lock recovered', () => {
       const run1 = repo.acquireScrapeLock()!;
       // simulate a crash 2 hours ago

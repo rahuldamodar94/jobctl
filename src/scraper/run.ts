@@ -9,7 +9,7 @@ import {
 } from '../config/load.js';
 import { PoliteHttp, scopeHttp, type HttpClient } from '../sources/http.js';
 import type { BoardAdapter, ScrapeContext } from '../sources/types.js';
-import type { RawJob, SourceRunResult } from '../shared/types.js';
+import type { CompanyConfig, RawJob, SourceRunResult } from '../shared/types.js';
 import { dedupeKey, findFuzzyMatch } from '../matcher/dedupe.js';
 import { normCompany, normTitle } from '../matcher/normalize.js';
 import { geoBucket } from '../matcher/geo.js';
@@ -102,12 +102,58 @@ export async function runScrape(db: Database.Database, opts: ScrapeOptions = {})
     );
   }
 
+  // Progress unit = each company board (the bulk of a run) + each non-ats board
+  // source. We resolve the company list once here so the total is known up front;
+  // runAtsSources reuses it. Best-effort UI feedback only — a failure to read
+  // companies just leaves total at the board count.
+  let atsCompanies: CompanyConfig[] = [];
+  if (enabled.includes('ats')) {
+    try {
+      atsCompanies = loadCompanies();
+    } catch {
+      /* companies unreadable — runAtsSources will surface the real error */
+    }
+  }
+  const boardCount = enabled.filter((s) => s !== 'ats').length;
+  const sourcesTotal = boardCount + atsCompanies.length;
+  repo.setRunTotal(runId, sourcesTotal);
+  // Single monotonic running total across boards AND ATS companies. Boards
+  // increment it by 1 each; the ATS callback reports a CUMULATIVE company count,
+  // so we add only the delta against an offset captured when ATS starts.
+  let sourcesDone = 0;
+  // Throttle DB writes: ATS fires per-company (hundreds), so only persist every
+  // Nth step (and always the final one) — a single-row UPDATE is cheap but the UI
+  // polls at most every couple seconds, so sub-step granularity is wasted.
+  const PROGRESS_STRIDE = 5;
+  const reportProgress = (label: string | null) => {
+    if (sourcesDone % PROGRESS_STRIDE === 0 || sourcesDone === sourcesTotal) {
+      try {
+        repo.updateRunProgress(runId, sourcesDone, label, totalNew);
+      } catch {
+        /* progress is best-effort — never fail a scrape over a status write */
+      }
+    }
+  };
+
   try {
     for (const sourceId of enabled) {
       // "ats" is a pseudo-source: it fans out to every company in
       // profile/companies.yaml via the greenhouse/lever/ashby adapters.
       if (sourceId === 'ats') {
-        const atsResults = await runAtsSources(repo, http, roles, categories, log, profile.excludeCategories);
+        const atsBase = sourcesDone;
+        const atsResults = await runAtsSources(
+          repo,
+          http,
+          roles,
+          categories,
+          log,
+          profile.excludeCategories,
+          atsCompanies,
+          (companyDone, name) => {
+            sourcesDone = atsBase + companyDone;
+            reportProgress(name);
+          }
+        );
         results.push(...atsResults.results);
         totalNew += atsResults.totalNew;
         continue;
@@ -126,6 +172,8 @@ export async function runScrape(db: Database.Database, opts: ScrapeOptions = {})
           error: !config ? 'no entry in config/sources.yaml' : 'no adapter implemented',
           durationMs: 0,
         });
+        sourcesDone++;
+        reportProgress(sourceId);
         continue;
       }
 
@@ -177,6 +225,8 @@ export async function runScrape(db: Database.Database, opts: ScrapeOptions = {})
         });
         log(`✗ ${sourceId} failed: ${(e as Error).message}`);
       }
+      sourcesDone++;
+      reportProgress(sourceId);
     }
 
     // Rescore ALL active rows against current config — roles.yaml edits take
@@ -332,9 +382,13 @@ async function runAtsSources(
   roles: ReturnType<typeof loadRoles>,
   categories: ReturnType<typeof loadCategories>,
   log: (m: string) => void,
-  excludeCategories: string[] = []
+  excludeCategories: string[] = [],
+  preloadedCompanies?: CompanyConfig[],
+  onProgress?: (companyDone: number, company: string) => void
 ): Promise<{ results: SourceRunResult[]; totalNew: number }> {
-  const companies = loadCompanies();
+  // runScrape resolves the company list up front (to set the progress total);
+  // reuse it to avoid a second YAML read. Fall back to loading if called directly.
+  const companies = preloadedCompanies ?? loadCompanies();
   const started = Date.now();
   if (companies.length === 0) {
     return {
@@ -343,7 +397,7 @@ async function runAtsSources(
     };
   }
 
-  const companyResults = await fetchAtsCompanies(http, companies, log);
+  const companyResults = await fetchAtsCompanies(http, companies, log, onProgress);
   const raw = companyResults.flatMap((r) => r.jobs);
   // NOTE: no max-age filter for ATS sources — a posting returned by the
   // company's own board API is open by definition, even if it was first

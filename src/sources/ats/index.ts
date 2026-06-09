@@ -32,13 +32,18 @@ export interface AtsCompanyResult {
   error?: string;
 }
 
-/** Fetch all configured companies' boards. Per-company failures are isolated. */
+/** Fetch all configured companies' boards. Per-company failures are isolated.
+ *  `onProgress(done, name)` fires after each company (best-effort progress for
+ *  the UI — a throw inside it must never abort the scrape, so callers keep it
+ *  cheap/safe). */
 export async function fetchAtsCompanies(
   http: PoliteHttp,
   companies: CompanyConfig[],
-  log: (m: string) => void
+  log: (m: string) => void,
+  onProgress?: (done: number, company: string) => void
 ): Promise<AtsCompanyResult[]> {
   const results: AtsCompanyResult[] = [];
+  let done = 0;
   for (const c of companies) {
     const detected = detectAts(c.careersUrl);
     const provider = c.provider ?? detected?.provider ?? null;
@@ -50,15 +55,23 @@ export async function fetchAtsCompanies(
         jobs: [],
         error: `cannot detect ATS from ${c.careersUrl} — supported: greenhouse/lever/ashby/recruitee/workable/teamtailor/personio/breezy/pinpoint/smartrecruiters board URLs`,
       });
-      continue;
+    } else {
+      try {
+        const jobs = await FETCHERS[provider](http, slug, c.name);
+        log(`  ats:${provider}/${slug}: ${jobs.length} jobs`);
+        results.push({ company: c.name, provider, jobs });
+      } catch (e) {
+        results.push({ company: c.name, provider, jobs: [], error: (e as Error).message });
+        log(`  ✗ ats:${provider}/${slug} (${c.name}): ${(e as Error).message}`);
+      }
     }
-    try {
-      const jobs = await FETCHERS[provider](http, slug, c.name);
-      log(`  ats:${provider}/${slug}: ${jobs.length} jobs`);
-      results.push({ company: c.name, provider, jobs });
-    } catch (e) {
-      results.push({ company: c.name, provider, jobs: [], error: (e as Error).message });
-      log(`  ✗ ats:${provider}/${slug} (${c.name}): ${(e as Error).message}`);
+    done++;
+    if (onProgress) {
+      try {
+        onProgress(done, c.name);
+      } catch {
+        /* progress is best-effort — never let a UI/DB write abort the scrape */
+      }
     }
   }
   return results;

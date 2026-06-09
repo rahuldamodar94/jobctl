@@ -13,6 +13,26 @@ describe('migrate (versioned schema runner)', () => {
     const cols = (db.prepare('PRAGMA table_info(jobs)').all() as { name: string }[]).map((c) => c.name);
     expect(cols).toContain('dedupe_key');
     expect(cols).toContain('llm_dimensions'); // a "later" guarded-ALTER column, part of v1
+    // v2 scrape-progress columns are present after migrate
+    const runCols = (db.prepare('PRAGMA table_info(scrape_runs)').all() as { name: string }[]).map((c) => c.name);
+    expect(runCols).toContain('sources_done');
+    expect(runCols).toContain('sources_total');
+    expect(runCols).toContain('current_source');
+  });
+
+  test('v2 migration adds scrape-progress columns to a long-lived v1 DB (existing-DB path)', () => {
+    const db = new Database(':memory:');
+    // simulate a v1 DB created BEFORE the progress columns existed: build the
+    // scrape_runs table without them, then stamp it at version 1.
+    db.exec(
+      "CREATE TABLE scrape_runs (id INTEGER PRIMARY KEY AUTOINCREMENT, started_at TEXT NOT NULL, completed_at TEXT, status TEXT NOT NULL DEFAULT 'running', sources TEXT NOT NULL DEFAULT '[]', total_new INTEGER NOT NULL DEFAULT 0)"
+    );
+    db.pragma('user_version = 1');
+    migrate(db); // should run v2 only
+    const runCols = (db.prepare('PRAGMA table_info(scrape_runs)').all() as { name: string }[]).map((c) => c.name);
+    expect(runCols).toContain('sources_done');
+    expect(runCols).toContain('sources_total');
+    expect(runCols).toContain('current_source');
   });
 
   test('re-running migrate is idempotent (no version drift, no error)', () => {

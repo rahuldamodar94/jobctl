@@ -242,4 +242,9 @@ export interface ScrapeRunSummary {
   status: 'running' | 'completed' | 'failed';
   sources: SourceRunResult[];
   totalNew: number;
+  /** live progress (only meaningful while status==='running') */
+  sourcesDone: number;
+  sourcesTotal: number;
+  /** label of the source currently being scraped, or null */
+  currentSource: string | null;
 }

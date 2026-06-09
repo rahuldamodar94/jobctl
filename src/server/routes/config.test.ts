@@ -67,6 +67,9 @@ test('payload reflects the user config: roles, ats-expanded sources, category or
   expect(payload.categories).toEqual(['gaming', 'web2', 'other']);
   expect(payload.roleTemplates).toEqual([]); // no role-templates.yaml in this temp config dir
   expect(typeof payload.resumeGeneration).toBe('boolean');
+  // claude CLI detection surfaced for the AI/LLM Settings tab (mirrors resumeGeneration)
+  expect(typeof payload.claudeAvailable).toBe('boolean');
+  expect(payload.claudeAvailable).toBe(payload.resumeGeneration);
 });
 
 test('excluded categories are dropped from the dropdown vocabulary', async () => {

@@ -43,6 +43,7 @@ export function Onboarding({ config, onDone }: { config: AppConfig; onDone: () =
   const [lane, setLane] = useState<'ic' | 'em'>('ic');
   const [titleKeywords, setTitleKeywords] = useState('');
   const [stack, setStack] = useState('');
+  const [niceToHave, setNiceToHave] = useState('');
   const [geoPriority, setGeoPriority] = useState<Set<string>>(new Set(['Remote']));
   const [relocationOk, setRelocationOk] = useState<Set<string>>(new Set());
   const [customLoc, setCustomLoc] = useState('');
@@ -83,6 +84,7 @@ export function Onboarding({ config, onDone }: { config: AppConfig; onDone: () =
     setRoleLabel('');
     setTitleKeywords('');
     setStack('');
+    setNiceToHave('');
   };
 
   // location chips = the common set plus any custom values the user added
@@ -119,6 +121,7 @@ export function Onboarding({ config, onDone }: { config: AppConfig; onDone: () =
             lane,
             titleKeywords,
             stack,
+            niceToHave,
             template: config.roleTemplates.find((t) => t.id === templateId),
           }),
         ],
@@ -291,7 +294,9 @@ export function Onboarding({ config, onDone }: { config: AppConfig; onDone: () =
 
               {roleDetailReady && (
                 <div className="space-y-3 border-t border-line/60 pt-3">
-                  <p className="text-xs text-faint">Pre-filled from the template — tweak anything below.</p>
+                  <p className="text-xs text-faint">
+                    {templateId ? 'Pre-filled from the template — tweak anything below.' : 'Define your role — describe the kind of job you want.'}
+                  </p>
                   <label className="block">
                     <span className={lbl}>Role label</span>
                     <input className={input} value={roleLabel} onChange={(e) => setRoleLabel(e.target.value)} placeholder="Senior Backend Engineer" />
@@ -304,6 +309,13 @@ export function Onboarding({ config, onDone }: { config: AppConfig; onDone: () =
                     <span className={lbl}>Must-have keywords <span className="font-normal text-faint">— the JD must mention at least one</span></span>
                     <input className={input} value={stack} onChange={(e) => setStack(e.target.value)} placeholder="typescript, node.js" />
                   </label>
+                  {roleGroup === 'custom' && (
+                    <label className="block">
+                      <span className={lbl}>Nice to have <span className="font-normal text-faint">(optional) — boosts the score when a JD mentions these</span></span>
+                      <input className={input} value={niceToHave} onChange={(e) => setNiceToHave(e.target.value)} placeholder="kubernetes, postgres, distributed systems" />
+                      <span className={hint}>Your must-have keywords already count toward the score; add more here to rank stronger fits higher.</span>
+                    </label>
+                  )}
                 </div>
               )}
             </div>

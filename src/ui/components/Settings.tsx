@@ -7,7 +7,7 @@
  */
 import React, { useEffect, useState } from 'react';
 import { parse, stringify } from 'yaml';
-import { User, Briefcase, Tags, FileText, Scale, Files, X, Check, AlertCircle } from 'lucide-react';
+import { User, Briefcase, Tags, FileText, Scale, Files, Sparkles, X, Check, AlertCircle } from 'lucide-react';
 import {
   getSettings,
   saveProfile,
@@ -16,14 +16,16 @@ import {
   saveSkill,
   saveRubric,
   saveResume,
+  type AppConfig,
   type SaveResult,
   type SettingsSnapshot,
 } from '../api.js';
 import { Button, cn } from './ui.js';
 
-type Tab = 'profile' | 'roles' | 'categories' | 'skill' | 'rubric' | 'resumes';
+type Tab = 'profile' | 'ai' | 'roles' | 'categories' | 'skill' | 'rubric' | 'resumes';
 const TABS: { id: Tab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { id: 'profile', label: 'Profile', icon: User },
+  { id: 'ai', label: 'AI / LLM', icon: Sparkles },
   { id: 'roles', label: 'Roles', icon: Briefcase },
   { id: 'categories', label: 'Categories', icon: Tags },
   { id: 'skill', label: 'Resume rules', icon: FileText },
@@ -31,7 +33,7 @@ const TABS: { id: Tab; label: string; icon: React.ComponentType<{ className?: st
   { id: 'resumes', label: 'Resumes', icon: Files },
 ];
 
-export function Settings({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) {
+export function Settings({ config, onClose, onSaved }: { config: AppConfig | null; onClose: () => void; onSaved: () => void }) {
   const [snap, setSnap] = useState<SettingsSnapshot | null>(null);
   const [tab, setTab] = useState<Tab>('profile');
 
@@ -75,6 +77,8 @@ export function Settings({ onClose, onSaved }: { onClose: () => void; onSaved: (
             // key per tab: these are all YamlEditor — without a distinct key
             // React reuses the instance across tabs and keeps stale text state.
             <YamlEditor key="profile" title="profile.yaml" hint="Your identity, enabled sources, company selection, exclude_categories, ui_prefs." initial={snap.profile} save={saveProfile} onSaved={onSaved} />
+          ) : tab === 'ai' ? (
+            <AiSettings key="ai" profile={snap.profile} claudeAvailable={config?.claudeAvailable ?? false} onSaved={onSaved} />
           ) : tab === 'roles' ? (
             <YamlEditor key="roles" title="roles.yaml" hint="One entry per role you're hunting. title_keywords are substring matches; lane is ic|em." initial={snap.roles} save={saveRoles} onSaved={onSaved} />
           ) : tab === 'categories' ? (
@@ -295,6 +299,193 @@ function ResumesTab({ snap, onSaved }: { snap: SettingsSnapshot; onSaved: () => 
           <SaveBar result={result} dirty={dirty} onSave={onSave} saving={saving} />
         </>
       )}
+    </div>
+  );
+}
+
+/* ── AI / LLM settings ────────────────────────────────────────────────────────
+ * A friendly form over the profile.yaml `llm` block so the fit-judge can be
+ * enabled WITHOUT hand-writing YAML into the Profile textarea. It reads the
+ * current llm config from the (snake_case) parsed profile, edits a single
+ * named backend + the judge toggle/min_score, and writes the FULL profile back
+ * via the same validated PUT /profile the YAML editor uses (no new write path).
+ * Keys stay snake_case to match profileSchema (min_score/base_url/api_key_env).
+ */
+export type LlmEngine = 'claude-cli' | 'openai-compatible';
+export interface LlmBackend {
+  engine: LlmEngine;
+  model?: string;
+  base_url?: string;
+  api_key_env?: string;
+}
+export interface LlmBlock {
+  backends?: Record<string, LlmBackend>;
+  judge?: { enabled?: boolean; backend?: string; min_score?: number };
+  resume?: { backend?: string };
+}
+
+// The single backend name this form manages. A power user with several backends
+// can still edit them all via the raw Profile YAML tab; this form curates one.
+const FORM_BACKEND = 'claude-cli';
+
+/** Pure builder for the profile.yaml `llm` block from the form inputs — extracted
+ *  so the snake_case shape (which MUST satisfy profileSchema) is unit-testable
+ *  without rendering React. Preserves any pre-existing backends/keys; only the
+ *  form's named backend + judge settings are (re)written. */
+export function buildLlmBlock(
+  prev: LlmBlock,
+  input: { engine: LlmEngine; model: string; baseUrl: string; apiKeyEnv: string; judgeEnabled: boolean; minScore: number }
+): LlmBlock {
+  const backend: LlmBackend =
+    input.engine === 'openai-compatible'
+      ? {
+          engine: input.engine,
+          ...(input.model.trim() ? { model: input.model.trim() } : {}),
+          ...(input.baseUrl.trim() ? { base_url: input.baseUrl.trim() } : {}),
+          ...(input.apiKeyEnv.trim() ? { api_key_env: input.apiKeyEnv.trim() } : {}),
+        }
+      : { engine: input.engine };
+  return {
+    ...prev,
+    backends: { ...(prev.backends ?? {}), [FORM_BACKEND]: backend },
+    judge: { ...(prev.judge ?? {}), enabled: input.judgeEnabled, backend: FORM_BACKEND, min_score: input.minScore },
+    resume: prev.resume ?? { backend: FORM_BACKEND },
+  };
+}
+
+function AiSettings({
+  profile,
+  claudeAvailable,
+  onSaved,
+}: {
+  profile: Record<string, unknown> | null;
+  claudeAvailable: boolean;
+  onSaved: () => void;
+}) {
+  const llm = ((profile?.llm as LlmBlock | undefined) ?? {}) as LlmBlock;
+  const existingBackend = llm.backends?.[FORM_BACKEND];
+  const judge = llm.judge ?? {};
+
+  const [engine, setEngine] = useState<LlmEngine>(existingBackend?.engine ?? 'claude-cli');
+  const [model, setModel] = useState(existingBackend?.model ?? '');
+  const [baseUrl, setBaseUrl] = useState(existingBackend?.base_url ?? '');
+  const [apiKeyEnv, setApiKeyEnv] = useState(existingBackend?.api_key_env ?? '');
+  const [judgeEnabled, setJudgeEnabled] = useState(judge.enabled ?? false);
+  const [minScore, setMinScore] = useState(judge.min_score ?? 50);
+
+  const [result, setResult] = useState<SaveResult | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [dirty, setDirty] = useState(false);
+  const touch = () => setDirty(true);
+
+  async function onSave() {
+    setSaving(true);
+    setResult(null);
+    const nextLlm = buildLlmBlock(llm, { engine, model, baseUrl, apiKeyEnv, judgeEnabled, minScore });
+    // Spread the whole profile so nothing else is dropped (atomic validated write).
+    const nextProfile = { ...(profile ?? {}), llm: nextLlm };
+    const r = await saveProfile(nextProfile);
+    setResult(r);
+    setSaving(false);
+    if (r.ok) {
+      setDirty(false);
+      onSaved();
+    }
+  }
+
+  const fld = 'w-full rounded-lg border border-line bg-surface-2/60 px-3 py-2 text-sm text-ink placeholder-faint outline-none transition-colors focus:border-accent';
+  const lbl = 'mb-1.5 block text-sm font-medium text-ink';
+  const sub = 'mt-1 block text-xs text-faint';
+
+  return (
+    <div className="max-w-lg">
+      <EditorHead title="AI / LLM" hint="Set up the optional fit-judge (and the backend it uses). Writes the profile.yaml llm block — validated and atomic, same as every other tab." />
+
+      {/* CLI detection */}
+      <div className={cn('mb-4 flex items-center gap-2 rounded-lg border px-3 py-2 text-xs', claudeAvailable ? 'border-accent/40 bg-accent/10 text-accent' : 'border-amber-500/30 bg-amber-500/10 text-amber-200')}>
+        {claudeAvailable ? <Check className="h-3.5 w-3.5" /> : <AlertCircle className="h-3.5 w-3.5" />}
+        Detected <span className="font-mono">claude</span> CLI: <span className="font-semibold">{claudeAvailable ? 'yes' : 'no'}</span>
+        {!claudeAvailable && <span className="text-faint">— install it or use an OpenAI-compatible backend below.</span>}
+      </div>
+
+      {/* Backend engine */}
+      <div className="mb-4">
+        <span className={lbl}>Backend</span>
+        <div className="flex gap-2">
+          {(['claude-cli', 'openai-compatible'] as LlmEngine[]).map((e) => (
+            <button
+              key={e}
+              onClick={() => { setEngine(e); touch(); }}
+              className={cn(
+                'flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-all',
+                engine === e ? 'border-accent bg-accent/10 text-accent' : 'border-line bg-surface-2/40 text-muted hover:border-line-strong'
+              )}
+            >
+              {e === 'claude-cli' ? 'Claude CLI (local)' : 'OpenAI-compatible'}
+            </button>
+          ))}
+        </div>
+        <span className={sub}>
+          {engine === 'claude-cli'
+            ? 'Uses your local claude subscription — no API key needed.'
+            : 'Any OpenAI-compatible API (OpenAI, Gemini, DeepSeek, OpenRouter, Ollama, …).'}
+        </span>
+      </div>
+
+      {/* OpenAI-compatible fields (hidden unless that engine is picked) */}
+      {engine === 'openai-compatible' && (
+        <div className="mb-4 space-y-3 rounded-lg border border-line/60 bg-surface-2/30 p-3">
+          <label className="block">
+            <span className={lbl}>Model</span>
+            <input className={fld} value={model} onChange={(e) => { setModel(e.target.value); touch(); }} placeholder="gpt-4o-mini" />
+          </label>
+          <label className="block">
+            <span className={lbl}>Base URL</span>
+            <input className={fld} value={baseUrl} onChange={(e) => { setBaseUrl(e.target.value); touch(); }} placeholder="https://api.openai.com/v1" />
+          </label>
+          <label className="block">
+            <span className={lbl}>API key env var <span className="font-normal text-faint">— the NAME of the env var holding the key (never the key itself)</span></span>
+            <input className={fld} value={apiKeyEnv} onChange={(e) => { setApiKeyEnv(e.target.value); touch(); }} placeholder="OPENAI_API_KEY" />
+            <span className={sub}>Set the actual key in your shell/env; the app reads it from this variable.</span>
+          </label>
+        </div>
+      )}
+
+      {/* Judge toggle + floor */}
+      <div className="mb-4 rounded-lg border border-line/60 bg-surface-2/30 p-3">
+        <label className="flex cursor-pointer items-center gap-3">
+          <span
+            onClick={() => { setJudgeEnabled((v) => !v); touch(); }}
+            className={cn('relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors', judgeEnabled ? 'bg-accent' : 'bg-line-strong')}
+          >
+            <span className={cn('inline-block h-4 w-4 transform rounded-full bg-white transition-transform', judgeEnabled ? 'translate-x-4' : 'translate-x-0.5')} />
+          </span>
+          <span>
+            <span className={cn(lbl, 'mb-0')}>Enable the fit-judge</span>
+            <span className={sub}>Advisory only — adds verdict chips + sorting over matched jobs. Never hides anything.</span>
+          </span>
+        </label>
+        <label className="mt-3 block">
+          <span className={lbl}>Judge floor (min score) <span className="font-normal text-faint">— only judge jobs scoring at least this</span></span>
+          <input
+            type="number"
+            min={0}
+            max={100}
+            className={cn(fld, 'w-28')}
+            value={minScore}
+            onChange={(e) => { setMinScore(Math.max(0, Math.min(100, Number(e.target.value) || 0))); touch(); }}
+          />
+          <span className={sub}>Default 50. The Re-judge button bypasses this floor.</span>
+        </label>
+      </div>
+
+      {judgeEnabled && (
+        <p className="mb-3 text-xs text-faint">
+          The judge also needs a <span className="font-mono">judge-rubric.md</span> (Judge rubric tab) describing how to evaluate a JD against you.
+        </p>
+      )}
+
+      <SaveBar result={result} dirty={dirty} onSave={onSave} saving={saving} />
     </div>
   );
 }

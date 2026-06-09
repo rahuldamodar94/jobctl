@@ -35,6 +35,10 @@ export interface AppConfigPayload {
   uiPrefs: { defaultMinScore?: number; defaultPostedWithin?: number };
   /** is the advisory fit-judge turned on? (UI shows verdict chips + re-judge) */
   judgeEnabled: boolean;
+  /** is the local `claude` CLI on PATH? (surfaced in the AI/LLM Settings tab so
+   *  the user knows whether the claude-cli backend will work). Same detection as
+   *  resumeGeneration, named for its own meaning. */
+  claudeAvailable: boolean;
 }
 
 /** Pure builder (unit-tested); config read errors degrade to empty lists so a
@@ -95,8 +99,10 @@ export function buildConfigPayload(): AppConfigPayload {
     /* committed role-templates.yaml unreadable — role picker degrades */
   }
   // "configured" = a usable setup: the app needs both a profile and ≥1 role.
+  const cliPresent = claudeAvailable();
   return {
-    resumeGeneration: claudeAvailable(),
+    resumeGeneration: cliPresent,
+    claudeAvailable: cliPresent,
     configured: profileOk && rolesOk,
     roles,
     sources,

@@ -252,7 +252,14 @@ export default function App() {
 
   const onScrape = async () => {
     setNotice(null);
+    // A first scrape pulls the whole ATS registry (~570 boards) sequentially and
+    // takes minutes — tell the user up front so the running spinner doesn't read
+    // as "frozen". (Only when there's no completed run yet.)
+    const firstScrape = !run || (run.status !== 'completed' && run.totalNew === 0 && run.sourcesTotal === 0);
     if (await startScrape()) {
+      if (firstScrape) {
+        setNotice('First scrape pulls ~570 company boards — this takes a few minutes. It runs in the background, so keep working; progress shows in the status pill.');
+      }
       setRun(await latestRun()); // flips status to running → starts the poll
     } else {
       setNotice('Scrape not started — one is already running.');
@@ -350,6 +357,7 @@ export default function App() {
     <div className="min-h-screen text-sm">
       {showSettings && (
         <Settings
+          config={config}
           onClose={() => setShowSettings(false)}
           onSaved={() => { seededRef.current = false; loadConfig(); reload(); }}
         />

@@ -53,6 +53,10 @@ export interface RunSummary {
   status: 'running' | 'completed' | 'failed';
   sources: { sourceId: string; status: string; jobsFound: number; jobsNew: number; error?: string }[];
   totalNew: number;
+  /** live progress while scraping (0/0 once not running) */
+  sourcesDone: number;
+  sourcesTotal: number;
+  currentSource: string | null;
 }
 
 export interface Filters {
@@ -170,6 +174,8 @@ export interface AppConfig {
   roleTemplates: RoleTemplate[];
   uiPrefs: { defaultMinScore?: number; defaultPostedWithin?: number };
   judgeEnabled: boolean;
+  /** is the local `claude` CLI detected on PATH? (AI/LLM Settings tab) */
+  claudeAvailable: boolean;
 }
 
 /** A curated role-search template the picker prefills into an editable role. */

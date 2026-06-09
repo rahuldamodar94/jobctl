@@ -85,6 +85,22 @@ export function initSchema(db: Database.Database): void {
     /* column already exists */
   }
 
+  // Live scrape-progress columns on the `running` row (UI shows "40/120 sources"
+  // instead of a static spinner). Guarded ALTERs — present in the v1 baseline for
+  // fresh DBs; a v2 migration below re-applies them (idempotently) to long-lived
+  // DBs already stamped at user_version=1 that never saw this edit.
+  for (const col of [
+    'sources_done INTEGER NOT NULL DEFAULT 0',
+    'sources_total INTEGER NOT NULL DEFAULT 0',
+    'current_source TEXT',
+  ]) {
+    try {
+      db.exec(`ALTER TABLE scrape_runs ADD COLUMN ${col}`);
+    } catch {
+      /* column already exists */
+    }
+  }
+
   // Advisory LLM fit-judge columns (added later — same guarded-ALTER pattern).
   for (const col of [
     'llm_verdict TEXT',
@@ -118,9 +134,31 @@ export function initSchema(db: Database.Database): void {
  * A migration that needs atomicity should wrap its own body in db.transaction()
  * (the runner doesn't, so v1's self-guarded ALTERs can't poison a transaction).
  */
+/**
+ * v2 — live scrape-progress columns on the `running` row, so the polling UI can
+ * show "Scraping… 40/120 sources" instead of a static spinner over a multi-minute
+ * run. Guarded ALTERs (idempotent): a fresh DB reaches this state via the v1
+ * baseline → v2 here; a long-lived v1 DB gains the columns here. Either way the
+ * end state is identical. (Updated incrementally by runScrape; completeRun writes
+ * the authoritative final `sources`/`total_new`.)
+ */
+function v2_scrapeProgress(db: Database.Database): void {
+  for (const col of [
+    'sources_done INTEGER NOT NULL DEFAULT 0',
+    'sources_total INTEGER NOT NULL DEFAULT 0',
+    'current_source TEXT',
+  ]) {
+    try {
+      db.exec(`ALTER TABLE scrape_runs ADD COLUMN ${col}`);
+    } catch {
+      /* column already exists (fresh DB whose v1 baseline pre-dated this) */
+    }
+  }
+}
+
 const MIGRATIONS: Array<(db: Database.Database) => void> = [
   initSchema, // v1 — baseline (DO NOT edit for new changes; add a v2 below instead)
-  // v2: (db) => db.transaction(() => db.exec('ALTER TABLE jobs ADD COLUMN foo TEXT'))(),
+  v2_scrapeProgress, // v2 — scrape progress columns
 ];
 
 export function migrate(db: Database.Database): void {

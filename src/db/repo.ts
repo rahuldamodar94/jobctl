@@ -415,9 +415,26 @@ export class Repo {
     })();
   }
 
+  /** Set the total number of sources up front so the UI can show "N/total". */
+  setRunTotal(runId: number, sourcesTotal: number): void {
+    this.db.prepare('UPDATE scrape_runs SET sources_total = ? WHERE id = ?').run(sourcesTotal, runId);
+  }
+
+  /** Incremental progress on the running row (best-effort; cheap single-row
+   *  UPDATE). `currentSource` is a human label of what's being scraped now;
+   *  `totalNew` is the running count of newly-inserted jobs so the UI can show
+   *  "N new" live (completeRun re-writes the authoritative final value). */
+  updateRunProgress(runId: number, sourcesDone: number, currentSource: string | null, totalNew: number): void {
+    this.db
+      .prepare('UPDATE scrape_runs SET sources_done = ?, current_source = ?, total_new = ? WHERE id = ?')
+      .run(sourcesDone, currentSource, totalNew, runId);
+  }
+
   completeRun(runId: number, sources: SourceRunResult[], totalNew: number, failed = false): void {
     this.db
-      .prepare('UPDATE scrape_runs SET completed_at = ?, status = ?, sources = ?, total_new = ? WHERE id = ?')
+      .prepare(
+        'UPDATE scrape_runs SET completed_at = ?, status = ?, sources = ?, total_new = ?, current_source = NULL WHERE id = ?'
+      )
       .run(new Date().toISOString(), failed ? 'failed' : 'completed', JSON.stringify(sources), totalNew, runId);
   }
 
@@ -427,7 +444,17 @@ export class Repo {
     // the server process stays alive but the scrape itself hung.)
     this.failStaleRuns();
     const row = this.db.prepare('SELECT * FROM scrape_runs ORDER BY id DESC LIMIT 1').get() as
-      | { id: number; started_at: string; completed_at: string | null; status: string; sources: string; total_new: number }
+      | {
+          id: number;
+          started_at: string;
+          completed_at: string | null;
+          status: string;
+          sources: string;
+          total_new: number;
+          sources_done: number;
+          sources_total: number;
+          current_source: string | null;
+        }
       | undefined;
     if (!row) return null;
     return {
@@ -437,6 +464,9 @@ export class Repo {
       status: row.status as ScrapeRunSummary['status'],
       sources: JSON.parse(row.sources),
       totalNew: row.total_new,
+      sourcesDone: row.sources_done,
+      sourcesTotal: row.sources_total,
+      currentSource: row.current_source,
     };
   }
 

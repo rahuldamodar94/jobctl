@@ -37,7 +37,9 @@ Daily workflow: open UI → Run scrape → triage `new, score≥30` list → don
   pickers + bulk actions all import it; `JudgeVerdict` lists come from
   `JUDGE_VERDICTS`) — never re-list the strings.
 - Deliberate cuts: no LLM, no caching layer, no queue, no Playwright, no auth,
-  no migrations framework (additive ALTERs guarded inline).
+  no migrations framework — additive ALTERs guarded inline in the v1 baseline,
+  plus a tiny PRAGMA-user_version runner (`migrate()`) for changes a long-lived
+  DB needs after v1 was stamped (v2 = scrape-progress columns).
 - Polite scraping: fixed UA, sequential sources, per-host delays (ATS APIs get
   faster 0.5-1.5s pacing), 10s timeout, retries w/ backoff, 30/60/120s on
   429/503 (fail-fast on last attempt), host allowlist for ATS fetchers AND
@@ -79,6 +81,12 @@ registry ∩ profile.domains − exclude + include (src/config/load.ts).
 **Setup is in-app**: a fresh install boots with `configured:false` (no/invalid
 profile+roles) → the React onboarding wizard writes profile.yaml + roles.yaml
 via `/api/settings`; the Settings overlay edits every profile/ artifact later.
+The Settings **AI/LLM tab** is a friendly form over the profile `llm` block
+(backend engine claude-cli|openai-compatible with model/base_url/api_key_env,
+judge enabled toggle + min_score floor, a "Detected claude CLI: yes/no" line from
+`/api/config` `claudeAvailable`) — it builds a snake_case `llm` block via the pure
+`buildLlmBlock` and writes the FULL profile through the same validated PUT
+/profile (no new write path; openai fields hidden unless that engine is picked).
 Writes are **zod-validated with the SAME schemas the loaders use** (invalid
 config rejected, never written) and **atomic** (temp+rename). There is NO
 config cache — a written file is live on the next read. Personal `profile/`
@@ -185,6 +193,16 @@ CONFIG (yaml)                  SCRAPE PIPELINE (src/scraper/run.ts)
   read path (`latestRun`), so the polling UI recovers on its own; **server
   startup** reconciles ALL `running` rows (an in-process scrape can't survive a
   restart/crash), so an orphaned run never strands the UI on a phantom "running".
+- Scrape progress: the `running` row carries live `sources_done`/`sources_total`/
+  `current_source` (v2 migration; the unit = each ATS company board + each
+  non-ats board). `runScrape` updates them incrementally (throttled, best-effort —
+  a status-write failure NEVER aborts a scrape; `fetchAtsCompanies` fires a
+  per-company `onProgress`), `completeRun` writes the authoritative final
+  `sources`/`total_new` and clears `current_source`. `latestRun` surfaces them so
+  RunStatusStrip shows "Scraping… 40/120 sources · N new" (the polling UI already
+  refetches every 2s); a first scrape shows a one-time "~570 boards, a few
+  minutes, runs in the background" notice. Crash-safety unchanged (the orphan
+  reconciliation still owns running-state).
 - Corrupt JSON in a DB row degrades to defaults (safeJsonParse), never throws.
 
 ### Reviewed-and-REJECTED ideas (don't re-propose without new evidence)
@@ -280,7 +298,7 @@ guide: `docs/model-tradeoffs.md`.
 npm run scrape [-- --source X]   # scrape (lock-guarded; UI button same path)
 npm run judge [-- --all|--id N]  # optional fit-judge over matched jobs
 npm run dev | build | start      # UI dev / production
-npm test                         # vitest — 276 tests
+npm test                         # vitest — 288 tests
 ```
 
 ## Status
@@ -303,7 +321,11 @@ future version.)
 **v3 — post-fresh-run remediation (2026-06-09), per-phase review + checks, local
 commits (unpushed):** fixed the headline scoring bug (the onboarding wizard
 dropped the role template's `nice_to_have`/excludes → every job capped at 60/100;
-now carried via a unit-tested `buildRoleEntry`, browser-validated); expanded the
+now carried via a unit-tested `buildRoleEntry`, browser-validated — and the SAME
+cap on the **custom-role** path (no template → no nice_to_have) is fixed too:
+`buildRoleEntry` now synthesizes a modest nice_to_have from the user's stack (+ an
+optional comma-separated "nice to have" field in the onboarding custom block), so
+a custom role scores 0-100, not 0-60); expanded the
 registry **113 → 328 companies** across all 12 domains (was 7 empty), global +
 India/MENA, incl. famous names (OpenAI, Anthropic, Snowflake, Coinbase, …) with
 unscrapeable giants documented in `companies-unsupported.md`; **role templates

@@ -20,10 +20,30 @@ function relativeTime(iso: string): string {
 
 export function RunStatusStrip({ run, scraping }: { run: RunSummary | null; scraping: boolean }) {
   if (scraping || run?.status === 'running') {
+    // Show live progress when the running row reports a total (it always does
+    // after setRunTotal); fall back to a plain spinner before the first tick.
+    const total = run?.sourcesTotal ?? 0;
+    const done = run?.sourcesDone ?? 0;
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-2.5 py-1 text-xs font-medium text-accent ring-1 ring-inset ring-accent/25">
+      <span
+        className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-2.5 py-1 text-xs font-medium text-accent ring-1 ring-inset ring-accent/25"
+        title={run?.currentSource ? `Scraping ${run.currentSource}…` : undefined}
+      >
         <Loader2 className="h-3.5 w-3.5 animate-spin" />
-        Scraping…
+        {total > 0 ? (
+          <>
+            Scraping… <span className="tnum">{done}/{total}</span>
+            <span className="text-accent/60">sources</span>
+            {run && run.totalNew > 0 && (
+              <>
+                <span className="text-accent/40">·</span>
+                <span className="tnum">{run.totalNew}</span> new
+              </>
+            )}
+          </>
+        ) : (
+          'Scraping…'
+        )}
       </span>
     );
   }
