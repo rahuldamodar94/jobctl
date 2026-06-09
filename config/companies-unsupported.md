@@ -132,3 +132,64 @@ Nykaa, Zerodha, Unacademy, Dream11, ShareChat, Urban Company, Zepto, Freshworks,
 Zoho, BrowserStack, Chargebee, Hasura, Pine Labs, Cashfree, slice, Navi,
 PharmEasy, Practo, Delhivery, Lenskart, PolicyBazaar, MakeMyTrip, Oyo, CarDekho,
 upGrad, Vedantu. (Only Paytm — Lever — was scrapeable and was added.)
+
+## Popular-company sweep (2026-06-09) — famous names probed, NOT on a supported ATS
+
+Broad sweep over the best-known / most-desirable tech employers in every domain.
+Each below was probed across the supported ATS APIs (Greenhouse / Lever / Ashby /
+Recruitee / Workable / Teamtailor / Personio / Breezy / Pinpoint) and returned
+404 / empty / disabled-API, OR its public board is gated. Net-new famous names
+that DID expose a non-empty supported ATS were added to companies.yaml in the
+same pass (CoreWeave, Bitrefill, Stripe, Cerebras, SambaNova, Crusoe, Lambda,
+Figure AI, Wayve, Glean, Fireworks, Deepgram, Docker, Sentry, Redis, 1Password,
+JFrog, Chainguard, Tailscale, Coalition, Whoop, Oura, Roblox-via-existing, Match
+Group, Lyra Health, Kalshi, Galaxy Digital, Anchorage, BitGo, Blockchain.com,
+FanDuel, Remote, Turing, Mercor, and ~120 more — see the sweep block there).
+
+**Frontier AI / ML — custom / Workday / disabled public API:** Hugging Face
+(custom apply.workable? no — custom portal), Groq (custom careers.groq.com),
+Cerebras *(note: main board gated; `earlytalentcerebras` Greenhouse exists for
+grads — `cerebrassystems` Greenhouse WAS live and was added)*, Mistral
+(`jobs.lever.co/mistral` already in registry), Perplexity (`ashby/perplexity`
+already in registry), Inflection, Adept, Character AI, Contextual AI, Hebbia,
+AI21 Labs, Liquid AI, Nous Research, Skild AI, Hippocratic AI, Moveworks,
+Twelve Labs, Mindee, Replicate, Modal *(in registry)*, Tecton, OctoML,
+Weights & Biases, Comet ML, Luma AI, Tome, Jasper, Copy.ai — custom / Workday /
+Ashby-disabled portals.
+
+**Self-driving / robotics:** Waymo *(Greenhouse `waymo` — added)*, Zoox
+*(Lever — added)*, Nuro *(Greenhouse — added)*, Cruise, Aurora, Applied
+Intuition, Anduril *(Greenhouse `andurilindustries` — added)*, Shield AI *(Lever
+— added)*, Saronic *(Ashby — added)*, SpaceX *(Greenhouse — added)*, Relativity
+Space, Varda, Hadrian, Castelion, Mach Industries — the un-added ones are on
+Workday / custom.
+
+**Big tech & well-known SaaS — Workday / custom / iCIMS / Eightfold:** Google,
+Microsoft, Amazon, Apple, Meta, Netflix, Uber, Salesforce, Adobe, Atlassian,
+Canva, Miro, Grammarly, Snyk, HashiCorp, GitLab *(in registry)*, Snap, PayPal,
+Shopify, Etsy, Wayfair, Chewy, DoorDash, Grubhub, Rippling, Wise, Revolut,
+Klarna, Navan, Tipalti, Monday.com, Coda, Loom, Productboard, Front, Gladly,
+Pulumi, Aiven, Timescale, Redpanda, Sourcegraph, Gitpod, Harness, Split,
+LaunchDarkly *(Greenhouse — added)*, Teleport, Lacework, Aqua Security, Cyera,
+Island, Clerk *(Ashby live, 0 roles)*, Tabnine, Codeium *(= Windsurf/Cognition,
+in registry)*, Hex, Census, Segment *(= Twilio, in registry)*, RudderStack,
+Snowplow, Monte Carlo, Bigeye — Workday / custom / gated.
+
+**Crypto / web3 not on a supported public API:** Circle (Workday — see top
+table), Kraken *(`ashby/kraken.com` already in registry)*, Chainalysis *(in
+registry)*, Bitwise, Grayscale *(Greenhouse `grayscale` had 2 — borderline,
+not added)*, Solana Foundation, Ava Labs / Avalanche, NEAR (custom), Worldcoin /
+Tools for Humanity, Dapper Labs, Yuga Labs, Mythical Games, Thirdweb, Tenderly,
+Privy *(Ashby disabled)*, Dynamic, Pimlico, Biconomy, Reservoir, Berachain,
+Movement Labs, Caldera *(Ashby disabled)*, Tensor, Pump.fun, Bridge, Zora,
+Rarible, Blur, Blockaid, Hexagate, Forta, Hypernative — custom / JS-rendered /
+disabled posting-api.
+
+**Consumer / gaming / commerce / health — Workday / custom:** Whatnot
+(`ashby/whatnot` returns Not Found — public posting-api not exposed; custom),
+Shopify, Bumble, Tinder/Hinge *(Match Group itself IS on Lever — added)*, Niantic,
+Zynga, King, Playtika, Supercell *(Ashby — added)*, Depop, Vinted, ThredUp,
+Grailed, Fanatics, Headspace, Calm *(Greenhouse `calm`=1, borderline, not added)*,
+Noom, Hims & Hers, Spring Health, Carbon Health, Hinge Health, Cityblock,
+Devoted Health, Codecademy, Outschool, Masterclass *(Greenhouse — added)*,
+ShipBob, Stord, Shippo, Deliverr — Workday / custom / Eightfold.

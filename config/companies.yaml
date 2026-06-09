@@ -1322,3 +1322,461 @@ companies:
   - name: Tether
     careers_url: https://tether.recruitee.com
     domains: [crypto, fintech]
+
+  # =====================================================================
+  # Popular-company sweep (2026-06-09) — broad pass over the best-known /
+  # most-desirable tech employers across all 12 domains. Every entry below
+  # was curl-verified against its supported ATS API and returned a NON-EMPTY
+  # job list at probe time. Slugs confirmed to the real company (generic /
+  # same-name slugs were rejected — see companies-unsupported.md false-pos
+  # table). Grouped by primary domain; can fold into sections above later.
+  # =====================================================================
+  # --- ai-ml / frontier compute / robotics ---
+  - name: CoreWeave
+    careers_url: https://boards.greenhouse.io/coreweave
+    domains: [ai-ml, cloud-infra]
+  - name: Cerebras
+    careers_url: https://boards.greenhouse.io/cerebrassystems
+    domains: [ai-ml, cloud-infra]
+  - name: SambaNova
+    careers_url: https://boards.greenhouse.io/sambanovasystems
+    domains: [ai-ml, cloud-infra]
+  - name: Crusoe
+    careers_url: https://jobs.ashbyhq.com/crusoe
+    domains: [ai-ml, cloud-infra]
+  - name: Lambda
+    careers_url: https://jobs.ashbyhq.com/lambda
+    domains: [ai-ml, cloud-infra]
+  - name: RunPod
+    careers_url: https://boards.greenhouse.io/runpod
+    domains: [ai-ml, cloud-infra]
+  - name: Lightning AI
+    careers_url: https://boards.greenhouse.io/lightningai
+    domains: [ai-ml, devtools]
+  - name: Fireworks AI
+    careers_url: https://boards.greenhouse.io/fireworksai
+    domains: [ai-ml, devtools]
+  - name: Etched
+    careers_url: https://jobs.ashbyhq.com/etched
+    domains: [ai-ml, cloud-infra]
+  - name: Stability AI
+    careers_url: https://boards.greenhouse.io/stabilityai
+    domains: [ai-ml]
+  - name: Imbue
+    careers_url: https://boards.greenhouse.io/imbue
+    domains: [ai-ml]
+  - name: Glean
+    careers_url: https://boards.greenhouse.io/gleanwork
+    domains: [ai-ml, saas]
+  - name: Reflection AI
+    careers_url: https://jobs.ashbyhq.com/reflectionai
+    domains: [ai-ml]
+  - name: AssemblyAI
+    careers_url: https://boards.greenhouse.io/assemblyai
+    domains: [ai-ml, devtools]
+  - name: Deepgram
+    careers_url: https://jobs.ashbyhq.com/deepgram
+    domains: [ai-ml, devtools]
+  - name: Synthesia
+    careers_url: https://jobs.ashbyhq.com/synthesia
+    domains: [ai-ml]
+  - name: Descript
+    careers_url: https://boards.greenhouse.io/descript
+    domains: [ai-ml, consumer]
+  - name: Pika
+    careers_url: https://jobs.ashbyhq.com/pika
+    domains: [ai-ml]
+  - name: Speak
+    careers_url: https://jobs.ashbyhq.com/speak
+    domains: [ai-ml, consumer]
+  - name: Tavus
+    careers_url: https://jobs.ashbyhq.com/tavus
+    domains: [ai-ml]
+  - name: Cresta
+    careers_url: https://boards.greenhouse.io/cresta
+    domains: [ai-ml, saas]
+  - name: PolyAI
+    careers_url: https://boards.greenhouse.io/polyai
+    domains: [ai-ml]
+  - name: Rasa
+    careers_url: https://jobs.ashbyhq.com/rasa
+    domains: [ai-ml, devtools]
+  - name: LlamaIndex
+    careers_url: https://jobs.ashbyhq.com/llamaindex
+    domains: [ai-ml, devtools]
+  - name: Mem0
+    careers_url: https://jobs.ashbyhq.com/mem0
+    domains: [ai-ml, devtools]
+  - name: Turbopuffer
+    careers_url: https://jobs.ashbyhq.com/turbopuffer
+    domains: [ai-ml, data]
+  - name: Unstructured
+    careers_url: https://jobs.ashbyhq.com/unstructured
+    domains: [ai-ml, data]
+  - name: Reducto
+    careers_url: https://jobs.ashbyhq.com/reducto
+    domains: [ai-ml, data]
+  - name: Extend
+    careers_url: https://boards.greenhouse.io/extend
+    domains: [ai-ml, data]
+  - name: Reka
+    careers_url: https://jobs.ashbyhq.com/reka
+    domains: [ai-ml]
+  - name: Mercor
+    careers_url: https://jobs.ashbyhq.com/mercor
+    domains: [ai-ml, data]
+  - name: Tractian
+    careers_url: https://jobs.lever.co/tractian
+    domains: [ai-ml]
+  - name: Figure AI
+    careers_url: https://boards.greenhouse.io/figureai
+    domains: [ai-ml]
+  - name: Physical Intelligence
+    careers_url: https://jobs.ashbyhq.com/physicalintelligence
+    domains: [ai-ml]
+  - name: World Labs
+    careers_url: https://boards.greenhouse.io/worldlabs
+    domains: [ai-ml]
+  - name: Wayve
+    careers_url: https://boards.greenhouse.io/wayve
+    domains: [ai-ml]
+  # --- fintech / payments ---
+  - name: Stripe
+    careers_url: https://boards.greenhouse.io/stripe
+    domains: [fintech]
+  - name: Bill.com
+    careers_url: https://boards.greenhouse.io/billcom
+    domains: [fintech, saas]
+  - name: Melio
+    careers_url: https://boards.greenhouse.io/melio
+    domains: [fintech]
+  - name: Dave
+    careers_url: https://jobs.ashbyhq.com/dave
+    domains: [fintech]
+  - name: Wealthfront
+    careers_url: https://jobs.lever.co/wealthfront
+    domains: [fintech]
+  - name: Acorns
+    careers_url: https://jobs.ashbyhq.com/acorns
+    domains: [fintech]
+  - name: Titan
+    careers_url: https://jobs.ashbyhq.com/titan
+    domains: [fintech]
+  - name: Alpaca
+    careers_url: https://boards.greenhouse.io/alpaca
+    domains: [fintech, devtools]
+  - name: Altruist
+    careers_url: https://boards.greenhouse.io/altruist
+    domains: [fintech]
+  - name: AngelList
+    careers_url: https://jobs.lever.co/angellist
+    domains: [fintech, saas]
+  - name: EquityZen
+    careers_url: https://boards.greenhouse.io/equityzen
+    domains: [fintech]
+  - name: Rho
+    careers_url: https://jobs.ashbyhq.com/rho
+    domains: [fintech]
+  - name: Relay
+    careers_url: https://jobs.ashbyhq.com/relayfi
+    domains: [fintech]
+  - name: Novo
+    careers_url: https://jobs.ashbyhq.com/novo
+    domains: [fintech]
+  - name: Capchase
+    careers_url: https://jobs.ashbyhq.com/capchase
+    domains: [fintech]
+  - name: Greenlight
+    careers_url: https://jobs.lever.co/greenlight
+    domains: [fintech, consumer]
+  - name: Wisetack
+    careers_url: https://boards.greenhouse.io/wisetack
+    domains: [fintech]
+  - name: Coalition
+    careers_url: https://boards.greenhouse.io/coalition
+    domains: [fintech, security]
+  - name: Ethos
+    careers_url: https://boards.greenhouse.io/ethos
+    domains: [fintech]
+  - name: Newfront
+    careers_url: https://jobs.ashbyhq.com/newfront
+    domains: [fintech]
+  - name: Figure
+    careers_url: https://boards.greenhouse.io/figure
+    domains: [fintech]
+  - name: Kalshi
+    careers_url: https://boards.greenhouse.io/kalshi
+    domains: [fintech, crypto]
+  - name: Remote
+    careers_url: https://boards.greenhouse.io/remotecom
+    domains: [fintech, saas]
+  # --- crypto / web3 ---
+  - name: Anchorage Digital
+    careers_url: https://jobs.lever.co/anchorage
+    domains: [crypto, fintech]
+  - name: Blockchain.com
+    careers_url: https://boards.greenhouse.io/blockchain
+    domains: [crypto, fintech]
+  - name: Magic Eden
+    careers_url: https://jobs.ashbyhq.com/magiceden
+    domains: [crypto]
+  - name: BitGo
+    careers_url: https://boards.greenhouse.io/bitgo
+    domains: [crypto, fintech]
+  - name: Cobo
+    careers_url: https://boards.greenhouse.io/cobo
+    domains: [crypto, fintech]
+  - name: Galaxy Digital
+    careers_url: https://boards.greenhouse.io/galaxydigitalservices
+    domains: [crypto, fintech]
+  - name: Backpack
+    careers_url: https://jobs.ashbyhq.com/backpack
+    domains: [crypto]
+  - name: Anagram
+    careers_url: https://jobs.ashbyhq.com/anagram
+    domains: [crypto]
+  - name: Gauntlet
+    careers_url: https://jobs.lever.co/gauntlet
+    domains: [crypto]
+  - name: Toku
+    careers_url: https://jobs.ashbyhq.com/toku
+    domains: [crypto, fintech]
+  - name: Jito
+    careers_url: https://jobs.lever.co/jito
+    domains: [crypto]
+  - name: Sky Mavis
+    careers_url: https://jobs.ashbyhq.com/skymavis
+    domains: [crypto, gaming]
+  - name: Bitrefill
+    careers_url: https://bitrefill.teamtailor.com/
+    domains: [crypto, fintech]
+  # --- cloud-infra / devtools ---
+  - name: Docker
+    careers_url: https://jobs.ashbyhq.com/docker
+    domains: [devtools, cloud-infra]
+  - name: Sentry
+    careers_url: https://jobs.ashbyhq.com/sentry
+    domains: [devtools]
+  - name: Coder
+    careers_url: https://jobs.ashbyhq.com/coder
+    domains: [devtools]
+  - name: TigerData
+    careers_url: https://jobs.ashbyhq.com/tigerdata
+    domains: [data, devtools]
+  - name: Redis
+    careers_url: https://jobs.ashbyhq.com/redis
+    domains: [data, devtools]
+  - name: Materialize
+    careers_url: https://jobs.ashbyhq.com/materialize
+    domains: [data]
+  - name: Namespace
+    careers_url: https://jobs.ashbyhq.com/namespace
+    domains: [devtools]
+  - name: Buildkite
+    careers_url: https://boards.greenhouse.io/buildkite
+    domains: [devtools]
+  - name: CircleCI
+    careers_url: https://boards.greenhouse.io/circleci
+    domains: [devtools]
+  - name: LaunchDarkly
+    careers_url: https://boards.greenhouse.io/launchdarkly
+    domains: [devtools]
+  - name: Plane
+    careers_url: https://jobs.ashbyhq.com/plane
+    domains: [devtools, saas]
+  # --- security ---
+  - name: 1Password
+    careers_url: https://jobs.ashbyhq.com/1password
+    domains: [security]
+  - name: Orca Security
+    careers_url: https://boards.greenhouse.io/orcasecurity
+    domains: [security, cloud-infra]
+  - name: JFrog
+    careers_url: https://boards.greenhouse.io/jfrog
+    domains: [security, devtools]
+  - name: Chainguard
+    careers_url: https://boards.greenhouse.io/chainguard
+    domains: [security, devtools]
+  - name: Endor Labs
+    careers_url: https://boards.greenhouse.io/endorlabs
+    domains: [security, devtools]
+  - name: Material Security
+    careers_url: https://jobs.ashbyhq.com/materialsecurity
+    domains: [security]
+  - name: Cato Networks
+    careers_url: https://boards.greenhouse.io/catonetworks
+    domains: [security, cloud-infra]
+  - name: Tailscale
+    careers_url: https://boards.greenhouse.io/tailscale
+    domains: [security, cloud-infra]
+  - name: Twingate
+    careers_url: https://jobs.lever.co/twingate
+    domains: [security, cloud-infra]
+  - name: Doppler
+    careers_url: https://jobs.ashbyhq.com/doppler
+    domains: [security, devtools]
+  - name: Infisical
+    careers_url: https://jobs.ashbyhq.com/infisical
+    domains: [security, devtools]
+  - name: TrueLayer
+    careers_url: https://boards.greenhouse.io/truelayer
+    domains: [fintech, security]
+  - name: AuthZed
+    careers_url: https://jobs.ashbyhq.com/authzed
+    domains: [security, devtools]
+  # --- data & analytics ---
+  - name: Deepnote
+    careers_url: https://jobs.ashbyhq.com/deepnote
+    domains: [data, ai-ml]
+  - name: Lightdash
+    careers_url: https://jobs.ashbyhq.com/lightdash
+    domains: [data]
+  - name: Acceldata
+    careers_url: https://jobs.lever.co/acceldata
+    domains: [data]
+  # --- saas / B2B ---
+  - name: SurveyMonkey
+    careers_url: https://boards.greenhouse.io/surveymonkey
+    domains: [saas]
+  - name: Qualtrics
+    careers_url: https://boards.greenhouse.io/qualtrics
+    domains: [saas, data]
+  - name: Kustomer
+    careers_url: https://jobs.ashbyhq.com/kustomer
+    domains: [saas]
+  - name: Pylon
+    careers_url: https://jobs.ashbyhq.com/pylon
+    domains: [saas]
+  - name: Justworks
+    careers_url: https://boards.greenhouse.io/justworks
+    domains: [saas, fintech]
+  - name: Culture Amp
+    careers_url: https://boards.greenhouse.io/cultureamp
+    domains: [saas]
+  - name: 15Five
+    careers_url: https://jobs.lever.co/15five
+    domains: [saas]
+  - name: Leapsome
+    careers_url: https://jobs.ashbyhq.com/leapsome
+    domains: [saas]
+  - name: Beamery
+    careers_url: https://jobs.ashbyhq.com/beamery
+    domains: [saas, ai-ml]
+  - name: Findem
+    careers_url: https://jobs.lever.co/findem
+    domains: [saas, ai-ml]
+  - name: Turing
+    careers_url: https://boards.greenhouse.io/turing
+    domains: [ai-ml, saas]
+  # --- gaming ---
+  - name: Supercell
+    careers_url: https://jobs.ashbyhq.com/supercell
+    domains: [gaming]
+  - name: Jam City
+    careers_url: https://jobs.lever.co/jamcity
+    domains: [gaming]
+  - name: Improbable
+    careers_url: https://jobs.ashbyhq.com/improbable
+    domains: [gaming]
+  - name: Singularity 6
+    careers_url: https://boards.greenhouse.io/singularity6
+    domains: [gaming]
+  - name: Second Dinner
+    careers_url: https://jobs.ashbyhq.com/seconddinner
+    domains: [gaming]
+  - name: FanDuel
+    careers_url: https://boards.greenhouse.io/fanduel
+    domains: [gaming, consumer]
+  - name: Underdog Fantasy
+    careers_url: https://boards.greenhouse.io/underdogfantasy
+    domains: [gaming, consumer]
+  - name: PrizePicks
+    careers_url: https://boards.greenhouse.io/prizepicks
+    domains: [gaming, consumer]
+  - name: Limit Break
+    careers_url: https://jobs.lever.co/limitbreak
+    domains: [gaming, crypto]
+  # --- consumer / social / media ---
+  - name: Match Group
+    careers_url: https://jobs.lever.co/matchgroup
+    domains: [consumer]
+  - name: Poshmark
+    careers_url: https://jobs.ashbyhq.com/poshmark
+    domains: [consumer, ecommerce]
+  - name: OfferUp
+    careers_url: https://boards.greenhouse.io/offerup
+    domains: [consumer, ecommerce]
+  - name: Wallapop
+    careers_url: https://boards.greenhouse.io/wallapop
+    domains: [consumer, ecommerce]
+  - name: Vestiaire Collective
+    careers_url: https://jobs.lever.co/vestiairecollective
+    domains: [consumer, ecommerce]
+  - name: Cameo
+    careers_url: https://boards.greenhouse.io/cameo
+    domains: [consumer]
+  - name: Whoop
+    careers_url: https://jobs.ashbyhq.com/whoop
+    domains: [consumer, healthtech]
+  - name: Oura
+    careers_url: https://boards.greenhouse.io/oura
+    domains: [consumer, healthtech]
+  - name: Eight Sleep
+    careers_url: https://jobs.ashbyhq.com/eightsleep
+    domains: [consumer]
+  - name: Brilliant
+    careers_url: https://jobs.lever.co/brilliant
+    domains: [consumer]
+  - name: MasterClass
+    careers_url: https://boards.greenhouse.io/masterclass
+    domains: [consumer]
+  - name: Multiverse
+    careers_url: https://jobs.ashbyhq.com/multiverse
+    domains: [consumer, saas]
+  - name: Handshake
+    careers_url: https://jobs.ashbyhq.com/handshake
+    domains: [consumer, saas]
+  - name: Andela
+    careers_url: https://jobs.ashbyhq.com/andela
+    domains: [consumer, saas]
+  - name: Toptal
+    careers_url: https://jobs.lever.co/toptal
+    domains: [consumer, saas]
+  # --- e-commerce / retail tech ---
+  - name: project44
+    careers_url: https://boards.greenhouse.io/project44
+    domains: [ecommerce]
+  - name: FourKites
+    careers_url: https://boards.greenhouse.io/fourkites
+    domains: [ecommerce, data]
+  - name: Triple Whale
+    careers_url: https://boards.greenhouse.io/triplewhale
+    domains: [ecommerce, data]
+  - name: Northbeam
+    careers_url: https://boards.greenhouse.io/northbeam
+    domains: [ecommerce, data]
+  - name: Fundraise Up
+    careers_url: https://boards.greenhouse.io/fundraiseup
+    domains: [ecommerce, saas]
+  # --- healthtech ---
+  - name: Lyra Health
+    careers_url: https://jobs.lever.co/lyrahealth
+    domains: [healthtech]
+  - name: Sword Health
+    careers_url: https://jobs.lever.co/swordhealth
+    domains: [healthtech]
+  - name: Omada Health
+    careers_url: https://boards.greenhouse.io/omadahealth
+    domains: [healthtech]
+  - name: Included Health
+    careers_url: https://jobs.lever.co/includedhealth
+    domains: [healthtech]
+  - name: Aledade
+    careers_url: https://jobs.lever.co/aledade
+    domains: [healthtech]
+  - name: Cedar
+    careers_url: https://jobs.ashbyhq.com/cedar
+    domains: [healthtech, fintech]
+  - name: Superpower
+    careers_url: https://jobs.ashbyhq.com/superpower
+    domains: [healthtech, consumer]
