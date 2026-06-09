@@ -2,8 +2,7 @@ import { Router } from 'express';
 import type Database from 'better-sqlite3';
 import { Repo } from '../../db/repo.js';
 import { existsSync } from 'node:fs';
-import { join, normalize, sep } from 'node:path';
-import { profileDir } from '../../config/load.js';
+import { safeProfileSubpath } from '../../config/paths.js';
 import { claudeAvailable, findExistingResume, generateResume } from '../../resume/generate.js';
 
 /**
@@ -49,10 +48,9 @@ export function resumeGenRouter(db: Database.Database): Router {
 
   r.get('/generated/*', (req, res) => {
     const rel = decodeURIComponent((req.params as Record<string, string>)[0] ?? '');
-    // boundary-aware guard, same pattern as routes/resumes.ts
-    const root = join(profileDir(), 'generated');
-    const path = normalize(join(root, rel));
-    if (!path.startsWith(root + sep) || !existsSync(path)) {
+    // boundary-aware guard (shared): confined strictly to profile/generated/.
+    const path = safeProfileSubpath('generated', rel);
+    if (!path || !existsSync(path)) {
       return res.status(404).json({ error: 'not found' });
     }
     if (path.endsWith('.pdf')) res.type('application/pdf');

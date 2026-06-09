@@ -43,6 +43,13 @@ describe('parsePostedDate', () => {
     expect(parsePostedDate(1780663022, NOW)).toBe('2026-06-05');
   });
 
+  test('epoch is stamped at LOCAL calendar date (Dubai), not UTC', () => {
+    // 22:00 UTC Jun 5 = 02:00 Jun 6 in Dubai — the stamp must say Jun 6, matching
+    // localDateISO/first_seen, so a late-evening posting doesn't drift a day.
+    const NOW_LATE = new Date('2026-06-06T23:00:00Z');
+    expect(parsePostedDate(Date.parse('2026-06-05T22:00:00Z'), NOW_LATE)).toBe('2026-06-06');
+  });
+
   test('future dates (bad board data) → null, not a permanent top-of-list entry', () => {
     expect(parsePostedDate('2099-01-01', NOW)).toBe(null);
     expect(parsePostedDate('2030-01-01T00:00:00Z', NOW)).toBe(null);

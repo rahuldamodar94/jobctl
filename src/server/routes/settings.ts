@@ -1,9 +1,10 @@
 import { Router } from 'express';
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync, unlinkSync } from 'node:fs';
-import { join, normalize, sep, dirname } from 'node:path';
+import { join, sep, dirname } from 'node:path';
 import { parse, stringify } from 'yaml';
 import type { z } from 'zod';
 import { profileDir, profileSchema, rolesFileSchema, categoriesSchema } from '../../config/load.js';
+import { safeProfilePath } from '../../config/paths.js';
 
 /**
  * Settings/onboarding write surface. Every write validates with the SAME zod
@@ -18,15 +19,8 @@ import { profileDir, profileSchema, rolesFileSchema, categoriesSchema } from '..
 const SKILL_FILE = 'RESUME_GENERATION_SKILL.md';
 const RUBRIC_FILE = 'judge-rubric.md';
 
-/** Resolve a path strictly INSIDE profile/ (reject the root itself + escapes). */
-function safeProfilePath(rel: string): string | null {
-  const root = profileDir();
-  const path = normalize(join(root, rel));
-  if (path === root || !path.startsWith(root + sep)) return null;
-  return path;
-}
-
-/** Resolve a path under profile/resumes/ (the only user-file write zone). */
+/** Resolve a path under profile/resumes/ (the only user-file write zone).
+ *  Built on the shared safeProfilePath boundary guard (src/config/paths.ts). */
 function safeResumePath(rel: string): string | null {
   const path = safeProfilePath(rel);
   if (!path || !path.startsWith(join(profileDir(), 'resumes') + sep)) return null;

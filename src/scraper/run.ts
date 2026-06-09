@@ -7,7 +7,7 @@ import {
   loadRoles,
   loadSources,
 } from '../config/load.js';
-import { PoliteHttp } from '../sources/http.js';
+import { PoliteHttp, scopeHttp, type HttpClient } from '../sources/http.js';
 import type { BoardAdapter, ScrapeContext } from '../sources/types.js';
 import type { RawJob, SourceRunResult } from '../shared/types.js';
 import { dedupeKey, findFuzzyMatch } from '../matcher/dedupe.js';
@@ -118,7 +118,16 @@ export async function runScrape(db: Database.Database, opts: ScrapeOptions = {})
         continue;
       }
 
-      const ctx: ScrapeContext = { http, config, log, now };
+      // Pin each board adapter to its configured host (SSRF guard mirroring the
+      // ATS fetchers): derive the allowlist host from base_url; if it's absent/
+      // invalid, leave the client unscoped (such an adapter doesn't fetch a URL).
+      let boardHttp: HttpClient = http;
+      try {
+        boardHttp = scopeHttp(http, [new URL(config.baseUrl).hostname]);
+      } catch {
+        /* no/invalid base_url → leave unscoped */
+      }
+      const ctx: ScrapeContext = { http: boardHttp, config, log, now };
       try {
         const raw = await adapter.fetch(ctx);
         const fresh = raw.filter((j) => !isOlderThan(j.postedDate, profile.maxAgeDays, now));
@@ -334,19 +343,38 @@ async function runAtsSources(
 
   const failures = companyResults.filter((r) => r.error);
   const allFailed = failures.length === companyResults.length;
-  if (!allFailed) repo.recordSourceSuccess('ats', raw.length);
+
+  // Symmetric with the board path: a previously-productive ATS aggregate that
+  // surprisingly returns 0 jobs (but ISN'T the all-errored case above) is
+  // SUSPECT, not success — recording success here would let the decay loop
+  // deactivate the entire prior ATS corpus on one fluke empty run. After 3
+  // consecutive suspect runs we accept 0 as the new baseline (same mechanism/
+  // state as boards) so decay never stays frozen forever.
+  let suspect = false;
+  if (!allFailed) {
+    const prior = repo.getSourceState('ats');
+    suspect = raw.length === 0 && prior.lastSuccessCount > 0;
+    if (suspect && repo.bumpSuspect('ats') >= 3) {
+      log('  ats: 0 jobs for 3 consecutive runs — accepting as the new baseline');
+      suspect = false;
+    }
+    if (!suspect) repo.recordSourceSuccess('ats', raw.length);
+  }
 
   // ATS decay scope: each provider gets its own source_id (ats:greenhouse etc.)
-  // handled by the caller's decay loop via this aggregate result.
+  // handled by the caller's decay loop via this aggregate result — which only
+  // runs for status 'success', so 'suspect'/'failed' correctly skip decay.
   return {
     results: [
       {
         sourceId: 'ats',
-        status: allFailed ? 'failed' : 'success',
+        status: allFailed ? 'failed' : suspect ? 'suspect' : 'success',
         jobsFound: raw.length,
         jobsNew,
         durationMs: Date.now() - started,
-        ...(failures.length
+        ...(suspect
+          ? { error: '0 jobs from a previously-productive source — selector drift?' }
+          : failures.length
           ? { error: failures.map((f) => `${f.company}: ${f.error}`).join(' | ').slice(0, 500) }
           : {}),
       },

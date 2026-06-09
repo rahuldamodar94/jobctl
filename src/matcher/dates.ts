@@ -14,10 +14,6 @@ const UNIT_DAYS: Record<string, number> = {
   y: 365, year: 365, years: 365,
 };
 
-function toISODate(d: Date): string {
-  return d.toISOString().slice(0, 10);
-}
-
 /**
  * The date "today" in the machine's LOCAL timezone as yyyy-mm-dd.
  * Used for first_seen/last_seen stamps and decay cutoffs: a user in Dubai
@@ -43,7 +39,7 @@ export function parsePostedDate(
     const ms = raw < 1e12 ? raw * 1000 : raw;
     const d = new Date(ms);
     if (isNaN(d.getTime()) || d.getTime() > now.getTime()) return null; // future = bad data
-    return toISODate(d);
+    return localDateISO(d);
   }
 
   const s = raw.trim();
@@ -56,14 +52,14 @@ export function parsePostedDate(
     let daysBack = n * (UNIT_DAYS[unit] ?? 1);
     // "< 1d" means "less than N ago" — use the newer bound
     if (s.startsWith('<')) daysBack = Math.max(0, daysBack - 1);
-    return toISODate(new Date(now.getTime() - daysBack * 86_400_000));
+    return localDateISO(new Date(now.getTime() - daysBack * 86_400_000));
   }
 
   // ISO date or timestamp
   if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
     const d = new Date(s);
     if (isNaN(d.getTime()) || d.getTime() > now.getTime()) return null; // future = bad data
-    return toISODate(d);
+    return localDateISO(d);
   }
 
   return null;

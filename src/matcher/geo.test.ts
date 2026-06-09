@@ -23,6 +23,19 @@ describe('geoBucket', () => {
   test('remote with office option still buckets remote', () => {
     expect(geoBucket('Remote (London office option, visa sponsored)')).toBe('remote');
   });
+
+  test('intra-word hyphen does NOT split — distinct hyphenated places keep tails', () => {
+    // ASCII '-' inside a word is not a separator, so "Wilkes-Barre" doesn't
+    // collapse to "wilkes" (and thus never shares a bucket with "Wilkes").
+    expect(geoBucket('Wilkes-Barre, PA')).toBe('wilkes-barre');
+    expect(geoBucket('Wilkes, PA')).toBe('wilkes');
+    expect(geoBucket('Wilkes-Barre, PA')).not.toBe(geoBucket('Wilkes, PA'));
+    expect(geoBucket('Baden-Württemberg')).toBe('baden-württemberg');
+  });
+
+  test('whitespace-flanked hyphen still splits like a dash separator', () => {
+    expect(geoBucket('Berlin - Germany')).toBe('berlin');
+  });
 });
 
 describe('geoCompatible', () => {
@@ -52,5 +65,16 @@ describe('locationMatches', () => {
 
   test('bare remote counts as match when remote is in the list', () => {
     expect(locationMatches('Remote', ['remote'])).toBe(true);
+  });
+
+  test('short terms are word-boundary matched — no substring over-match', () => {
+    // 'us' must not substring-hit "Belarus"; must still hit a standalone "US".
+    expect(locationMatches('Minsk, Belarus', ['us'])).toBe(false);
+    expect(locationMatches('US', ['us'])).toBe(true);
+    expect(locationMatches('Austin, US', ['us'])).toBe(true);
+    // 'eu' must not hit "Europe"; 'uk' must not hit inside another word.
+    expect(locationMatches('Europe', ['eu'])).toBe(false);
+    // multi-word country term still matches as a unit.
+    expect(locationMatches('Austin, United States', ['united states'])).toBe(true);
   });
 });

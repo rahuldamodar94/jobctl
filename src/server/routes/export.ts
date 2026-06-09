@@ -54,6 +54,8 @@ function csvCell(v: unknown): string {
   let s = String(v);
   // formula-injection guard
   if (/^[=+\-@]/.test(s)) s = `'${s}`;
-  if (/[",\n]/.test(s)) s = `"${s.replaceAll('"', '""')}"`;
+  // quote any cell containing a delimiter, quote, or line/field break — \r and
+  // \t included so a stray CR or tab can't malform a row in a spreadsheet (L3)
+  if (/[",\n\r\t]/.test(s)) s = `"${s.replaceAll('"', '""')}"`;
   return s;
 }

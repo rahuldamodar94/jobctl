@@ -2,9 +2,7 @@ import { Router } from 'express';
 import type Database from 'better-sqlite3';
 import { safeJsonParse, type Repo } from '../../db/repo.js';
 import { localDateISO } from '../../matcher/dates.js';
-import { JUDGE_VERDICTS } from '../../shared/types.js';
-
-const STATUSES = ['new', 'interested', 'applied', 'rejected', 'dismissed'];
+import { JOB_STATUSES, JUDGE_VERDICTS } from '../../shared/types.js';
 
 /** Query keys buildJobsFilter understands — the export route uses this to tell
  *  "filtered view requested" apart from a bare full-dump backup call. */
@@ -49,7 +47,7 @@ export function buildJobsFilter(
       // hiding their own dismissals from an investigation makes jobs "go missing".
     } else if (status) {
       // explicit status (or comma list) — invalid values are dropped
-      const list = status.split(',').filter((s) => STATUSES.includes(s));
+      const list = status.split(',').filter((s) => (JOB_STATUSES as readonly string[]).includes(s));
       if (list.length) {
         where.push(`status IN (${list.map(() => '?').join(',')})`);
         params.push(...list);
@@ -186,8 +184,8 @@ export function jobsRouter(db: Database.Database, repo: Repo): Router {
     const id = Number(req.params.id);
     const { status, notes } = req.body as { status?: string; notes?: string | null };
     if (!repo.findById(id)) return res.status(404).json({ error: 'not found' });
-    if (status !== undefined && !STATUSES.includes(status)) {
-      return res.status(400).json({ error: `status must be one of ${STATUSES.join(', ')}` });
+    if (status !== undefined && !(JOB_STATUSES as readonly string[]).includes(status)) {
+      return res.status(400).json({ error: `status must be one of ${JOB_STATUSES.join(', ')}` });
     }
     if (status !== undefined) repo.setStatus(id, status as never, notes !== undefined ? notes : undefined);
     else if (notes !== undefined) repo.setNotes(id, notes);
@@ -197,14 +195,17 @@ export function jobsRouter(db: Database.Database, repo: Repo): Router {
   /** POST /api/jobs/bulk { ids: number[], status } — capped at 1000 per call. */
   r.post('/bulk', (req, res) => {
     const { ids, status } = req.body as { ids: number[]; status: string };
-    if (!Array.isArray(ids) || !ids.length || ids.length > 1000 || !STATUSES.includes(status)) {
+    if (!Array.isArray(ids) || !ids.length || ids.length > 1000 || !(JOB_STATUSES as readonly string[]).includes(status)) {
       return res.status(400).json({ error: 'need ids[] (max 1000) and a valid status' });
     }
-    // one transaction → all-or-nothing + a single WAL commit for up to 1000 rows
+    // one transaction → all-or-nothing + a single WAL commit for up to 1000 rows.
+    // Sum the rows actually changed so the response reflects reality — bad/
+    // non-existent ids update nothing and shouldn't inflate the count (L1).
+    let updated = 0;
     repo.transaction(() => {
-      for (const id of ids) repo.setStatus(Number(id), status as never);
+      for (const id of ids) updated += repo.setStatus(Number(id), status as never);
     });
-    res.json({ updated: ids.length });
+    res.json({ updated });
   });
 
   return r;

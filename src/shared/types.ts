@@ -21,7 +21,11 @@ export interface RawJob {
   postedDate: string | null;
 }
 
-export type JobStatus = 'new' | 'interested' | 'applied' | 'rejected' | 'dismissed';
+/** Full status vocabulary (DB values), ordered new → terminal. Single source of
+ *  truth for the server's status-CSV validation and the UI's status pickers —
+ *  import this instead of re-listing the strings. */
+export const JOB_STATUSES = ['new', 'interested', 'applied', 'rejected', 'dismissed'] as const;
+export type JobStatus = (typeof JOB_STATUSES)[number];
 
 /**
  * Ordered ranks — dedupe merges never downgrade to a less-advanced status.

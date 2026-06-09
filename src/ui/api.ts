@@ -143,8 +143,15 @@ export async function startScrape(): Promise<boolean> {
 }
 
 export async function latestRun(): Promise<RunSummary | null> {
-  const res = await fetch('/api/runs/latest');
-  return res.json();
+  // Polled every 2s during a scrape — a transient 5xx / non-JSON body must not
+  // reject (an unhandled rejection in the poll can strand the run strip).
+  try {
+    const res = await fetch('/api/runs/latest');
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
 }
 
 export interface AppConfig {
@@ -190,9 +197,19 @@ export async function judgeJob(id: number): Promise<VerdictPatch> {
   return body;
 }
 
-export async function getConfig(): Promise<AppConfig> {
-  const res = await fetch('/api/config');
-  return res.json();
+/** Last successfully-fetched config — returned if a later fetch fails so the UI
+ *  keeps its dropdown vocabulary instead of showing an error body as data. */
+let lastConfig: AppConfig | null = null;
+
+export async function getConfig(): Promise<AppConfig | null> {
+  try {
+    const res = await fetch('/api/config');
+    if (!res.ok) return lastConfig;
+    lastConfig = await res.json();
+    return lastConfig;
+  } catch {
+    return lastConfig;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -283,7 +300,10 @@ export async function generateResume(jobId: number): Promise<GeneratedResumeInfo
 }
 
 export async function getResumeInfo(jobId: number): Promise<GeneratedResumeInfo | null> {
+  // 404 = no resume generated yet (the common case) — don't render the error
+  // body as info; just report "none".
   const res = await fetch(`/api/jobs/${jobId}/resume`);
+  if (!res.ok) return null;
   return res.json();
 }
 
@@ -293,6 +313,9 @@ export async function listResumes(): Promise<{ id: string; label: string }[]> {
 }
 
 export async function getResume(id: string): Promise<string> {
+  // Guard the read path so the drawer never renders a 404/500 error body as
+  // resume content.
   const res = await fetch(`/api/resumes/${id}`);
+  if (!res.ok) throw new Error(`resume: HTTP ${res.status}`);
   return res.text();
 }

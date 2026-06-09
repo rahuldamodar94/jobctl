@@ -68,9 +68,11 @@ export function buildConfigPayload(): AppConfigPayload {
     /* profile unreadable — source/category filters degrade */
   }
   try {
-    // drop categories the user excluded — listing them in the filter is just
-    // confusing (their jobs are unmatched and never appear in the matched view)
-    categories = loadCategories().order.filter((c) => !excluded.has(c));
+    // The dropdown vocabulary = the taxonomy order plus the conventional
+    // 'other' fallback bucket (the DB default for no-description jobs), minus
+    // anything the user excluded. Emitting 'other' here (instead of the UI
+    // re-appending it) means an excluded 'other' is correctly dropped too (M8).
+    categories = [...new Set([...loadCategories().order, 'other'])].filter((c) => !excluded.has(c));
   } catch {
     /* categories unreadable */
   }

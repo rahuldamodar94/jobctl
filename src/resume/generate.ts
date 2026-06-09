@@ -49,7 +49,11 @@ function fileSlug(s: string): string {
 
 const GENERATED_DIR = () => join(profileDir(), 'generated');
 
-/** Find a previous generation for this job (newest first). */
+/** Find a previous generation for this job (newest first). Dir names encode the
+ *  jobId as the trailing `-<jobId>` segment (`<date>-<company>-<jobId>`), so we
+ *  match on the NAME and only read the one matching dir's meta.json — no longer
+ *  a readFileSync per generation on every call. (The dir name is the authority;
+ *  meta.json is read solely for the returned `meta` fields the route serves.) */
 export function findExistingResume(jobId: number): { dir: string; meta: Record<string, unknown> } | null {
   const root = GENERATED_DIR();
   if (!existsSync(root)) return null;
@@ -59,11 +63,17 @@ export function findExistingResume(jobId: number): { dir: string; meta: Record<s
     .sort()
     .reverse();
   for (const dir of dirs) {
+    // jobId is the trailing numeric segment of the dir name; skip non-matches
+    // without touching disk.
+    const m = /-(\d+)$/.exec(dir);
+    if (!m || Number(m[1]) !== jobId) continue;
     const metaPath = join(root, dir, 'meta.json');
     if (!existsSync(metaPath)) continue;
     try {
       const meta = JSON.parse(readFileSync(metaPath, 'utf8'));
-      if (meta.jobId === jobId) return { dir, meta };
+      // Trust the meta's jobId when present (guards a slug that happens to end
+      // in -<n>); fall back to the name match when meta lacks the field.
+      if (meta.jobId === undefined || meta.jobId === jobId) return { dir, meta };
     } catch {
       /* unreadable meta — skip */
     }

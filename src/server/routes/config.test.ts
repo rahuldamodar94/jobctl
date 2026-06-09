@@ -71,7 +71,21 @@ test('excluded categories are dropped from the dropdown vocabulary', async () =>
     'order: [ai, web3, web2]\nkeywords:\n  ai: [llm]\n  web3: [crypto]\n'
   );
   const payload = (await freshBuild())();
-  expect(payload.categories).toEqual(['web3', 'web2']); // ai excluded
+  expect(payload.categories).toEqual(['web3', 'web2', 'other']); // ai excluded; 'other' fallback always offered
+});
+
+test("the 'other' fallback is itself droppable via exclude_categories (M8)", async () => {
+  writeFileSync(
+    join(dir, 'profile', 'profile.yaml'),
+    'name: Test\nenabled_sources: [jobstash]\nexclude_categories: [other]\n'
+  );
+  writeFileSync(
+    join(dir, 'profile', 'roles.yaml'),
+    'roles:\n  - id: be\n    label: Backend\n    title_keywords: [backend]\n    must_have_stack: [node]\n'
+  );
+  writeFileSync(join(dir, 'config', 'categories.yaml'), 'order: [web3, web2]\nkeywords:\n  web3: [crypto]\n');
+  const payload = (await freshBuild())();
+  expect(payload.categories).toEqual(['web3', 'web2']); // 'other' excluded → not offered
 });
 
 test('unreadable config degrades to empty lists, never throws', async () => {

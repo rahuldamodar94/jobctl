@@ -289,16 +289,18 @@ export class Repo {
     }
   }
 
-  setStatus(id: number, status: JobStatus, notes?: string | null): void {
-    if (notes !== undefined) {
-      this.db
-        .prepare('UPDATE jobs SET status = ?, user_notes = ?, status_updated_at = ? WHERE id = ?')
-        .run(status, notes, new Date().toISOString(), id);
-    } else {
-      this.db
-        .prepare('UPDATE jobs SET status = ?, status_updated_at = ? WHERE id = ?')
-        .run(status, new Date().toISOString(), id);
-    }
+  /** Returns the number of rows changed (0 if the id didn't exist) so callers
+   *  like the bulk route can report the true count, not the requested one. */
+  setStatus(id: number, status: JobStatus, notes?: string | null): number {
+    const info =
+      notes !== undefined
+        ? this.db
+            .prepare('UPDATE jobs SET status = ?, user_notes = ?, status_updated_at = ? WHERE id = ?')
+            .run(status, notes, new Date().toISOString(), id)
+        : this.db
+            .prepare('UPDATE jobs SET status = ?, status_updated_at = ? WHERE id = ?')
+            .run(status, new Date().toISOString(), id);
+    return info.changes;
   }
 
   setNotes(id: number, notes: string | null): void {

@@ -30,6 +30,13 @@ export interface RequestOptions {
   delayRangeMs?: [number, number];
 }
 
+/** Minimal HTTP surface the adapters use — lets us hand a board adapter a
+ *  host-scoped wrapper instead of the raw client. PoliteHttp satisfies it. */
+export interface HttpClient {
+  getText(url: string, opts?: RequestOptions): Promise<string>;
+  getJson<T = unknown>(url: string, opts?: RequestOptions): Promise<T>;
+}
+
 export class PoliteHttp {
   private lastRequestAt = new Map<string, number>();
   private delayRange: [number, number];
@@ -74,13 +81,29 @@ export class PoliteHttp {
       try {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), opts.timeoutMs ?? this.defaultTimeout);
+        const headers = { 'user-agent': USER_AGENT, ...opts.headers };
         let res: Response;
         try {
-          res = await fetch(url, {
-            headers: { 'user-agent': USER_AGENT, ...opts.headers },
-            redirect: opts.redirect ?? 'follow',
-            signal: controller.signal,
-          });
+          if (opts.allowHosts && opts.redirect !== 'error') {
+            // Manually follow redirects, re-checking the host allowlist at EACH
+            // hop — a 3xx from a board host must not bounce the request to an
+            // internal/LAN address (SSRF). Same-host redirects (http→https,
+            // trailing-slash) still work transparently.
+            let current = url;
+            for (let hop = 0; ; hop++) {
+              res = await fetch(current, { headers, redirect: 'manual', signal: controller.signal });
+              const loc = res.status >= 300 && res.status < 400 ? res.headers.get('location') : null;
+              if (!loc) break;
+              if (hop >= 5) throw new Error(`Too many redirects for ${url}`);
+              const next = new URL(loc, current);
+              if (!opts.allowHosts.includes(next.hostname)) {
+                throw new Error(`Redirect to ${next.hostname} not in allowlist [${opts.allowHosts.join(', ')}]`);
+              }
+              current = next.toString();
+            }
+          } else {
+            res = await fetch(url, { headers, redirect: opts.redirect ?? 'follow', signal: controller.signal });
+          }
         } finally {
           clearTimeout(timeout);
         }
@@ -118,6 +141,17 @@ export class PoliteHttp {
     if (elapsed < wait) await sleep(wait - elapsed);
     this.lastRequestAt.set(host, Date.now());
   }
+}
+
+/** Wrap an HttpClient so every call is pinned to `allowHosts` — board sources
+ *  get their configured host injected, mirroring the ATS fetchers' SSRF guard.
+ *  Combined with the manual redirect re-check, a board host can't bounce the
+ *  request off its allowlisted host. */
+export function scopeHttp(http: HttpClient, allowHosts: string[]): HttpClient {
+  return {
+    getText: (url, opts = {}) => http.getText(url, { allowHosts, ...opts }),
+    getJson: <T = unknown>(url: string, opts: RequestOptions = {}) => http.getJson<T>(url, { allowHosts, ...opts }),
+  };
 }
 
 export class HttpError extends Error {

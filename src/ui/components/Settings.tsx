@@ -213,12 +213,24 @@ function ResumesTab({ snap, onSaved }: { snap: SettingsSnapshot; onSaved: () => 
   const [result, setResult] = useState<SaveResult | null>(null);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
+  // Free-text new-path input has its OWN local state — typing here must NOT call
+  // switchFile per keystroke (that would load a partial path → 404 → wipe the
+  // editor, and spam the discard-confirm). It commits only on blur/Enter/Open.
+  const [newPath, setNewPath] = useState('');
 
   // guard against silently discarding unsaved edits when switching files
   const switchFile = (next: string) => {
+    if (next === file) return;
     if (dirty && !window.confirm('Discard unsaved changes to this resume?')) return;
     setDirty(false);
     setFile(next);
+  };
+
+  // Commit the typed path (blur / Enter / Open button) — only then do we load it.
+  const openNewPath = () => {
+    const next = newPath.trim();
+    if (!next) return;
+    switchFile(next);
   };
 
   useEffect(() => {
@@ -252,7 +264,22 @@ function ResumesTab({ snap, onSaved }: { snap: SettingsSnapshot; onSaved: () => 
             <option key={r.file} value={r.file}>{r.label} ({r.file})</option>
           ))}
         </select>
-        <input value={file} onChange={(e) => switchFile(e.target.value)} placeholder="resumes/new.md" className={cn(ctrl, 'w-48')} />
+        <input
+          value={newPath}
+          onChange={(e) => setNewPath(e.target.value)}
+          onBlur={openNewPath}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              openNewPath();
+            }
+          }}
+          placeholder="resumes/new.md"
+          className={cn(ctrl, 'w-48')}
+        />
+        <Button variant="secondary" size="sm" onClick={openNewPath} disabled={!newPath.trim()}>
+          Open
+        </Button>
       </div>
       {file && (
         <>

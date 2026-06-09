@@ -7,6 +7,7 @@
 import React from 'react';
 import { Search, RotateCcw } from 'lucide-react';
 import type { AppConfig, Filters, Stats } from '../api.js';
+import { JUDGE_VERDICTS } from '../../shared/types.js';
 import { cn } from './ui.js';
 
 /** Status pills: value sent to the server ↔ display label. "Active" = the
@@ -48,7 +49,12 @@ export function FilterBar({
   const currentLane = lanes.find((l) => idsForLane(l) === filters.role) ?? '';
   const LANE_LABEL: Record<string, string> = { ic: 'IC', em: 'EM' };
 
-  const cats = [...vocab.categories, 'other'].filter((c, i, a) => a.indexOf(c) === i);
+  // The server's /api/config already drops excluded categories from
+  // vocab.categories, so its list is authoritative. Only synthesize 'other' when
+  // the server returned NO categories at all (no taxonomy loaded yet) — that way
+  // a deliberately-excluded 'other' can't reappear, while an empty dropdown still
+  // gets the universal fallback. (M8)
+  const cats = vocab.categories.length ? vocab.categories : ['other'];
   const isDefault = JSON.stringify(filters) === JSON.stringify(defaults);
 
   const Label = ({ children }: { children: React.ReactNode }) => (
@@ -198,7 +204,7 @@ export function FilterBar({
             <Label>Fit</Label>
             <select value={filters.verdict} onChange={set('verdict')} className={CTRL}>
               <option value="">all</option>
-              {['STRONG', 'DECENT', 'WEAK', 'SKIP'].map((v) => (
+              {JUDGE_VERDICTS.map((v) => (
                 <option key={v} value={v}>{v.toLowerCase()}</option>
               ))}
             </select>

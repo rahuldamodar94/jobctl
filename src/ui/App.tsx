@@ -32,7 +32,12 @@ import { ResumeDrawer } from './components/ResumeDrawer.js';
 import { Onboarding } from './components/Onboarding.js';
 import { Settings } from './components/Settings.js';
 import { Button, Skeleton } from './components/ui.js';
+import { JOB_STATUSES } from '../shared/types.js';
 import { Play, Download, FileText, Settings as SettingsIcon, Crosshair, SearchX, Sparkles } from 'lucide-react';
+
+// Bulk actions target every status EXCEPT 'new' (you don't bulk-reset to new —
+// it's the untriaged default). Sourced from the shared vocab, not re-listed.
+const BULK_STATUSES = JOB_STATUSES.filter((s) => s !== 'new');
 
 const DEFAULT_FILTERS: Filters = {
   q: '',
@@ -85,15 +90,15 @@ export default function App() {
 
   // Lazy loading: jobs accumulate in pages of PAGE_SIZE as the user scrolls.
   // `epoch` guards against a stale page landing after the filters changed.
-  // jobsLenRef mirrors jobs.length so loadMore reads it WITHOUT a state-updater
-  // side effect (which StrictMode double-invokes → duplicate pages).
+  // serverConsumedRef = how many server rows we've actually pulled for the
+  // current filter set; it ONLY grows by the count fetched per page. We use it
+  // (not jobs.length) as the SQL OFFSET, because jobs.length shrinks when a
+  // triaged row leaves the view — using that would skip/duplicate a row at a
+  // page boundary (M2). Reset to 0 on every fresh reload.
   const epochRef = useRef(0);
   const loadingRef = useRef(false);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
-  const jobsLenRef = useRef(0);
-  useEffect(() => {
-    jobsLenRef.current = jobs.length;
-  }, [jobs.length]);
+  const serverConsumedRef = useRef(0);
 
   const reload = useCallback(
     (opts: { keepSelection?: boolean } = {}) => {
@@ -104,6 +109,7 @@ export default function App() {
         setHasLoaded(true);
         setJobs(r.jobs);
         setTotal(r.total);
+        serverConsumedRef.current = r.jobs.length; // fresh page set → reset offset base
         // poll-driven refreshes keep the user's bulk selection intact
         if (!opts.keepSelection) setSelected(new Set());
       });
@@ -118,9 +124,12 @@ export default function App() {
     if (loadingRef.current) return;
     loadingRef.current = true;
     const epoch = epochRef.current;
-    fetchJobs(filters, jobsLenRef.current)
+    // OFFSET from the STABLE consumed counter, not jobs.length (which shrinks
+    // when a triaged row leaves the view → would skip/dupe at a page boundary).
+    fetchJobs(filters, serverConsumedRef.current)
       .then((r) => {
         if (epoch === epochRef.current) {
+          serverConsumedRef.current += r.jobs.length;
           setJobs((js) => [...js, ...r.jobs]);
           setTotal(r.total);
         }
@@ -174,6 +183,7 @@ export default function App() {
   }, [jobs.length, total, loadMore]);
   const loadConfig = useCallback(() => {
     getConfig().then((c) => {
+      if (!c) return; // fetch failed and no last-known config — keep current state
       setConfig(c);
       setResumeGenEnabled(c.resumeGeneration);
       setVocab({ roles: c.roles ?? [], sources: c.sources ?? [], categories: c.categories ?? [] });
@@ -224,9 +234,16 @@ export default function App() {
   useEffect(() => {
     if (!scraping) return;
     pollRef.current = setInterval(async () => {
-      const r = await latestRun();
-      setRun(r);
-      if (r && r.status !== 'running') reload({ keepSelection: true });
+      // One bad poll must not kill the interval — latestRun() already returns
+      // null on failure, but guard the whole body so nothing can throw out of it.
+      try {
+        const r = await latestRun();
+        if (!r) return; // transient failure — keep polling, leave the strip as-is
+        setRun(r);
+        if (r.status !== 'running') reload({ keepSelection: true });
+      } catch {
+        /* keep polling */
+      }
     }, 2000);
     return () => {
       if (pollRef.current) clearInterval(pollRef.current);
@@ -407,7 +424,7 @@ export default function App() {
             <span className="font-semibold text-ink">{selected.size}</span>
             <span className="text-muted">selected</span>
             <span className="mx-1 h-4 w-px bg-line" />
-            {['interested', 'applied', 'rejected', 'dismissed'].map((s) => (
+            {BULK_STATUSES.map((s) => (
               <Button key={s} size="sm" variant="secondary" onClick={() => onBulk(s)} className="capitalize">
                 {s}
               </Button>

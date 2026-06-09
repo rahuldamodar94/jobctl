@@ -16,6 +16,7 @@ import {
 import { generateResume, getResumeInfo, judgeJob, type GeneratedResumeInfo, type UiJob } from '../api.js';
 import { Badge, ScoreRing, Button, cn } from './ui.js';
 import { isHttpUrl } from '../../shared/url.js';
+import { JOB_STATUSES } from '../../shared/types.js';
 
 /** verdict → chip tone (advisory; never hides the row) */
 const VERDICT_TONE: Record<string, React.ComponentProps<typeof Badge>['tone']> = {
@@ -72,7 +73,8 @@ function shortDate(d: string): string {
 /** Statuses that don't deserve a note prompt — mechanical transitions. */
 const NO_NOTE_STATUSES = new Set(['applied', 'new']);
 
-const STATUS_OPTIONS = ['new', 'interested', 'applied', 'rejected', 'dismissed'];
+// Status dropdown values come from the shared vocab (display label == value here).
+const STATUS_OPTIONS = JOB_STATUSES;
 
 export function JobRow({
   job,
@@ -109,9 +111,18 @@ export function JobRow({
   const [judging, setJudging] = useState(false);
   const [judgeError, setJudgeError] = useState<string | null>(null);
 
-  // on expand, check whether a resume was already generated for this job
+  // on expand, check whether a resume was already generated for this job.
+  // `cancelled` guards the async setState so it no-ops if the row unmounts
+  // (or re-runs) mid-flight.
   useEffect(() => {
-    if (open && resumeGenEnabled) getResumeInfo(job.id).then(setResumeInfo);
+    if (!(open && resumeGenEnabled)) return;
+    let cancelled = false;
+    getResumeInfo(job.id).then((info) => {
+      if (!cancelled) setResumeInfo(info);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [open, resumeGenEnabled, job.id]);
 
   const onGenerate = async () => {

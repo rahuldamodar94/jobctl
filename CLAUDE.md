@@ -31,12 +31,19 @@ Daily workflow: open UI → Run scrape → triage `new, score≥30` list → don
 - **Nothing personal in committed code** — names, employers, role ids, the
   category taxonomy: all config. Tests assert structurally (derived from
   fixtures), never on personal literals. The UI's dropdown vocabulary
-  (roles/sources/categories) comes from `GET /api/config`, never constants.
+  (roles/sources/categories) comes from `GET /api/config`, never constants. The
+  fixed status vocabulary is the one exception: `JOB_STATUSES` in
+  `src/shared/types.ts` is the single source (server CSV validation + UI status
+  pickers + bulk actions all import it; `JudgeVerdict` lists come from
+  `JUDGE_VERDICTS`) — never re-list the strings.
 - Deliberate cuts: no LLM, no caching layer, no queue, no Playwright, no auth,
   no migrations framework (additive ALTERs guarded inline).
 - Polite scraping: fixed UA, sequential sources, per-host delays (ATS APIs get
   faster 0.5-1.5s pacing), 10s timeout, retries w/ backoff, 30/60/120s on
-  429/503 (fail-fast on last attempt), host allowlist for ATS fetchers.
+  429/503 (fail-fast on last attempt), host allowlist for ATS fetchers AND
+  board fetchers (each board adapter is host-scoped to its `base_url` via
+  `scopeHttp`; the manual redirect-follow re-checks the allowlist at every hop,
+  so a 3xx can't bounce the request to an internal/LAN address — SSRF guard).
 - All date stamps (first_seen/last_seen/decay cutoffs) use the **local**
   timezone (`localDateISO`) — UTC would mislabel "today" for non-UTC users.
 
@@ -75,7 +82,10 @@ via `/api/settings`; the Settings overlay edits every profile/ artifact later.
 Writes are **zod-validated with the SAME schemas the loaders use** (invalid
 config rejected, never written) and **atomic** (temp+rename). There is NO
 config cache — a written file is live on the next read. Personal `profile/`
-only; committed `config/` is never edited from the UI.
+only; committed `config/` is never edited from the UI. Every fs route
+(resumes/resume-gen/settings) confines paths through the **shared** boundary
+guard `src/config/paths.ts` (`safeProfilePath`/`safeProfileSubpath`: reject `..`
+escapes AND the dir root itself) — one implementation, no per-route drift.
 
 ## Architecture
 
@@ -146,7 +156,10 @@ CONFIG (yaml)                  SCRAPE PIPELINE (src/scraper/run.ts)
 ### Reliability rules
 
 - Source failures logged per-source, never fatal. 0 jobs from a previously
-  productive source = `suspect` (decay skipped); 3 consecutive → accepted.
+  productive source = `suspect` (decay skipped); 3 consecutive → accepted. The
+  aggregate `ats` source applies the SAME rule (mirroring the board path, same
+  repo state): an all-empty-but-not-all-errored ATS run is `suspect`, so one
+  fluke can't deactivate the prior ATS corpus; 3 consecutive accept 0.
 - posted_date NULL or stale → UI date filter ORs with first_seen ("recently
   posted OR recently discovered").
 - **Refinement-on-new-only** (buildJobsFilter): score / recency / `match=matched`
