@@ -15,6 +15,7 @@ import { User, Globe, Briefcase, MapPin, FileText, Check, Crosshair, ArrowLeft, 
 import { saveProfile, saveRoles, saveResume, type AppConfig, type RoleTemplate } from '../api.js';
 import { buildRoleEntry, toList } from '../role-builder.js';
 import { Button, cn } from './ui.js';
+import { ResumeUpload } from './ResumeUpload.js';
 
 const STEPS = [
   { icon: User, label: 'You' },
@@ -357,8 +358,9 @@ export function Onboarding({ config, onDone }: { config: AppConfig; onDone: () =
           {/* ── Resume (optional) ───────────────────────────────────────── */}
           {step === 4 && (
             <div className="space-y-3">
-              <p className="text-sm text-muted">Optional — paste a base resume (Markdown). Used as a reference in the app and, later, by the optional resume-generation feature. You can add it anytime in Settings.</p>
-              <textarea className={`${input} h-44 font-mono text-xs`} value={resumeMd} onChange={(e) => setResumeMd(e.target.value)} placeholder="# Your Name&#10;&#10;## Summary&#10;..." />
+              <p className="text-sm text-muted">Optional but recommended — upload a <span className="font-medium text-ink">.docx</span> or <span className="font-medium text-ink">.pdf</span> (we convert it to Markdown), or paste it below. The optional AI features (fit-judge, resume generation) learn from it. You can add it anytime in Settings.</p>
+              <ResumeUpload onExtracted={setResumeMd} />
+              <textarea className={`${input} h-44 font-mono text-xs`} value={resumeMd} onChange={(e) => setResumeMd(e.target.value)} placeholder="# Your Name&#10;&#10;## Summary&#10;... (or upload above)" />
             </div>
           )}
 
