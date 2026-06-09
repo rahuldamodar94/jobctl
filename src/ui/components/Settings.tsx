@@ -6,7 +6,6 @@
  * are plain markdown.
  */
 import React, { useCallback, useEffect, useState } from 'react';
-import { parse, stringify } from 'yaml';
 import { User, Briefcase, FileText, Scale, Files, Sparkles, X, Check, AlertCircle } from 'lucide-react';
 import {
   getSettings,
@@ -23,6 +22,7 @@ import {
 } from '../api.js';
 import { Button, cn } from './ui.js';
 import { ResumeUpload } from './ResumeUpload.js';
+import { slug, toList } from '../role-builder.js';
 
 type Tab = 'profile' | 'ai' | 'roles' | 'skill' | 'rubric' | 'resumes';
 const TABS: { id: Tab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
@@ -89,7 +89,7 @@ export function Settings({ config, onClose, onSaved }: { config: AppConfig | nul
           ) : tab === 'ai' ? (
             <AiSettings key="ai" profile={snap.profile} claudeAvailable={config?.claudeAvailable ?? false} onSaved={handleSaved} />
           ) : tab === 'roles' ? (
-            <YamlEditor key="roles" title="roles.yaml" hint="Your role search: title_keywords (substring matches), must_have_stack, weighted nice_to_have, excludes." initial={snap.roles} save={saveRoles} onSaved={handleSaved} />
+            <RolesForm key="roles" roles={snap.roles} config={config} onSaved={handleSaved} />
           ) : tab === 'skill' ? (
             <AuthoredDocTab key="skill" target="skill" title="Resume generation rules" hint="How the resume generator tailors your resume per job. Generate it from your resume, then refine." initial={snap.skill ?? ''} hasResume={Boolean((snap.profile as { resumes?: unknown[] } | null)?.resumes?.length)} save={saveSkill} onSaved={handleSaved} />
           ) : tab === 'rubric' ? (
@@ -136,48 +136,6 @@ function EditorHead({ title, hint }: { title: string; hint: string }) {
       <h3 className="font-mono text-sm font-semibold text-ink">{title}</h3>
       <p className="mb-2.5 mt-0.5 text-xs text-muted">{hint}</p>
     </>
-  );
-}
-
-function YamlEditor({ title, hint, initial, save, onSaved }: { title: string; hint: string; initial: unknown; save: (o: unknown) => Promise<SaveResult>; onSaved: () => void }) {
-  const [text, setText] = useState(() => stringify(initial ?? {}));
-  const [result, setResult] = useState<SaveResult | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [dirty, setDirty] = useState(false);
-
-  async function onSave() {
-    setSaving(true);
-    setResult(null);
-    let obj: unknown;
-    try {
-      obj = parse(text);
-    } catch (e) {
-      setSaving(false);
-      return setResult({ ok: false, error: `YAML parse error: ${(e as Error).message}` });
-    }
-    const r = await save(obj);
-    setResult(r);
-    setSaving(false);
-    if (r.ok) {
-      setDirty(false);
-      onSaved();
-    }
-  }
-
-  return (
-    <div>
-      <EditorHead title={title} hint={hint} />
-      <textarea
-        className={`${ta} h-[60vh]`}
-        value={text}
-        onChange={(e) => {
-          setText(e.target.value);
-          setDirty(true);
-        }}
-        spellCheck={false}
-      />
-      <SaveBar result={result} dirty={dirty} onSave={onSave} saving={saving} />
-    </div>
   );
 }
 
@@ -345,6 +303,140 @@ function ProfileForm({ profile, config, onSaved }: { profile: Record<string, unk
             <span className="flex items-center gap-2">{num(postedWithin, setPostedWithin)}<span className="text-xs text-faint">days</span></span>
           </label>
         </div>
+      </div>
+      <div className="mt-5">
+        <SaveBar result={result} dirty={dirty} onSave={onSave} saving={saving} />
+      </div>
+    </div>
+  );
+}
+
+/** Form over the single role search (replaces the raw-YAML editor). Optionally
+ *  prefill from a curated template; nice_to_have weights are editable rows. */
+function RolesForm({ roles, config, onSaved }: { roles: Record<string, unknown> | null; config: AppConfig | null; onSaved: () => void }) {
+  const role = ((roles as { roles?: Record<string, any>[] } | null)?.roles?.[0] ?? {}) as Record<string, any>;
+  const existingId = role.id as string | undefined;
+  const [label, setLabel] = useState<string>(role.label ?? '');
+  const [titleKeywords, setTitleKeywords] = useState<string>((role.title_keywords ?? []).join(', '));
+  const [stack, setStack] = useState<string>((role.must_have_stack ?? []).join(', '));
+  const [titleExclude, setTitleExclude] = useState<string>((role.title_exclude ?? []).join(', '));
+  const [excludePrimary, setExcludePrimary] = useState<string>((role.exclude_if_primary ?? []).join(', '));
+  const [niceRows, setNiceRows] = useState<{ term: string; weight: number }[]>(
+    Object.entries((role.nice_to_have ?? {}) as Record<string, number>).map(([term, weight]) => ({ term, weight }))
+  );
+  const [dirty, setDirty] = useState(false);
+  const [result, setResult] = useState<SaveResult | null>(null);
+  const [saving, setSaving] = useState(false);
+  const touch = () => setDirty(true);
+
+  function applyTemplate(id: string) {
+    const t = (config?.roleTemplates ?? []).find((x) => x.id === id);
+    if (!t) return;
+    setLabel(t.label);
+    setTitleKeywords(t.titleKeywords.join(', '));
+    setStack(t.mustHaveStack.join(', '));
+    setTitleExclude(t.titleExclude.join(', '));
+    setExcludePrimary(t.excludeIfPrimary.join(', '));
+    setNiceRows(Object.entries(t.niceToHave).map(([term, weight]) => ({ term, weight })));
+    touch();
+  }
+  const setRow = (i: number, patch: Partial<{ term: string; weight: number }>) => {
+    setNiceRows((rows) => rows.map((r, j) => (j === i ? { ...r, ...patch } : r)));
+    touch();
+  };
+
+  async function onSave() {
+    setResult(null);
+    if (!label.trim()) return setResult({ ok: false, error: 'Label is required.' });
+    const tk = toList(titleKeywords);
+    const st = toList(stack);
+    if (!tk.length) return setResult({ ok: false, error: 'Add at least one title keyword.' });
+    if (!st.length) return setResult({ ok: false, error: 'Add at least one must-have stack term.' });
+    const nice_to_have: Record<string, number> = {};
+    for (const r of niceRows) {
+      const t = r.term.trim().toLowerCase();
+      if (t) nice_to_have[t] = r.weight;
+    }
+    setSaving(true);
+    const entry = {
+      id: existingId || slug(label), // keep the existing id (avoids orphaning matched rows)
+      label: label.trim(),
+      title_keywords: tk,
+      must_have_stack: st,
+      ...(toList(titleExclude).length ? { title_exclude: toList(titleExclude) } : {}),
+      nice_to_have,
+      ...(toList(excludePrimary).length ? { exclude_if_primary: toList(excludePrimary) } : {}),
+    };
+    const r = await saveRoles({ roles: [entry] });
+    setResult(r);
+    setSaving(false);
+    if (r.ok) {
+      setDirty(false);
+      onSaved();
+    }
+  }
+
+  const lbl = 'mb-1.5 block text-sm font-medium text-ink';
+  // base field WITHOUT a width (callers add w-full / flex-1 / w-20 as needed —
+  // a baked-in w-full would fight flex-1/w-20 on the nice-to-have rows).
+  const fld = 'rounded-lg border border-line bg-surface-2/60 px-3 py-2 text-sm text-ink placeholder-faint outline-none focus:border-accent';
+  const groups = [...new Set((config?.roleTemplates ?? []).map((t) => t.group))];
+
+  return (
+    <div className="max-w-2xl">
+      <EditorHead title="Role" hint="The single role you're hunting. Title keywords gate the match; must-have stack is an OR-gate; nice-to-have weights tune the score." />
+      <div className="space-y-5">
+        {(config?.roleTemplates?.length ?? 0) > 0 && (
+          <label className="block">
+            <span className={lbl}>Prefill from a template <span className="font-normal text-faint">(optional — overwrites the fields below)</span></span>
+            <select className={cn(fld, 'w-full max-w-md')} value="" onChange={(e) => e.target.value && applyTemplate(e.target.value)}>
+              <option value="">— choose a template —</option>
+              {groups.map((g) => (
+                <optgroup key={g} label={g}>
+                  {(config?.roleTemplates ?? []).filter((t) => t.group === g).map((t) => (
+                    <option key={t.id} value={t.id}>{t.label}</option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+          </label>
+        )}
+
+        <label className="block">
+          <span className={lbl}>Label</span>
+          <input className={cn(fld, 'w-full max-w-md')} value={label} onChange={(e) => { setLabel(e.target.value); touch(); }} placeholder="Senior Backend Engineer" />
+        </label>
+        <label className="block">
+          <span className={lbl}>Title keywords <span className="font-normal text-faint">(comma-separated; substring-matched against the job title)</span></span>
+          <textarea className={cn(fld, 'w-full h-20 font-mono text-xs')} value={titleKeywords} onChange={(e) => { setTitleKeywords(e.target.value); touch(); }} placeholder="senior backend, staff engineer, backend developer" />
+        </label>
+        <label className="block">
+          <span className={lbl}>Must-have stack <span className="font-normal text-faint">(comma-separated; the JD must mention ≥1, word-boundary matched)</span></span>
+          <input className={cn(fld, 'w-full')} value={stack} onChange={(e) => { setStack(e.target.value); touch(); }} placeholder="typescript, node.js, javascript" />
+        </label>
+
+        <div>
+          <span className={lbl}>Nice-to-have weights <span className="font-normal text-faint">(boost the score when a JD mentions these; negatives deprioritize)</span></span>
+          <div className="space-y-1.5">
+            {niceRows.map((r, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <input className={cn(fld, 'flex-1')} value={r.term} onChange={(e) => setRow(i, { term: e.target.value })} placeholder="keyword" />
+                <input type="number" className={cn(fld, 'w-20')} value={r.weight} onChange={(e) => setRow(i, { weight: Math.round(Number(e.target.value) || 0) })} />
+                <button onClick={() => { setNiceRows((rows) => rows.filter((_, j) => j !== i)); touch(); }} className="px-2 text-faint hover:text-amber-300" title="remove">✕</button>
+              </div>
+            ))}
+            <Button variant="secondary" size="sm" onClick={() => { setNiceRows((rows) => [...rows, { term: '', weight: 5 }]); touch(); }}>+ add weight</Button>
+          </div>
+        </div>
+
+        <label className="block">
+          <span className={lbl}>Title excludes <span className="font-normal text-faint">(comma-separated; reject titles containing any)</span></span>
+          <input className={cn(fld, 'w-full')} value={titleExclude} onChange={(e) => { setTitleExclude(e.target.value); touch(); }} placeholder="junior, intern, frontend" />
+        </label>
+        <label className="block">
+          <span className={lbl}>Exclude if primary <span className="font-normal text-faint">(comma-separated; reject when one of these is the JD's primary language)</span></span>
+          <input className={cn(fld, 'w-full')} value={excludePrimary} onChange={(e) => { setExcludePrimary(e.target.value); touch(); }} placeholder="rust, golang, python, java" />
+        </label>
       </div>
       <div className="mt-5">
         <SaveBar result={result} dirty={dirty} onSave={onSave} saving={saving} />
