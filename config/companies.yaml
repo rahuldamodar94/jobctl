@@ -1026,3 +1026,275 @@ companies:
   - name: Zocdoc
     careers_url: https://boards.greenhouse.io/zocdoc
     domains: [healthtech]
+
+  # =====================================================================
+  # Recovered TS/JS/Node additions (2026-06-09) — live-ATS-verified.
+  # Grouped by primary domain; can fold into the sections above later.
+  # =====================================================================
+  # --- ai-ml ---
+  - name: Bland
+    careers_url: https://jobs.ashbyhq.com/bland
+    domains: [ai-ml]
+  - name: Decagon
+    careers_url: https://jobs.ashbyhq.com/decagon
+    domains: [ai-ml, saas]
+  - name: Langfuse
+    careers_url: https://jobs.ashbyhq.com/langfuse
+    domains: [ai-ml, devtools]
+  - name: Vapi
+    careers_url: https://jobs.ashbyhq.com/vapi
+    domains: [ai-ml, devtools]
+  - name: Braintrust
+    careers_url: https://jobs.ashbyhq.com/braintrust
+    domains: [ai-ml, devtools]
+  - name: CodeRabbit
+    careers_url: https://jobs.ashbyhq.com/coderabbit
+    domains: [ai-ml, devtools]
+  - name: Continue
+    careers_url: https://jobs.ashbyhq.com/continue
+    domains: [ai-ml, devtools]
+  - name: Factory
+    careers_url: https://jobs.ashbyhq.com/factory
+    domains: [ai-ml, devtools]
+  - name: Greptile
+    careers_url: https://jobs.ashbyhq.com/greptile
+    domains: [ai-ml, devtools]
+  - name: Lovable
+    careers_url: https://jobs.ashbyhq.com/lovable
+    domains: [ai-ml, devtools]
+  - name: Magic Patterns
+    careers_url: https://jobs.ashbyhq.com/magicpatterns
+    domains: [ai-ml, devtools]
+  - name: Vellum
+    careers_url: https://jobs.ashbyhq.com/vellum
+    domains: [ai-ml, devtools]
+  - name: Credal
+    careers_url: https://jobs.ashbyhq.com/credal
+    domains: [ai-ml, saas]
+  - name: Firecrawl
+    careers_url: https://jobs.ashbyhq.com/firecrawl
+    domains: [ai-ml, devtools]
+  - name: Harvey
+    careers_url: https://jobs.ashbyhq.com/harvey
+    domains: [ai-ml, saas]
+  - name: Legora
+    careers_url: https://jobs.ashbyhq.com/legora
+    domains: [ai-ml, saas]
+  - name: Dust
+    careers_url: https://jobs.ashbyhq.com/dust
+    domains: [ai-ml, saas]
+  - name: Ema
+    careers_url: https://jobs.ashbyhq.com/ema
+    domains: [ai-ml, saas]
+  # --- crypto ---
+  - name: Allium
+    careers_url: https://jobs.ashbyhq.com/allium
+    domains: [crypto, data]
+  - name: Zerion
+    careers_url: https://jobs.lever.co/zerion
+    domains: [crypto]
+  # --- devtools ---
+  - name: ElectricSQL
+    careers_url: https://jobs.ashbyhq.com/electric
+    domains: [devtools, data]
+  - name: Fern
+    careers_url: https://jobs.ashbyhq.com/buildwithfern
+    domains: [devtools]
+  - name: Graphite
+    careers_url: https://jobs.ashbyhq.com/graphite
+    domains: [devtools]
+  - name: Knock
+    careers_url: https://jobs.ashbyhq.com/knock
+    domains: [devtools]
+  - name: Mintlify
+    careers_url: https://jobs.ashbyhq.com/mintlify
+    domains: [devtools]
+  - name: Mux
+    careers_url: https://jobs.ashbyhq.com/mux
+    domains: [devtools]
+  - name: Nylas
+    careers_url: https://jobs.ashbyhq.com/nylas
+    domains: [devtools]
+  - name: Statsig
+    careers_url: https://jobs.ashbyhq.com/statsig
+    domains: [devtools, data]
+  - name: Stytch
+    careers_url: https://jobs.ashbyhq.com/stytch
+    domains: [devtools, security]
+  # --- ecommerce ---
+  - name: Recharge
+    careers_url: https://jobs.ashbyhq.com/recharge
+    domains: [ecommerce, saas]
+  - name: Rebuy
+    careers_url: https://jobs.ashbyhq.com/rebuy
+    domains: [ecommerce, ai-ml]
+  - name: Swap
+    careers_url: https://jobs.ashbyhq.com/swap
+    domains: [ecommerce]
+  - name: Tapcart
+    careers_url: https://jobs.ashbyhq.com/tapcart
+    domains: [ecommerce]
+  # --- fintech ---
+  - name: Warp
+    careers_url: https://jobs.ashbyhq.com/warp
+    domains: [fintech]
+  - name: Fi Money
+    careers_url: https://jobs.lever.co/epifi
+    domains: [fintech, consumer]
+  - name: Cardless
+    careers_url: https://jobs.ashbyhq.com/cardless
+    domains: [fintech]
+  - name: Finch
+    careers_url: https://jobs.ashbyhq.com/finch
+    domains: [fintech, devtools]
+  - name: Merge
+    careers_url: https://jobs.ashbyhq.com/merge
+    domains: [fintech, devtools]
+  - name: Method
+    careers_url: https://jobs.ashbyhq.com/method
+    domains: [fintech, devtools]
+  - name: Middesk
+    careers_url: https://jobs.ashbyhq.com/middesk
+    domains: [fintech, security]
+  - name: Moss
+    careers_url: https://jobs.ashbyhq.com/moss
+    domains: [fintech]
+  - name: Parafin
+    careers_url: https://jobs.ashbyhq.com/parafin
+    domains: [fintech]
+  - name: Sardine
+    careers_url: https://jobs.ashbyhq.com/sardine
+    domains: [fintech, security]
+  - name: Wayflyer
+    careers_url: https://jobs.ashbyhq.com/wayflyer
+    domains: [fintech]
+  - name: Orb
+    careers_url: https://jobs.ashbyhq.com/orb
+    domains: [fintech, saas]
+  - name: Primer
+    careers_url: https://jobs.ashbyhq.com/primer
+    domains: [fintech]
+  - name: Alloy
+    careers_url: https://boards.greenhouse.io/alloy
+    domains: [fintech, security]
+  # --- healthtech ---
+  - name: Ambience Healthcare
+    careers_url: https://jobs.ashbyhq.com/ambiencehealthcare
+    domains: [healthtech, ai-ml]
+  - name: Canvas Medical
+    careers_url: https://jobs.ashbyhq.com/canvas-medical
+    domains: [healthtech]
+  - name: Grow Therapy
+    careers_url: https://jobs.ashbyhq.com/grow-therapy
+    domains: [healthtech]
+  - name: Nabla
+    careers_url: https://jobs.ashbyhq.com/nabla
+    domains: [healthtech, ai-ml]
+  # --- saas ---
+  - name: Contentful
+    careers_url: https://boards.greenhouse.io/contentful
+    domains: [saas, devtools]
+  - name: Customer.io
+    careers_url: https://boards.greenhouse.io/customerio
+    domains: [saas]
+  - name: Prismic
+    careers_url: https://jobs.lever.co/prismic
+    domains: [saas, devtools]
+  - name: Storyblok
+    careers_url: https://boards.greenhouse.io/storyblok
+    domains: [saas, devtools]
+  - name: DevRev
+    careers_url: https://boards.greenhouse.io/devrev
+    domains: [saas, ai-ml]
+  - name: SpotDraft
+    careers_url: https://jobs.ashbyhq.com/spotdraft
+    domains: [saas]
+  - name: Ashby
+    careers_url: https://jobs.ashbyhq.com/ashby
+    domains: [saas]
+  - name: Attio
+    careers_url: https://jobs.ashbyhq.com/attio
+    domains: [saas]
+  - name: Feathery
+    careers_url: https://jobs.ashbyhq.com/feathery
+    domains: [saas, devtools]
+  - name: Gamma
+    careers_url: https://jobs.ashbyhq.com/gamma
+    domains: [saas, ai-ml]
+  - name: Typeform
+    careers_url: https://boards.greenhouse.io/typeform
+    domains: [saas]
+  - name: Karat
+    careers_url: https://boards.greenhouse.io/karat
+    domains: [saas]
+  # --- security ---
+  - name: Fingerprint
+    careers_url: https://boards.greenhouse.io/fingerprint
+    domains: [security, devtools]
+
+  # =====================================================================
+  # India + UAE/MENA TS/Node additions (2026-06-09 pass 2) — live-verified.
+  # India-heavy (Bengaluru offices) + Gulf/MENA fintech. Slugs curl-confirmed
+  # against the supported ATS APIs; non-empty job lists at probe time.
+  # =====================================================================
+  # --- ai-ml (India offices) ---
+  - name: TrueFoundry
+    careers_url: https://boards.greenhouse.io/truefoundry
+    domains: [ai-ml, devtools]
+  - name: Cartesia
+    careers_url: https://jobs.ashbyhq.com/cartesia
+    domains: [ai-ml]
+  - name: Observe.AI
+    careers_url: https://boards.greenhouse.io/observeai
+    domains: [ai-ml, saas]
+  # --- devtools (India / global) ---
+  - name: SigNoz
+    careers_url: https://jobs.ashbyhq.com/signoz
+    domains: [devtools, data]
+  - name: AIOS
+    careers_url: https://jobs.ashbyhq.com/aios
+    domains: [devtools, ai-ml]
+  - name: Anyscale
+    careers_url: https://jobs.ashbyhq.com/anyscale
+    domains: [ai-ml, devtools]
+  - name: Altimate.ai
+    careers_url: https://jobs.ashbyhq.com/altimate
+    domains: [data, ai-ml]
+  - name: Metaforms
+    careers_url: https://jobs.ashbyhq.com/Metaforms
+    domains: [ai-ml, saas]
+  - name: Nanonets
+    careers_url: https://boards.greenhouse.io/nanonets
+    domains: [ai-ml, saas]
+  # --- security (India offices) ---
+  - name: JumpCloud
+    careers_url: https://jobs.lever.co/jumpcloud
+    domains: [security, saas]
+  # --- fintech (MENA / Gulf / India) ---
+  - name: HALA
+    careers_url: https://boards.greenhouse.io/hala
+    domains: [fintech]
+  - name: OpenFX
+    careers_url: https://boards.greenhouse.io/openfx
+    domains: [fintech, crypto]
+  - name: Bunq
+    careers_url: https://bunq.recruitee.com
+    domains: [fintech]
+  - name: Keyper
+    careers_url: https://keyper.recruitee.com
+    domains: [fintech, saas]
+  # --- consumer / super-app (MENA / North Africa) ---
+  - name: Yassir
+    careers_url: https://jobs.lever.co/Yassir
+    domains: [consumer, fintech]
+  - name: Stable Money
+    careers_url: https://jobs.lever.co/stable-money1
+    domains: [fintech]
+  # --- data / SaaS (India offices) ---
+  - name: Hevo Data
+    careers_url: https://jobs.lever.co/hevodata
+    domains: [data, saas]
+  # --- crypto/stablecoin (Recruitee — now a supported adapter) ---
+  - name: Tether
+    careers_url: https://tether.recruitee.com
+    domains: [crypto, fintech]

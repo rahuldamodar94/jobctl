@@ -1,9 +1,11 @@
 # Companies considered but not yet supported
 
-Every company researched (2026-06-06) whose jobs we can't pull via the three
-supported ATS APIs (Greenhouse / Lever / Ashby) today. Endpoint patterns for
-the next ATS adapters are documented in CLAUDE.md. Re-probe before assuming
-anything here is still unavailable — boards move.
+Every company researched whose jobs we can't pull via the supported ATS APIs
+(Greenhouse / Lever / Ashby / **Recruitee**) today. Endpoint patterns for the
+next ATS adapters are documented in CLAUDE.md. Re-probe before assuming anything
+here is still unavailable — boards move. (Recruitee is now a supported adapter,
+so former Recruitee entries that have live offers were promoted to
+companies.yaml — e.g. Tether.)
 
 ## On a known ATS we don't support yet (best v2 adapter targets)
 
@@ -11,7 +13,6 @@ anything here is still unavailable — boards move.
 |---|---|---|
 | Reap | Teamtailor | https://careers.reap.global/jobs (~23 jobs at probe) |
 | WalletConnect | Workable | https://apply.workable.com/walletconnect/ |
-| Tether | Recruitee | https://tether.recruitee.com/ |
 | Crossmint | Teamtailor | https://crossmint.na.teamtailor.com/ |
 | Zero Hash | Breezy HR | https://zero-hash.breezy.hr/ |
 | Safe | Personio | https://safe-labs.jobs.personio.com |
@@ -58,6 +59,36 @@ anything here is still unavailable — boards move.
   (mostly Keka/Darwinbox/custom portals)
 - **Dev-infra:** Convex, Turso, Fly.io, Hatchet, Upstash, Liveblocks, Ably,
   Daytona (Notion), Pusher (folded into Bird)
+
+### India pass 2 (2026-06-09) — confirmed NOT on a supported ATS
+
+Probed across Greenhouse/Lever/Ashby/Recruitee; all 0 / not found. India product
+companies overwhelmingly run on **Keka, Darwinbox, or Kula.ai / custom** portals
+(verified examples below), so supported-ATS coverage of Indian startups is
+genuinely thin — the wins are the few on Lever/Ashby/Greenhouse already added.
+
+- **Keka:** Zluri (zluri.keka.com), and the typical mid-size SaaS pattern.
+- **Darwinbox:** CleverTap (clevertap.darwinbox.in).
+- **Kula.ai / custom:** Rocketlane, CleverTap (careers.kula.ai/*).
+- **Other custom / Keka / Darwinbox (probed, no supported API):** Sprinto,
+  Hasura, Chargebee, BrowserStack, Freshworks, Zoho, Innovaccer, MoEngage,
+  Netcore, WebEngage, Whatfix, Gupshup, Exotel, Uniphore, Yellow.ai, Plivo,
+  Kissflow, Capillary, Fyle, Fynd, Shiprocket, smallcase, Zolve, Niyo, Setu,
+  Signzy, Perfios, HyperVerge, LeadSquared, Rupifi, Scalefusion, Toplyne,
+  Nanonets *(now ON Greenhouse — promoted to companies.yaml)*, DeepSource,
+  Airbase, Locofy, Lyzr, Vymo, Gainsight, Icertis, Mindtickle, Niramai, Qure.ai,
+  SigTuple, Tricog, Wysa, Practo.
+
+### MENA / Gulf pass 2 (2026-06-09) — confirmed NOT on a supported ATS
+
+Most Gulf/Egypt fintech, e-commerce and crypto run on **custom portals,
+Pinpoint, SmartRecruiters, or local boards (Bayt/Wuzzuf)**. Probed 0 / not found
+on Greenhouse/Lever/Ashby/Recruitee: Paymob, MoneyHash, Telda, ValU, Khazna,
+MNT-Halan/Lucky, Foodics, Tabby (Pinpoint, already noted), Tamara (Greenhouse
+**EU** — needs auth), Nymcard, Mamo, Pemo, Qashio, Alaan, Multiply, Floward,
+eyewa, Cartlow, Sarwa, Baraka, Tarabut, Huspy, Wio, Zywa, Flapkap, BitOasis,
+Fuze, CoinMENA, Swvl, Trella, MoneyFellows, Instabug. (Supported-ATS MENA wins
+this pass — HALA, OpenFX, Yassir, Keyper — went to companies.yaml.)
 
 ## ⚠️ Same-name FALSE POSITIVES — never add these slugs
 
