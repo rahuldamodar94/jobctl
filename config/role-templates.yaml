@@ -588,13 +588,15 @@ templates:
       - head of
       - manual tester
       - game tester
+    # `java`/other languages deliberately omitted from the gate: a QA-titled JD
+    # that merely mentions a language would pass on it alone; `testing`/`test
+    # automation`/the tools are the genuine QA signal.
     must_have_stack:
       - test automation
       - selenium
       - cypress
       - playwright
       - python
-      - java
       - testing
     nice_to_have:
       ci/cd: 4
@@ -793,7 +795,9 @@ templates:
       - head of
       - web
       - frontend
-      - data
+      # bare `data` removed from title_exclude — it dropped legit "Embedded Data
+      # Acquisition Engineer" titles; the must-have gate already excludes pure
+      # data-engineering roles.
     must_have_stack:
       - embedded
       - firmware
@@ -1348,16 +1352,17 @@ templates:
     label: Technical Program Manager
     group: Product
     description: Cross-team delivery of technical programs.
+    # Only "technical"-qualified titles + `tpm` — bare "program manager" /
+    # "senior program manager" / "principal program manager" / "delivery manager"
+    # substring-matched Legal/HR/Marketing/Services PMs the must-have OR-gate
+    # can't filter (it's a *technical* role). "tpm"/"technical program manager"
+    # still catch the senior/principal/staff variants.
     title_keywords:
       - technical program manager
       - tpm
-      - program manager
       - technical project manager
-      - senior program manager
       - senior technical program manager
       - staff technical program manager
-      - principal program manager
-      - delivery manager
     title_exclude:
       - intern
       - graduate
@@ -1719,7 +1724,6 @@ templates:
       - user experience researcher
       - senior ux researcher
       - staff ux researcher
-      - research lead
       - principal ux researcher
       - product researcher
     title_exclude:
@@ -1980,12 +1984,19 @@ templates:
       - brand designer
       - marketing
       - engineering manager
+      - workplace
+      - interior
+      - architect
+      - creative
+    # bare `design`/`team` were a no-op gate (every JD has them) behind broad
+    # "design manager"/"design lead" titles → leaked workplace/interior/creative
+    # roles. Anchored to product-design signals instead.
     must_have_stack:
-      - design
-      - leadership
       - product design
-      - team
+      - design systems
       - ux
+      - user research
+      - leadership
     nice_to_have:
       hiring: 4
       design systems: 3
@@ -2004,10 +2015,13 @@ templates:
     label: Growth / Marketing Manager
     group: Growth & Marketing
     description: Acquisition, lifecycle, performance marketing.
+    # bare "marketing manager" removed — as a substring it swallowed the
+    # product/field/content/performance marketing sub-roles (this role is the
+    # acquisition/growth lane, not a catch-all). The growth-specific titles carry
+    # it; product/content marketing are excluded to keep them in their own roles.
     title_keywords:
       - growth manager
       - growth marketing manager
-      - marketing manager
       - growth marketing
       - performance marketing manager
       - demand generation manager
@@ -2022,6 +2036,9 @@ templates:
       - working student
       - engineer
       - product manager
+      - product marketing
+      - content marketing
+      - data analyst
       - sales
       - designer
     must_have_stack:
@@ -2091,7 +2108,6 @@ templates:
       - content marketing manager
       - content manager
       - content strategist
-      - seo manager
       - editorial manager
       - content marketing
       - content lead
@@ -2106,9 +2122,10 @@ templates:
       - product marketing
       - social media intern
       - content designer
+    # bare `marketing` removed — redundant behind the content-specific title gate
+    # and a near-universal token; content/seo/editorial/copywriting are the signal.
     must_have_stack:
       - content
-      - marketing
       - seo
       - editorial
       - copywriting
@@ -2267,12 +2284,13 @@ templates:
       - product marketing
       - content marketing
       - sales
+    # bare `marketing` removed — generic and redundant behind the community/social
+    # title gate; community/social media/engagement/content carry the signal.
     must_have_stack:
       - community
       - social media
       - engagement
       - content
-      - marketing
     nice_to_have:
       discord: 3
       twitter: 3
@@ -2555,11 +2573,13 @@ templates:
       - account executive
       - sales development
       - software engineer
+    # `customer` swapped for `implementation` — `customer` is in nearly every JD,
+    # so it neutered the gate; `implementation` matches this role's own titles.
     must_have_stack:
       - technical support
       - troubleshooting
       - api
-      - customer
+      - implementation
       - integrations
     nice_to_have:
       saas: 4
@@ -2654,7 +2674,7 @@ templates:
       "on-site only": -8
     exclude_if_primary: []
 
-  # ============================ People & Ops (9) ============================
+  # ============================ People & Ops (10) ============================
   - id: technical_recruiter
     label: Technical Recruiter
     group: People & Ops
@@ -2677,6 +2697,7 @@ templates:
       - hr generalist
       - sales
       - sourcer
+      - university
     must_have_stack:
       - recruiting
       - sourcing
@@ -2819,14 +2840,15 @@ templates:
     label: Business Operations Manager
     group: People & Ops
     description: BizOps — strategy, process, cross-functional ops.
+    # bare "operations manager" removed — it substring-matched Support/Community/
+    # Market/AML/Legal Operations Managers the generic must-have can't filter.
+    # "revenue operations manager" → owned by sales_operations_manager;
+    # "chief of staff" → owned by the dedicated chief_of_staff role.
     title_keywords:
       - business operations manager
       - business operations
       - bizops
       - strategy and operations
-      - chief of staff
-      - operations manager
-      - revenue operations manager
       - senior business operations manager
       - strategy and operations manager
       - gtm operations
@@ -2954,6 +2976,8 @@ templates:
       - security engineer
       - data engineer
       - devops
+      - executive assistant
+      - audit
     must_have_stack:
       - it operations
       - workplace
