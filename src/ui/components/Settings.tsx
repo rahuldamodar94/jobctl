@@ -16,6 +16,7 @@ import {
   saveSkill,
   saveRubric,
   saveResume,
+  testLlmConnection,
   type AppConfig,
   type SaveResult,
   type SettingsSnapshot,
@@ -341,9 +342,46 @@ function AiSettings({
   const [dirty, setDirty] = useState(false);
   const touch = () => setDirty(true);
 
+  // A backend counts as "validated" when a connection test passed for the CURRENT
+  // config, or it's the local claude CLI and we detected it on PATH. Enabling the
+  // judge REQUIRES this — no more flipping the toggle on a backend that doesn't work.
+  const [testing, setTesting] = useState(false);
+  const [test, setTest] = useState<{ ok: boolean; latencyMs: number; error?: string } | null>(null);
+  const claudeReady = engine === 'claude-cli' && claudeAvailable;
+  const validated = claudeReady || (test?.ok ?? false);
+  // changing any connection field clears a prior pass
+  const touchBackend = () => {
+    setDirty(true);
+    setTest(null);
+  };
+
+  const backendCfg = () => ({
+    engine,
+    ...(model.trim() ? { model: model.trim() } : {}),
+    ...(baseUrl.trim() ? { base_url: baseUrl.trim() } : {}),
+    ...(apiKeyEnv.trim() ? { api_key_env: apiKeyEnv.trim() } : {}),
+  });
+
+  async function onTest() {
+    setTesting(true);
+    setTest(null);
+    setTest(await testLlmConnection(backendCfg()));
+    setTesting(false);
+  }
+
   async function onSave() {
-    setSaving(true);
     setResult(null);
+    if (judgeEnabled && !validated) {
+      setResult({
+        ok: false,
+        error:
+          engine === 'claude-cli'
+            ? 'Claude CLI not detected — install/log in, then Test connection before enabling the judge.'
+            : 'Test the connection first — the judge needs a working backend.',
+      });
+      return;
+    }
+    setSaving(true);
     const nextLlm = buildLlmBlock(llm, { engine, model, baseUrl, apiKeyEnv, judgeEnabled, minScore });
     // Spread the whole profile so nothing else is dropped (atomic validated write).
     const nextProfile = { ...(profile ?? {}), llm: nextLlm };
@@ -378,7 +416,7 @@ function AiSettings({
           {(['claude-cli', 'openai-compatible'] as LlmEngine[]).map((e) => (
             <button
               key={e}
-              onClick={() => { setEngine(e); touch(); }}
+              onClick={() => { setEngine(e); touchBackend(); }}
               className={cn(
                 'flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-all',
                 engine === e ? 'border-accent bg-accent/10 text-accent' : 'border-line bg-surface-2/40 text-muted hover:border-line-strong'
@@ -400,19 +438,34 @@ function AiSettings({
         <div className="mb-4 space-y-3 rounded-lg border border-line/60 bg-surface-2/30 p-3">
           <label className="block">
             <span className={lbl}>Model</span>
-            <input className={fld} value={model} onChange={(e) => { setModel(e.target.value); touch(); }} placeholder="gpt-4o-mini" />
+            <input className={fld} value={model} onChange={(e) => { setModel(e.target.value); touchBackend(); }} placeholder="gpt-4o-mini" />
           </label>
           <label className="block">
             <span className={lbl}>Base URL</span>
-            <input className={fld} value={baseUrl} onChange={(e) => { setBaseUrl(e.target.value); touch(); }} placeholder="https://api.openai.com/v1" />
+            <input className={fld} value={baseUrl} onChange={(e) => { setBaseUrl(e.target.value); touchBackend(); }} placeholder="https://api.openai.com/v1" />
           </label>
           <label className="block">
             <span className={lbl}>API key env var <span className="font-normal text-faint">— the NAME of the env var holding the key (never the key itself)</span></span>
-            <input className={fld} value={apiKeyEnv} onChange={(e) => { setApiKeyEnv(e.target.value); touch(); }} placeholder="OPENAI_API_KEY" />
+            <input className={fld} value={apiKeyEnv} onChange={(e) => { setApiKeyEnv(e.target.value); touchBackend(); }} placeholder="OPENAI_API_KEY" />
             <span className={sub}>Set the actual key in your shell/env; the app reads it from this variable.</span>
           </label>
         </div>
       )}
+
+      {/* Connection test — must pass before the judge can be enabled */}
+      <div className="mb-4">
+        <Button variant="secondary" size="sm" onClick={onTest} loading={testing} disabled={testing}>
+          {testing ? 'Testing…' : 'Test connection'}
+        </Button>
+        {test && (
+          <p className={cn('mt-1.5 text-xs', test.ok ? 'text-accent' : 'text-amber-300')}>
+            {test.ok ? `Connected — responded in ${test.latencyMs} ms.` : test.error}
+          </p>
+        )}
+        {!test && claudeReady && (
+          <p className="mt-1.5 text-xs text-faint">Local claude CLI detected — the judge can be enabled. (Test to confirm it's logged in.)</p>
+        )}
+      </div>
 
       {/* Judge toggle + floor */}
       <div className="mb-4 rounded-lg border border-line/60 bg-surface-2/30 p-3">

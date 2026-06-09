@@ -324,6 +324,30 @@ async function putConfig(path: string, body: unknown): Promise<SaveResult> {
   return { ok: false, issues: j.issues, error: j.error };
 }
 
+export interface LlmTestConfig {
+  engine: 'claude-cli' | 'openai-compatible';
+  model?: string;
+  base_url?: string;
+  api_key_env?: string;
+}
+
+/** Cheap LLM connectivity/auth check — the key itself stays server-side (only the
+ *  env-var NAME is sent). Never throws (returns {ok:false,error}). */
+export async function testLlmConnection(
+  cfg: LlmTestConfig
+): Promise<{ ok: boolean; latencyMs: number; error?: string }> {
+  try {
+    const res = await fetch('/api/settings/llm/test', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(cfg),
+    });
+    return await res.json();
+  } catch (e) {
+    return { ok: false, latencyMs: 0, error: (e as Error).message };
+  }
+}
+
 export const saveProfile = (obj: unknown) => putConfig('profile', obj);
 export const saveRoles = (obj: unknown) => putConfig('roles', obj);
 export const saveCategories = (obj: unknown) => putConfig('categories', obj);

@@ -7,6 +7,8 @@ import { profileDir, profileSchema, rolesFileSchema, categoriesSchema } from '..
 import { safeProfilePath } from '../../config/paths.js';
 import { extractResume } from '../../upload/extract.js';
 import { MAX_RESUME_BYTES } from '../../upload/guards.js';
+import { testLlmConnection } from '../../llm/test-connection.js';
+import type { LlmBackendConfig } from '../../shared/types.js';
 
 /**
  * Settings/onboarding write surface. Every write validates with the SAME zod
@@ -155,6 +157,17 @@ export function settingsRouter(): Router {
     const buf = Buffer.isBuffer(req.body) ? req.body : Buffer.alloc(0);
     const filename = String((req.query as { filename?: string }).filename ?? '');
     res.json(await extractResume(buf, filename));
+  });
+
+  // POST /api/settings/llm/test — a cheap LLM connectivity/auth check (body holds a
+  // backend config; the API key itself stays in server env via api_key_env). The
+  // UI requires this to pass before enabling the judge/resume features.
+  r.post('/llm/test', async (req, res) => {
+    const cfg = req.body as Partial<LlmBackendConfig>;
+    if (cfg?.engine !== 'claude-cli' && cfg?.engine !== 'openai-compatible') {
+      return res.status(400).json({ ok: false, latencyMs: 0, error: 'engine must be claude-cli or openai-compatible' });
+    }
+    res.json(await testLlmConnection(cfg as LlmBackendConfig));
   });
 
   return r;
