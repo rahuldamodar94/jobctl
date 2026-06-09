@@ -334,6 +334,37 @@ export async function saveResume(file: string, markdown: string): Promise<SaveRe
   return putConfig('resume', { file, markdown });
 }
 
+export interface ExtractedResume {
+  /** converted markdown ('' on failure/empty) */
+  markdown: string;
+  /** PDF layout is lossy → prompt the user to review before saving */
+  approximate: boolean;
+  /** scanned/image-only PDF — no extractable text */
+  empty: boolean;
+  /** user-facing reason when markdown is empty */
+  error?: string;
+}
+
+/** Upload a .docx/.pdf and get back Markdown for review. EXTRACT ONLY — the
+ *  caller drops the result into the editor and saves via saveResume. Sends raw
+ *  bytes (no base64), never throws (returns {error} instead). */
+export async function extractResumeFile(file: File): Promise<ExtractedResume> {
+  try {
+    const res = await fetch(`/api/settings/resume/extract?filename=${encodeURIComponent(file.name)}`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/octet-stream' },
+      body: file,
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({} as { error?: string }));
+      return { markdown: '', approximate: false, empty: false, error: body.error ?? `upload failed: HTTP ${res.status}` };
+    }
+    return await res.json();
+  } catch (e) {
+    return { markdown: '', approximate: false, empty: false, error: (e as Error).message };
+  }
+}
+
 export interface GeneratedResumeInfo {
   dir: string;
   pdfFile: string;

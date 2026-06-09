@@ -1,10 +1,12 @@
-import { Router } from 'express';
+import express, { Router } from 'express';
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync, unlinkSync } from 'node:fs';
 import { join, sep, dirname } from 'node:path';
 import { parse, stringify } from 'yaml';
 import type { z } from 'zod';
 import { profileDir, profileSchema, rolesFileSchema, categoriesSchema } from '../../config/load.js';
 import { safeProfilePath } from '../../config/paths.js';
+import { extractResume } from '../../upload/extract.js';
+import { MAX_RESUME_BYTES } from '../../upload/guards.js';
 
 /**
  * Settings/onboarding write surface. Every write validates with the SAME zod
@@ -142,6 +144,17 @@ export function settingsRouter(): Router {
     if (!path) return res.status(400).json({ error: 'file must be under resumes/' });
     if (existsSync(path)) unlinkSync(path);
     res.json({ ok: true });
+  });
+
+  // POST /resume/extract?filename=cv.pdf — convert an uploaded docx/pdf to
+  // Markdown for review in the editor. EXTRACT ONLY: it never writes (the user
+  // edits, then saves through the validated PUT /resume above). Raw bytes via a
+  // route-scoped body limit; the global express.json (application/json only)
+  // leaves an octet-stream body untouched, so this doesn't widen its 1mb limit.
+  r.post('/resume/extract', express.raw({ type: 'application/octet-stream', limit: MAX_RESUME_BYTES + 65_536 }), async (req, res) => {
+    const buf = Buffer.isBuffer(req.body) ? req.body : Buffer.alloc(0);
+    const filename = String((req.query as { filename?: string }).filename ?? '');
+    res.json(await extractResume(buf, filename));
   });
 
   return r;

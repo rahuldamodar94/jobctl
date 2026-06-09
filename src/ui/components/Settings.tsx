@@ -21,6 +21,7 @@ import {
   type SettingsSnapshot,
 } from '../api.js';
 import { Button, cn } from './ui.js';
+import { ResumeUpload } from './ResumeUpload.js';
 
 type Tab = 'profile' | 'ai' | 'roles' | 'categories' | 'skill' | 'rubric' | 'resumes';
 const TABS: { id: Tab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
@@ -208,37 +209,22 @@ function MarkdownEditor({ title, hint, initial, save, onSaved }: { title: string
   );
 }
 
-/** List resume entries from the profile; edit each file's markdown; add new. */
+/** The single base resume: upload a .docx/.pdf or paste/edit Markdown, then save.
+ *  Saving writes the file AND registers it in profile.resumes (one entry) so the
+ *  generator and drawer find it — fixing the old "saved a file nothing references"
+ *  split-brain. Single-role ⇒ exactly one resume, no picker. */
 function ResumesTab({ snap, onSaved }: { snap: SettingsSnapshot; onSaved: () => void }) {
-  const profile = (snap.profile ?? {}) as { resumes?: { id: string; label: string; file: string }[] };
-  const resumes = profile.resumes ?? [];
-  const [file, setFile] = useState(resumes[0]?.file ?? '');
+  const profile = (snap.profile ?? null) as (Record<string, unknown> & {
+    resumes?: { id: string; label: string; file: string }[];
+  }) | null;
+  const registered = profile?.resumes ?? [];
+  const file = registered[0]?.file ?? 'resumes/main.md';
   const [markdown, setMarkdown] = useState('');
   const [result, setResult] = useState<SaveResult | null>(null);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
-  // Free-text new-path input has its OWN local state — typing here must NOT call
-  // switchFile per keystroke (that would load a partial path → 404 → wipe the
-  // editor, and spam the discard-confirm). It commits only on blur/Enter/Open.
-  const [newPath, setNewPath] = useState('');
-
-  // guard against silently discarding unsaved edits when switching files
-  const switchFile = (next: string) => {
-    if (next === file) return;
-    if (dirty && !window.confirm('Discard unsaved changes to this resume?')) return;
-    setDirty(false);
-    setFile(next);
-  };
-
-  // Commit the typed path (blur / Enter / Open button) — only then do we load it.
-  const openNewPath = () => {
-    const next = newPath.trim();
-    if (!next) return;
-    switchFile(next);
-  };
 
   useEffect(() => {
-    if (!file) return setMarkdown('');
     fetch(`/api/settings/resume?file=${encodeURIComponent(file)}`)
       .then((r) => (r.ok ? r.json() : { markdown: '' }))
       .then((j) => setMarkdown(j.markdown ?? ''))
@@ -248,6 +234,11 @@ function ResumesTab({ snap, onSaved }: { snap: SettingsSnapshot; onSaved: () => 
   async function onSave() {
     setSaving(true);
     const r = await saveResume(file, markdown);
+    // Register it in profile.resumes if it isn't already, so it's actually usable
+    // (no more orphan files). No-op when already registered.
+    if (r.ok && profile && !registered.some((x) => x.file === file)) {
+      await saveProfile({ ...profile, resumes: [{ id: 'main', label: 'My Resume', file }] });
+    }
     setResult(r);
     setSaving(false);
     if (r.ok) {
@@ -256,49 +247,21 @@ function ResumesTab({ snap, onSaved }: { snap: SettingsSnapshot; onSaved: () => 
     }
   }
 
-  const ctrl = 'h-8 rounded-lg border border-line bg-surface-2/60 px-2 text-xs text-ink outline-none focus:border-accent';
-
   return (
     <div>
-      <EditorHead title="Resumes" hint="Edit base resume markdown. To register a NEW resume (so it appears in the drawer / is usable as an IC/EM base), add an entry under resumes: in the Profile tab, then edit its file here." />
-      <div className="mb-2.5 flex items-center gap-2">
-        <select value={file} onChange={(e) => switchFile(e.target.value)} className={ctrl}>
-          <option value="">— pick a resume —</option>
-          {resumes.map((r) => (
-            <option key={r.file} value={r.file}>{r.label} ({r.file})</option>
-          ))}
-        </select>
-        <input
-          value={newPath}
-          onChange={(e) => setNewPath(e.target.value)}
-          onBlur={openNewPath}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              openNewPath();
-            }
-          }}
-          placeholder="resumes/new.md"
-          className={cn(ctrl, 'w-48')}
-        />
-        <Button variant="secondary" size="sm" onClick={openNewPath} disabled={!newPath.trim()}>
-          Open
-        </Button>
-      </div>
-      {file && (
-        <>
-          <textarea
-            className={`${ta} h-[50vh]`}
-            value={markdown}
-            onChange={(e) => {
-              setMarkdown(e.target.value);
-              setDirty(true);
-            }}
-            spellCheck={false}
-          />
-          <SaveBar result={result} dirty={dirty} onSave={onSave} saving={saving} />
-        </>
-      )}
+      <EditorHead title="Resume" hint="Your base resume — the resume generator and fit-judge learn from it. Upload a .docx or .pdf to import it, or paste/edit the Markdown directly. Saving registers it automatically." />
+      <ResumeUpload className="mb-2.5" onExtracted={(md) => { setMarkdown(md); setDirty(true); }} />
+      <textarea
+        className={`${ta} h-[50vh]`}
+        value={markdown}
+        onChange={(e) => {
+          setMarkdown(e.target.value);
+          setDirty(true);
+        }}
+        placeholder="# Your Name&#10;&#10;## Summary&#10;..."
+        spellCheck={false}
+      />
+      <SaveBar result={result} dirty={dirty} onSave={onSave} saving={saving} />
     </div>
   );
 }
