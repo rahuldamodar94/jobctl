@@ -52,6 +52,7 @@ export const ATS_SOURCE_IDS = [
   'ats:personio',
   'ats:breezy',
   'ats:pinpoint',
+  'ats:smartrecruiters',
 ];
 
 export interface ScrapeOptions {

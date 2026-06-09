@@ -1783,3 +1783,23 @@ companies:
   - name: Superpower
     careers_url: https://jobs.ashbyhq.com/superpower
     domains: [healthtech, consumer]
+
+  # =====================================================================
+  # SmartRecruiters adapter — verified giants (2026-06-09). Case-sensitive
+  # slugs. List-only (no JD): scored on title via the matcher's short-JD path.
+  # =====================================================================
+  - name: Delivery Hero
+    careers_url: https://jobs.smartrecruiters.com/DeliveryHero
+    domains: [consumer, ecommerce]
+  - name: Grab
+    careers_url: https://jobs.smartrecruiters.com/Grab
+    domains: [consumer, fintech]
+  - name: Wise
+    careers_url: https://jobs.smartrecruiters.com/Wise
+    domains: [fintech]
+  - name: ServiceNow
+    careers_url: https://jobs.smartrecruiters.com/ServiceNow
+    domains: [saas]
+  - name: Visa
+    careers_url: https://jobs.smartrecruiters.com/Visa
+    domains: [fintech]

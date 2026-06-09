@@ -67,6 +67,19 @@ describe('detectAts', () => {
     expect(detectAts('https://tabby.pinpointhq.com/')).toEqual({ provider: 'pinpoint', slug: 'tabby' });
   });
 
+  test('smartrecruiters (case-sensitive slug from human board path)', () => {
+    expect(detectAts('https://jobs.smartrecruiters.com/DeliveryHero')).toEqual({
+      provider: 'smartrecruiters',
+      slug: 'DeliveryHero', // case preserved — SR slugs are case-sensitive
+    });
+    expect(detectAts('https://careers.smartrecruiters.com/Wise/all-jobs')).toEqual({
+      provider: 'smartrecruiters',
+      slug: 'Wise',
+    });
+    // must NOT capture the API host as a slug
+    expect(detectAts('https://api.smartrecruiters.com/v1/companies/Wise/postings')).toBe(null);
+  });
+
   test('unknown URLs → null', () => {
     expect(detectAts('https://company.com/careers')).toBe(null);
     expect(detectAts('https://myworkdayjobs.com/acme')).toBe(null);

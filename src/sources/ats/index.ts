@@ -10,6 +10,7 @@ import { fetchTeamtailor } from './teamtailor.js';
 import { fetchPersonio } from './personio.js';
 import { fetchBreezy } from './breezy.js';
 import { fetchPinpoint } from './pinpoint.js';
+import { fetchSmartRecruiters } from './smartrecruiters.js';
 
 const FETCHERS: Record<AtsProvider, (http: PoliteHttp, slug: string, company: string) => Promise<RawJob[]>> = {
   greenhouse: fetchGreenhouse,
@@ -21,6 +22,7 @@ const FETCHERS: Record<AtsProvider, (http: PoliteHttp, slug: string, company: st
   personio: fetchPersonio,
   breezy: fetchBreezy,
   pinpoint: fetchPinpoint,
+  smartrecruiters: fetchSmartRecruiters,
 };
 
 export interface AtsCompanyResult {
@@ -46,7 +48,7 @@ export async function fetchAtsCompanies(
         company: c.name,
         provider: null,
         jobs: [],
-        error: `cannot detect ATS from ${c.careersUrl} — supported: greenhouse/lever/ashby/recruitee/workable/teamtailor/personio/breezy/pinpoint board URLs`,
+        error: `cannot detect ATS from ${c.careersUrl} — supported: greenhouse/lever/ashby/recruitee/workable/teamtailor/personio/breezy/pinpoint/smartrecruiters board URLs`,
       });
       continue;
     }

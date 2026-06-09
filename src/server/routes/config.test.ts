@@ -62,6 +62,7 @@ test('payload reflects the user config: roles, ats-expanded sources, category or
     'ats:personio',
     'ats:breezy',
     'ats:pinpoint',
+    'ats:smartrecruiters',
   ]);
   expect(payload.categories).toEqual(['gaming', 'web2', 'other']);
   expect(payload.roleTemplates).toEqual([]); // no role-templates.yaml in this temp config dir

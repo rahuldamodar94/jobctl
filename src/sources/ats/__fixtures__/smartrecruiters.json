@@ -1,0 +1,55 @@
+{
+  "totalFound": 3,
+  "offset": 0,
+  "limit": 100,
+  "content": [
+    {
+      "id": "744000131103194",
+      "name": "Senior Backend Engineer",
+      "releasedDate": "2026-06-01T10:12:07.761Z",
+      "location": {
+        "city": "London",
+        "region": "",
+        "country": "gb",
+        "remote": true,
+        "hybrid": false,
+        "fullLocation": "London, , United Kingdom"
+      },
+      "customField": [
+        { "fieldLabel": "Job Ad Salary Range", "valueLabel": "£87500 - £111000 GBP Annual" },
+        { "fieldLabel": "Time Type", "valueLabel": "Full time" }
+      ],
+      "ref": "https://api.smartrecruiters.com/v1/companies/Wise/postings/744000131103194"
+    },
+    {
+      "id": 744000999,
+      "name": "Staff Software Engineer",
+      "releasedDate": "2026-05-20T00:00:00.000Z",
+      "location": {
+        "city": "Berlin",
+        "country": "de",
+        "remote": false,
+        "hybrid": true,
+        "fullLocation": "Berlin, Germany"
+      },
+      "customField": []
+    },
+    {
+      "id": "744000777",
+      "name": "Data Analyst",
+      "releasedDate": null,
+      "location": {
+        "city": "Dubai",
+        "country": "ae",
+        "remote": false,
+        "hybrid": false,
+        "fullLocation": "Dubai, United Arab Emirates"
+      }
+    },
+    {
+      "id": "744000000",
+      "name": null,
+      "location": { "city": "Nowhere" }
+    }
+  ]
+}

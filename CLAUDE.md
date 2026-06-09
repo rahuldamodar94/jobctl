@@ -119,8 +119,8 @@ CONFIG (yaml)                  SCRAPE PIPELINE (src/scraper/run.ts)
 - Board: `{ id, fetch(ctx): Promise<RawJob[]> }` in `src/sources/boards/` + an
   entry in `config/sources.yaml`.
 - ATS: `detect(careersUrl) → {provider, slug}` (greenhouse incl. `?for=` embed
-  form, lever, ashby, recruitee, workable, teamtailor, personio, breezy, pinpoint
-  — 9 providers) + a `fetch<Provider>` per provider in `src/sources/ats/` (the
+  form, lever, ashby, recruitee, workable, teamtailor, personio, breezy, pinpoint,
+  smartrecruiters — 10 providers) + a `fetch<Provider>` per provider in `src/sources/ats/` (the
   `FETCHERS` map in `index.ts`).
 - **Invariant:** ATS adapters write `source_id = 'ats:<provider>'` — the decay
   loop expands the aggregate `ats` result to exactly these ids.
@@ -329,7 +329,6 @@ optional browser-extension capture — design-gated; the v2 attempt was removed)
   suggest `nice_to_have` weight changes; deliberately a suggestion-printer, not
   an auto-tuner (weights stay human-owned in config). Needs ~50+ decisions.
 
-- SmartRecruiters: `GET https://api.smartrecruiters.com/v1/companies/{slug}/postings?limit=100&offset=N&status=PUBLIC` (no JD in list → N+1 per posting; exact case-sensitive slug)
 - Workday: `POST https://{co}.{shard}.myworkdayjobs.com/wday/cxs/{co}/{site}/jobs`
   body `{"appliedFacets":{},"limit":20,"offset":0,"searchText":""}` (needs per-company {shard,site} discovery + N+1)
 - Greenhouse EU (`boards.eu.greenhouse.io`) — no public EU API (`boards-api.eu…` is NXDOMAIN; EU board is a JS SPA) → user-import only
@@ -345,4 +344,5 @@ optional browser-extension capture — design-gated; the v2 attempt was removed)
 - Personio: `GET https://{slug}.jobs.personio.com/xml` (XML; JD in `<jobDescription>` CDATA)
 - Breezy: `GET https://{slug}.breezy.hr/json` (list-only — no public per-job JD; title+location → matcher short-JD path)
 - Pinpoint: `GET https://{slug}.pinpointhq.com/postings.json` (JSON; JD + salary inline; no posted date → first_seen governs)
+- SmartRecruiters: `GET https://api.smartrecruiters.com/v1/companies/{slug}/postings?limit=100&offset=N` (paginated; case-sensitive slug; salary in customField; **list-only — no JD**, title-gated N+1 enrichment is a future step; careers_url is `jobs.smartrecruiters.com/{Slug}`)
 - jobstash: `GET https://middleware.jobstash.xyz/jobs/list?page=N&limit=M`

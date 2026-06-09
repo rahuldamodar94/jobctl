@@ -2,12 +2,16 @@
 
 Every company researched whose jobs we can't pull via the supported ATS APIs
 today. Supported adapters now: **Greenhouse / Lever / Ashby / Recruitee /
-Workable / Teamtailor / Personio / Breezy / Pinpoint**. Endpoint patterns for
-the next ATS adapters (SmartRecruiters / Workday / Comeet) are documented in
-CLAUDE.md. Re-probe before assuming anything here is still unavailable — boards
-move. (When an adapter ships, former entries with live jobs are promoted to
-companies.yaml — e.g. Tether on Recruitee; WalletConnect/Crossmint/Safe/Zero
-Hash/Tabby on the Phase-1 multi-ATS adapters, 2026-06-09.)
+Workable / Teamtailor / Personio / Breezy / Pinpoint / SmartRecruiters** (10).
+Endpoint pattern for the next ATS adapter (Workday) is documented in CLAUDE.md.
+Re-probe before assuming anything here is still unavailable — boards move. (When
+an adapter ships, former entries with live jobs are promoted to companies.yaml —
+e.g. Tether on Recruitee; WalletConnect/Crossmint/Safe/Zero Hash/Tabby on the
+Phase-1 multi-ATS adapters; Delivery Hero/Grab/Wise/ServiceNow/Visa on the
+SmartRecruiters adapter — all 2026-06-09. NOT promoted: BoschGroup is on
+SmartRecruiters with ~4.6k live postings but is an industrial conglomerate where
+software roles are a tiny fraction — deliberately excluded to avoid corpus
+bloat.)
 
 ## On a known ATS we don't support yet (best next-adapter targets)
 
@@ -24,7 +28,6 @@ here.)
 | StarkWare | Comeet | https://www.comeet.com/jobs/starkware/C6.00E |
 | Ondo Finance | Gem | https://jobs.gem.com/ondo-finance |
 | CoinSwitch | RecruiterFlow | https://recruiterflow.com/coinswitch/jobs |
-| Talabat | Delivery Hero | https://careers.deliveryhero.com/talabat |
 | Ramp Network | Greenhouse **EU** | boards.eu.greenhouse.io/rampnetwork — the public boards-api requires auth for EU boards |
 
 ## Board exists but API disabled / empty (re-check occasionally)

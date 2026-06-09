@@ -9,7 +9,8 @@ export type AtsProvider =
   | 'teamtailor'
   | 'personio'
   | 'breezy'
-  | 'pinpoint';
+  | 'pinpoint'
+  | 'smartrecruiters';
 
 export interface AtsDetection {
   provider: AtsProvider;
@@ -40,6 +41,11 @@ const PATTERNS: { provider: AtsProvider; re: RegExp }[] = [
   { provider: 'breezy', re: /(?:https?:\/\/)?([a-z0-9][a-z0-9-]*)\.breezy\.hr/i },
   // Pinpoint: slug is the subdomain of {slug}.pinpointhq.com.
   { provider: 'pinpoint', re: /(?:https?:\/\/)?([a-z0-9][a-z0-9-]*)\.pinpointhq\.com/i },
+  // SmartRecruiters: slug is the first path segment of the human board
+  // (jobs|careers).smartrecruiters.com/{Slug}. CASE-SENSITIVE (like Ashby) — do
+  // NOT lowercase. Anchored to the human hosts so it never captures the
+  // api.smartrecruiters.com endpoint as a "slug".
+  { provider: 'smartrecruiters', re: /(?:jobs|careers)\.smartrecruiters\.com\/([^/?#]+)/ },
 ];
 
 export function detectAts(careersUrl: string): AtsDetection | null {
