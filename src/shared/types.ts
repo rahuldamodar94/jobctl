@@ -240,13 +240,3 @@ export interface ScrapeRunSummary {
   /** label of the source currently being scraped, or null */
   currentSource: string | null;
 }
-
-// The scrape's judge phase runs AFTER all sources finish but BEFORE the run
-// completes, so its progress rides on the still-running row's `currentSource` as
-// a `judge:done/total` sentinel — the single contract between runScrape (writer)
-// and RunStatusStrip (reader). completeRun clears it when the run finishes.
-export const judgeProgressLabel = (done: number, total: number): string => `judge:${done}/${total}`;
-export function parseJudgeProgress(currentSource: string | null | undefined): { done: number; total: number } | null {
-  const m = currentSource?.match(/^judge:(\d+)\/(\d+)$/);
-  return m ? { done: Number(m[1]), total: Number(m[2]) } : null;
-}

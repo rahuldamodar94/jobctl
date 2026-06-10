@@ -244,6 +244,17 @@ export default function App() {
    *  before/during its judge phase). Background run — poll status for progress. */
   const onJudge = async () => {
     setNotice(null);
+    // Judging is user-initiated and costs LLM tokens — show the estimate and let
+    // the user opt in before spending (not everyone wants to judge every batch).
+    const pending = judge?.pending ?? 0;
+    if (pending > 0) {
+      const k = Math.round(estimateJudgeRun(pending).tokens / 1000);
+      if (!window.confirm(
+        `Judge ${pending} matched job${pending === 1 ? '' : 's'} now? Estimated ~${k}K tokens on your configured judge model. Advisory only — verdicts never hide a job.`
+      )) {
+        return;
+      }
+    }
     setJudgeStopping(false); // clear any stale "Stopping…" from a prior run
     const { ok, error } = await startJudge();
     if (ok) {
@@ -287,8 +298,8 @@ export default function App() {
         if (r.status !== 'running') {
           setStopping(false);
           reload({ keepSelection: true });
-          // the scrape ran its own judge phase — refresh the backlog count so the
-          // "Judge jobs" button reflects anything it couldn't finish.
+          // The scrape no longer judges — refresh the backlog count so the "Judge
+          // jobs" button surfaces the newly-matched jobs that are ready to judge.
           getJudgeStatus().then(setJudge).catch(() => {});
         }
       } catch {

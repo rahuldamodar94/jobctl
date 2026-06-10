@@ -9,14 +9,13 @@ import {
 } from '../config/load.js';
 import { PoliteHttp, scopeHttp, type HttpClient } from '../sources/http.js';
 import type { BoardAdapter, ScrapeContext } from '../sources/types.js';
-import { judgeProgressLabel, type CompanyConfig, type RawJob, type SourceRunResult } from '../shared/types.js';
+import { type CompanyConfig, type RawJob, type SourceRunResult } from '../shared/types.js';
 import { dedupeKey, findFuzzyMatch } from '../matcher/dedupe.js';
 import { normCompany, normTitle } from '../matcher/normalize.js';
 import { geoBucket } from '../matcher/geo.js';
 import { isOlderThan, localDateISO } from '../matcher/dates.js';
 import { matchJob } from '../matcher/matcher.js';
 import { categorize } from '../matcher/categorizer.js';
-import { judgePending } from '../judge/index.js';
 
 import { fetchAtsCompanies } from '../sources/ats/index.js';
 import { jobstash } from '../sources/boards/jobstash.js';
@@ -270,26 +269,11 @@ export async function runScrape(db: Database.Database, opts: ScrapeOptions = {})
         }
       }
 
-      // Optional advisory LLM fit-judge over newly-matched / changed jobs.
-      // Best-effort: judgePending never throws, so a backend outage can't fail
-      // the scrape or touch match/status. Its progress rides on the still-running
-      // row's currentSource (judge:done/total) so the UI pill shows "Judging fit…
-      // X/Y" instead of a frozen "Scraping… N/N" through the (slow) judge phase.
-      // A stop during the judge phase halts it between jobs (shouldCancel).
-      if (profile.llm.judge.enabled) {
-        await judgePending(repo, log, {
-          profile,
-          shouldCancel: cancelled,
-          onProgress: (done, total) => {
-            if (total === 0) return; // nothing to judge → don't flash "judge:0/0" on the pill
-            try {
-              repo.updateRunProgress(runId, sourcesDone, judgeProgressLabel(done, total), totalNew);
-            } catch {
-              /* progress is best-effort — never fail a scrape over a status write */
-            }
-          },
-        });
-      }
+      // The fit-judge is deliberately NOT run here — scrape stays isolated.
+      // Judging is a separate, user-initiated action (the "Judge jobs" button →
+      // POST /api/judge/pending) so the user sees the estimated cost and opts in;
+      // not everyone wants to spend the LLM on every batch. After a scrape, the
+      // newly-matched un-judged jobs show up as the button's pending count.
     }
 
     const status = cancelled() ? 'cancelled' : 'completed';
