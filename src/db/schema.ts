@@ -156,9 +156,35 @@ function v2_scrapeProgress(db: Database.Database): void {
   }
 }
 
+/**
+ * v3 — advisory LLM fit-judge columns. These were originally appended (guarded)
+ * inside initSchema, but a DB stamped at user_version=2 by an earlier build (v2
+ * present, judge feature not yet shipped) would NEVER acquire them — migrate()
+ * doesn't re-run initSchema for version>=1. This idempotent migration backfills
+ * them. (They stay duplicated in initSchema too, like v2's columns, so a fresh DB
+ * reaches the same state either way.)
+ */
+function v3_judgeColumns(db: Database.Database): void {
+  for (const col of [
+    'llm_verdict TEXT',
+    'llm_summary TEXT',
+    'llm_reasons TEXT',
+    'llm_blockers TEXT',
+    'llm_dimensions TEXT',
+    'llm_judged_hash TEXT',
+  ]) {
+    try {
+      db.exec(`ALTER TABLE jobs ADD COLUMN ${col}`);
+    } catch {
+      /* column already exists (fresh DB whose v1 baseline already added it) */
+    }
+  }
+}
+
 const MIGRATIONS: Array<(db: Database.Database) => void> = [
-  initSchema, // v1 — baseline (DO NOT edit for new changes; add a v2 below instead)
+  initSchema, // v1 — baseline (DO NOT edit for new changes; add a vN below instead)
   v2_scrapeProgress, // v2 — scrape progress columns
+  v3_judgeColumns, // v3 — advisory judge columns (backfills v2-stamped DBs)
 ];
 
 export function migrate(db: Database.Database): void {

@@ -311,7 +311,23 @@ export default function App() {
     // The "this takes minutes / runs in background" hint now lives as a hover
     // tooltip on the status pill (RunStatusStrip), not a banner here.
     if (await startScrape()) {
-      setRun(await latestRun()); // flips status to running → starts the poll
+      // Flip to running so the poll starts. If latestRun() momentarily fails
+      // (transient → null), fall back to a synthetic running summary rather than
+      // setting null (which would read as "not running" and never start the poll).
+      const r = await latestRun();
+      setRun(
+        r ?? {
+          id: -1,
+          startedAt: new Date().toISOString(),
+          completedAt: null,
+          status: 'running',
+          sources: [],
+          totalNew: 0,
+          sourcesDone: 0,
+          sourcesTotal: 0,
+          currentSource: null,
+        }
+      );
     } else {
       setNotice('Scrape not started — one is already running.');
     }
@@ -420,9 +436,11 @@ export default function App() {
     []
   );
 
-  // Stable per-row verdict merge (passed straight to a memoized JobRow).
+  // Stable per-row verdict merge (passed straight to a memoized JobRow). Merges
+  // a PATCH into the live row by id — never spreads a row object captured at
+  // re-judge-click time, which would revert a status/notes edit made meanwhile.
   const onJudged = useCallback(
-    (updated: UiJob) => setJobs((js) => js.map((x) => (x.id === updated.id ? updated : x))),
+    (id: number, patch: Partial<UiJob>) => setJobs((js) => js.map((x) => (x.id === id ? { ...x, ...patch } : x))),
     []
   );
 

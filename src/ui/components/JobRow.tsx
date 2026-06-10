@@ -91,7 +91,8 @@ type JobRowProps = {
   /** the status interaction is fully done (incl. note popover) — App may now
    *  remove the row from a view it no longer matches */
   onSettled: (status: string) => void;
-  onJudged: (updated: UiJob) => void;
+  /** merge a verdict PATCH into the live row by id (App owns the merge) */
+  onJudged: (id: number, patch: Partial<UiJob>) => void;
 };
 
 function JobRowImpl({
@@ -142,9 +143,10 @@ function JobRowImpl({
     setJudging(true);
     setJudgeError(null);
     try {
-      // merge the verdict patch into THIS row (keep all other fields intact)
+      // merge the verdict patch into the LIVE row by id (App merges — don't spread
+      // a stale `job` captured at click time; the user may have edited it meanwhile)
       const patch = await judgeJob(job.id);
-      onJudged({ ...job, ...patch });
+      onJudged(job.id, patch);
     } catch (e) {
       setJudgeError((e as Error).message);
     } finally {

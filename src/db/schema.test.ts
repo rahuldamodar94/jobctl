@@ -12,7 +12,7 @@ describe('migrate (versioned schema runner)', () => {
     // schema usable: the jobs table exists with the expected columns
     const cols = (db.prepare('PRAGMA table_info(jobs)').all() as { name: string }[]).map((c) => c.name);
     expect(cols).toContain('dedupe_key');
-    expect(cols).toContain('llm_dimensions'); // a "later" guarded-ALTER column, part of v1
+    expect(cols).toContain('llm_dimensions'); // judge column (v3 + duplicated in the v1 baseline)
     // v2 scrape-progress columns are present after migrate
     const runCols = (db.prepare('PRAGMA table_info(scrape_runs)').all() as { name: string }[]).map((c) => c.name);
     expect(runCols).toContain('sources_done');
@@ -33,6 +33,23 @@ describe('migrate (versioned schema runner)', () => {
     expect(runCols).toContain('sources_done');
     expect(runCols).toContain('sources_total');
     expect(runCols).toContain('current_source');
+  });
+
+  test('v3 backfills judge columns onto a DB stamped at user_version=2 WITHOUT them (regression)', () => {
+    const db = new Database(':memory:');
+    // simulate an old build: a v2-era DB whose jobs table never got the llm columns
+    db.exec('CREATE TABLE jobs (id INTEGER PRIMARY KEY, dedupe_key TEXT, match_score INTEGER, is_active INTEGER, is_match INTEGER)');
+    db.exec("CREATE TABLE scrape_runs (id INTEGER PRIMARY KEY, status TEXT, sources_done INTEGER, sources_total INTEGER, current_source TEXT)");
+    db.pragma('user_version = 2');
+    const before = (db.prepare('PRAGMA table_info(jobs)').all() as { name: string }[]).map((c) => c.name);
+    expect(before).not.toContain('llm_verdict');
+
+    migrate(db); // must run v3
+
+    const after = (db.prepare('PRAGMA table_info(jobs)').all() as { name: string }[]).map((c) => c.name);
+    expect(after).toContain('llm_verdict');
+    expect(after).toContain('llm_judged_hash');
+    expect(db.pragma('user_version', { simple: true })).toBe(3);
   });
 
   test('re-running migrate is idempotent (no version drift, no error)', () => {

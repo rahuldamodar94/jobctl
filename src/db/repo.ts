@@ -416,6 +416,10 @@ export class Repo {
   }
 
   acquireScrapeLock(ttlMinutes = 60): number | null {
+    // IMMEDIATE: take the write lock up front. The default DEFERRED transaction
+    // begins read-only and upgrades only at the INSERT, leaving a TOCTOU window
+    // where two connections (server + a CLI `npm run scrape`) both SELECT no live
+    // row, then both INSERT — a double scrape. IMMEDIATE serializes the check+insert.
     return this.db.transaction(() => {
       this.failStaleRuns(ttlMinutes);
       const live = this.db.prepare("SELECT id FROM scrape_runs WHERE status = 'running'").get();
@@ -424,7 +428,7 @@ export class Repo {
         .prepare("INSERT INTO scrape_runs (started_at, status, pid) VALUES (?, 'running', ?)")
         .run(new Date().toISOString(), process.pid);
       return Number(res.lastInsertRowid);
-    })();
+    }).immediate();
   }
 
   /** Set the total number of sources up front so the UI can show "N/total". */

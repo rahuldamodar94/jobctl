@@ -88,6 +88,11 @@ export function judgeRouter(repo: Repo): Router {
     try {
       const id = Number(req.params.id);
       if (!repo.findById(id)) return res.status(404).json({ error: 'not found' });
+      // Don't spawn a judge call concurrently with a backlog run or a scrape's
+      // judge phase (double-spend) — every other judge path has this guard.
+      if (judgeRun.running || repo.latestRun()?.status === 'running') {
+        return res.status(409).json({ error: 'a judge run is already in progress — try again in a moment.' });
+      }
       const out = await judgePending(repo, (m) => console.log(`[judge] ${m}`), { all: true, ids: [id] });
       if (out.skipped) return res.status(503).json({ error: out.skipped });
       if (out.failed && !out.judged) return res.status(502).json({ error: 'judge failed (see server log)' });

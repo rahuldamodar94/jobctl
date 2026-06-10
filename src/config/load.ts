@@ -10,6 +10,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { parse } from 'yaml';
 import { z } from 'zod';
+import { checkApiKeyEnv, checkLlmBaseUrl } from '../llm/safety.js';
 import type {
   CategoriesConfig,
   CompanyConfig,
@@ -104,12 +105,25 @@ export const profileSchema = z.object({
       backends: z
         .record(
           z.string(),
-          z.object({
-            engine: z.enum(['claude-cli', 'openai-compatible']),
-            model: z.string().optional(),
-            base_url: httpUrl().optional(),
-            api_key_env: z.string().optional(),
-          })
+          z
+            .object({
+              engine: z.enum(['claude-cli', 'openai-compatible']),
+              model: z.string().optional(),
+              base_url: httpUrl().optional(),
+              api_key_env: z.string().optional(),
+            })
+            // SSRF / credential-exfil guard at WRITE time: a backend can't persist
+            // a metadata/link-local base_url or a non-LLM env-var name (which the
+            // judge would later read + ship as a Bearer token). Mirrors the runtime
+            // guard in judge/backends.ts.
+            .superRefine((b, ctx) => {
+              if (b.base_url) {
+                const e = checkLlmBaseUrl(b.base_url);
+                if (e) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['base_url'], message: e });
+              }
+              const e2 = checkApiKeyEnv(b.api_key_env);
+              if (e2) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['api_key_env'], message: e2 });
+            })
         )
         .default({}),
       // min_score gates the auto/scrape judge run to higher-match jobs — the LLM

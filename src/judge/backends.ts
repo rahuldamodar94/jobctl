@@ -1,5 +1,6 @@
 import { DIMENSION_KEYS, DIMENSION_RATINGS, JUDGE_VERDICTS, type LlmBackendConfig } from '../shared/types.js';
 import { runClaudeCli } from '../llm/claude-cli.js';
+import { checkApiKeyEnv, checkLlmBaseUrl } from '../llm/safety.js';
 
 /** A backend runner: prompt in, raw model text out. */
 export type Runner = (prompt: string) => Promise<string>;
@@ -41,6 +42,12 @@ export function makeRunner(cfg: LlmBackendConfig): Runner {
   }
   // openai-compatible (OpenAI / Gemini / DeepSeek / OpenRouter / local Ollama)
   if (!cfg.base_url) throw new Error('openai-compatible backend needs base_url');
+  // SAME SSRF / credential-exfil guards the test-connection + authoring fetches
+  // use — this is the runtime judge path, so it must not be the weak link.
+  const urlErr = checkLlmBaseUrl(cfg.base_url);
+  if (urlErr) throw new Error(urlErr);
+  const keyErr = checkApiKeyEnv(cfg.api_key_env);
+  if (keyErr) throw new Error(keyErr);
   const key = cfg.api_key_env ? process.env[cfg.api_key_env] : undefined;
   return async (prompt) => {
     const ctrl = new AbortController();
@@ -56,6 +63,7 @@ export function makeRunner(cfg: LlmBackendConfig): Runner {
           response_format: { type: 'json_schema', json_schema: { name: 'verdict', strict: true, schema: VERDICT_SCHEMA } },
         }),
         signal: ctrl.signal,
+        redirect: 'manual', // a 3xx must not bounce the Bearer token to another host
       });
       if (!res.ok) throw new Error(`LLM HTTP ${res.status}: ${(await res.text().catch(() => '')).slice(0, 200)}`);
       const j = (await res.json().catch(() => null)) as { choices?: { message?: { content?: string } }[] } | null;

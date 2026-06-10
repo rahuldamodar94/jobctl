@@ -148,9 +148,10 @@ export class PoliteHttp {
  *  Combined with the manual redirect re-check, a board host can't bounce the
  *  request off its allowlisted host. */
 export function scopeHttp(http: HttpClient, allowHosts: string[]): HttpClient {
+  // allowHosts LAST so a callee's own opts can't widen the SSRF pin (enforce, not default).
   return {
-    getText: (url, opts = {}) => http.getText(url, { allowHosts, ...opts }),
-    getJson: <T = unknown>(url: string, opts: RequestOptions = {}) => http.getJson<T>(url, { allowHosts, ...opts }),
+    getText: (url, opts = {}) => http.getText(url, { ...opts, allowHosts }),
+    getJson: <T = unknown>(url: string, opts: RequestOptions = {}) => http.getJson<T>(url, { ...opts, allowHosts }),
   };
 }
 
