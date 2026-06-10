@@ -6,7 +6,7 @@
  * are plain markdown.
  */
 import React, { useCallback, useEffect, useState } from 'react';
-import { User, Briefcase, FileText, Scale, Files, Sparkles, X, Check, AlertCircle } from 'lucide-react';
+import { User, Briefcase, FileText, Scale, Files, Sparkles, X, Check, AlertCircle, ArrowRight } from 'lucide-react';
 import {
   getSettings,
   saveProfile,
@@ -92,7 +92,7 @@ export function Settings({ config, onClose, onSaved, initialTab }: { config: App
           ) : tab === 'profile' ? (
             <ProfileForm key="profile" profile={snap.profile} config={config} onSaved={handleSaved} />
           ) : tab === 'ai' ? (
-            <AiSettings key="ai" profile={snap.profile} claudeAvailable={config?.claudeAvailable ?? false} onSaved={handleSaved} />
+            <AiSettings key="ai" profile={snap.profile} claudeAvailable={config?.claudeAvailable ?? false} onGoToTab={setTab} onSaved={handleSaved} />
           ) : tab === 'roles' ? (
             <RolesForm key="roles" roles={snap.roles} config={config} hasResume={Boolean((snap.profile as { resumes?: unknown[] } | null)?.resumes?.length)} onSaved={handleSaved} />
           ) : tab === 'skill' ? (
@@ -814,10 +814,12 @@ export function buildLlmBlock(
 function AiSettings({
   profile,
   claudeAvailable,
+  onGoToTab,
   onSaved,
 }: {
   profile: Record<string, unknown> | null;
   claudeAvailable: boolean;
+  onGoToTab: (tab: Tab) => void;
   onSaved: () => void;
 }) {
   const llm = ((profile?.llm as LlmBlock | undefined) ?? {}) as LlmBlock;
@@ -996,6 +998,39 @@ function AiSettings({
       )}
 
       <SaveBar result={result} dirty={dirty} onSave={onSave} saving={saving} />
+
+      {/* Guided tuning journey — appears once a backend is saved. Each step opens
+          the matching AI-tuning surface (draft from resume → review/edit → save). */}
+      {existingBackend && (
+        <div className="mt-6 rounded-xl border border-accent/30 bg-accent/5 p-4">
+          <h3 className="flex items-center gap-1.5 text-sm font-semibold text-ink">
+            <Sparkles className="h-4 w-4 text-accent" /> Tune your matching with AI
+          </h3>
+          <p className="mt-0.5 text-xs text-muted">
+            Now that a backend is set, let AI draft each piece from your resume. You review and edit every step before it saves.
+          </p>
+          <div className="mt-3 grid gap-1.5">
+            {([
+              { tab: 'roles', label: 'Role keywords & weights', desc: 'Tune stack, weights, and excludes from your resume' },
+              { tab: 'profile', label: 'Domains & locations', desc: 'Suggest which companies to scrape and where' },
+              { tab: 'rubric', label: 'Judge rubric', desc: 'How the fit-judge scores a JD against you' },
+              { tab: 'skill', label: 'Resume rules', desc: 'How tailored resumes are generated' },
+            ] as { tab: Tab; label: string; desc: string }[]).map((s) => (
+              <button
+                key={s.tab}
+                onClick={() => onGoToTab(s.tab)}
+                className="flex items-center justify-between rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-left transition-all hover:border-accent/50"
+              >
+                <span>
+                  <span className="text-sm font-medium text-ink">{s.label}</span>
+                  <span className="block text-[11px] text-faint">{s.desc}</span>
+                </span>
+                <ArrowRight className="h-4 w-4 shrink-0 text-faint" />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
