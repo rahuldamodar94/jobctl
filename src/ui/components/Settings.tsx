@@ -23,6 +23,7 @@ import {
 import { Button, cn } from './ui.js';
 import { ResumeUpload } from './ResumeUpload.js';
 import { slug, toList } from '../role-builder.js';
+import { COMMON_LOCATIONS } from '../locations.js';
 
 export type Tab = 'profile' | 'ai' | 'roles' | 'skill' | 'rubric' | 'resumes';
 const TABS: { id: Tab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
@@ -139,38 +140,48 @@ function EditorHead({ title, hint }: { title: string; hint: string }) {
   );
 }
 
-/** Reusable chip multi-select (sources, domains, locations). */
+/** Reusable chip multi-select (sources, domains, locations). When onSet is
+ *  passed it renders a "Select all · Clear" control wired to every option id. */
 function Chips({
   options,
   selected,
   onToggle,
+  onSet,
 }: {
   options: { id: string; label: string }[];
   selected: Set<string>;
   onToggle: (id: string) => void;
+  onSet?: (next: Set<string>) => void;
 }) {
   return (
-    <div className="flex flex-wrap gap-1.5">
-      {options.map((o) => {
-        const on = selected.has(o.id);
-        return (
-          <button
-            key={o.id}
-            onClick={() => onToggle(o.id)}
-            className={cn(
-              'rounded-full border px-2.5 py-1 text-xs font-medium transition-all',
-              on ? 'border-accent bg-accent/10 text-accent' : 'border-line bg-surface-2/40 text-muted hover:border-line-strong'
-            )}
-          >
-            {o.label}
-          </button>
-        );
-      })}
+    <div>
+      {onSet && (
+        <div className="mb-1.5 text-[11px] font-medium text-faint">
+          <button type="button" onClick={() => onSet(new Set(options.map((o) => o.id)))} className="text-accent hover:underline">Select all</button>
+          <span className="mx-1.5 text-line-strong">·</span>
+          <button type="button" onClick={() => onSet(new Set())} className="hover:text-muted hover:underline">Clear</button>
+        </div>
+      )}
+      <div className="flex flex-wrap gap-1.5">
+        {options.map((o) => {
+          const on = selected.has(o.id);
+          return (
+            <button
+              key={o.id}
+              onClick={() => onToggle(o.id)}
+              className={cn(
+                'rounded-full border px-2.5 py-1 text-xs font-medium transition-all',
+                on ? 'border-accent bg-accent/10 text-accent' : 'border-line bg-surface-2/40 text-muted hover:border-line-strong'
+              )}
+            >
+              {o.label}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
-
-const COMMON_LOCATIONS = ['Remote', 'United States', 'Europe', 'United Kingdom', 'India', 'MENA', 'Dubai', 'Singapore'];
 
 /** Form over the general profile.yaml fields (replaces the raw-YAML editor).
  *  Writes the FULL profile (spread + overrides) so the AI/LLM block etc. survive;
@@ -205,6 +216,10 @@ function ProfileForm({ profile, config, onSaved }: { profile: Record<string, unk
     if (!v) return;
     setGeoPriority((prev) => new Set(prev).add(v));
     setCustomLoc('');
+    touch();
+  };
+  const setter = (setSet: React.Dispatch<React.SetStateAction<Set<string>>>) => (next: Set<string>) => {
+    setSet(next);
     touch();
   };
 
@@ -256,21 +271,21 @@ function ProfileForm({ profile, config, onSaved }: { profile: Record<string, unk
         <div>
           <span className={lbl}>Sources</span>
           <span className={sub}>Which job boards / the company-ATS registry to scrape.</span>
-          <Chips options={sourceOpts} selected={sources} onToggle={toggler(setSources)} />
+          <Chips options={sourceOpts} selected={sources} onToggle={toggler(setSources)} onSet={setter(setSources)} />
         </div>
 
         {sources.has('ats') && (
           <div>
             <span className={lbl}>Company domains</span>
             <span className={sub}>Which slices of the committed company registry to include (ATS source).</span>
-            <Chips options={domainOpts} selected={domains} onToggle={toggler(setDomains)} />
+            <Chips options={domainOpts} selected={domains} onToggle={toggler(setDomains)} onSet={setter(setDomains)} />
           </div>
         )}
 
         <div>
           <span className={lbl}>Preferred locations</span>
           <span className={sub}>+15 to the score; 'Remote' is a normal entry.</span>
-          <Chips options={locOpts} selected={geoPriority} onToggle={toggler(setGeoPriority)} />
+          <Chips options={locOpts} selected={geoPriority} onToggle={toggler(setGeoPriority)} onSet={setter(setGeoPriority)} />
           <div className="mt-2 flex gap-2">
             <input className={cn(fld, 'w-48')} value={customLoc} placeholder="Add a location…" onChange={(e) => setCustomLoc(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addCustomLoc(); } }} />
             <Button variant="secondary" size="sm" onClick={addCustomLoc} disabled={!customLoc.trim()}>Add</Button>
@@ -279,7 +294,7 @@ function ProfileForm({ profile, config, onSaved }: { profile: Record<string, unk
 
         <div>
           <span className={lbl}>Open to relocating to <span className="font-normal text-faint">(+10)</span></span>
-          <Chips options={locOpts} selected={relocationOk} onToggle={toggler(setRelocationOk)} />
+          <Chips options={locOpts} selected={relocationOk} onToggle={toggler(setRelocationOk)} onSet={setter(setRelocationOk)} />
         </div>
 
         <div className="flex flex-wrap gap-6">

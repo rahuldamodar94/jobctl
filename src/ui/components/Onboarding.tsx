@@ -14,6 +14,7 @@ import React, { useState } from 'react';
 import { User, Globe, Briefcase, MapPin, FileText, Check, Crosshair, ArrowLeft, ArrowRight, Plus } from 'lucide-react';
 import { saveProfile, saveRoles, saveResume, type AppConfig, type RoleTemplate } from '../api.js';
 import { buildRoleEntry, toList } from '../role-builder.js';
+import { COMMON_LOCATIONS } from '../locations.js';
 import { Button, cn } from './ui.js';
 import { ResumeUpload } from './ResumeUpload.js';
 
@@ -25,13 +26,16 @@ const STEPS = [
   { icon: FileText, label: 'Resume' },
 ];
 
-// Common location choices (tap to select; matched as substrings against job
-// locations). The loader lowercases these, so display casing is fine here.
-const COMMON_LOCATIONS = [
-  'Remote', 'United States', 'Europe', 'United Kingdom', 'India', 'Bangalore',
-  'London', 'Berlin', 'New York', 'San Francisco', 'Dubai', 'MENA',
-  'Singapore', 'Canada', 'Germany', 'Netherlands', 'Australia',
-];
+// A small "Select all · Clear" control for the multi-select pickers below.
+function SelectAllClear({ onAll, onClear }: { onAll: () => void; onClear: () => void }) {
+  return (
+    <span className="text-[11px] font-medium text-faint">
+      <button type="button" onClick={onAll} className="text-accent hover:underline">Select all</button>
+      <span className="mx-1.5 text-line-strong">·</span>
+      <button type="button" onClick={onClear} className="hover:text-muted hover:underline">Clear</button>
+    </span>
+  );
+}
 
 export function Onboarding({ config, onDone }: { config: AppConfig; onDone: () => void }) {
   const [step, setStep] = useState(0);
@@ -209,7 +213,10 @@ export function Onboarding({ config, onDone }: { config: AppConfig; onDone: () =
           {/* ── Sources + domains ───────────────────────────────────────── */}
           {step === 1 && (
             <div>
-              <span className={lbl}>Where should we look for jobs?</span>
+              <div className="flex items-center justify-between">
+                <span className={lbl}>Where should we look for jobs?</span>
+                <SelectAllClear onAll={() => setSources(new Set(config.availableSources))} onClear={() => setSources(new Set())} />
+              </div>
               <div className="space-y-1">
                 {config.availableSources.map((s) => {
                   const on = sources.has(s);
@@ -232,7 +239,10 @@ export function Onboarding({ config, onDone }: { config: AppConfig; onDone: () =
               </div>
               {sources.has('ats') && (
                 <div className="mt-4">
-                  <span className={lbl}>Which domains? <span className="font-normal text-faint">— pick the industries you want</span></span>
+                  <div className="flex items-center justify-between">
+                    <span className={lbl}>Which domains? <span className="font-normal text-faint">— pick the industries you want</span></span>
+                    <SelectAllClear onAll={() => setDomains(new Set(config.domains.map((d) => d.id)))} onClear={() => setDomains(new Set())} />
+                  </div>
                   <div className="grid grid-cols-2 gap-1.5">
                     {config.domains.map((d) => {
                       const on = domains.has(d.id);
@@ -324,7 +334,10 @@ export function Onboarding({ config, onDone }: { config: AppConfig; onDone: () =
             <div className="space-y-4">
               <p className="text-sm text-muted">Your location preference applies to every role. <span className="font-mono text-ink">Remote</span> matches remote-friendly listings.</p>
               <div>
-                <span className={lbl}>Preferred locations <span className="font-normal text-faint">— tap to select</span></span>
+                <div className="flex items-center justify-between">
+                  <span className={lbl}>Preferred locations <span className="font-normal text-faint">— tap to select</span></span>
+                  <SelectAllClear onAll={() => setGeoPriority(new Set(locationOptions))} onClear={() => setGeoPriority(new Set())} />
+                </div>
                 <div className="flex flex-wrap gap-1.5">
                   {locationOptions.map((loc) => (
                     <button key={loc} onClick={() => toggleGeo(loc)} className={chip(geoPriority.has(loc))}>{loc}</button>
@@ -345,7 +358,10 @@ export function Onboarding({ config, onDone }: { config: AppConfig; onDone: () =
                 <span className={hint}>Jobs in these locations score higher; others still appear.</span>
               </div>
               <div>
-                <span className={lbl}>Open to relocating to <span className="font-normal text-faint">(optional)</span></span>
+                <div className="flex items-center justify-between">
+                  <span className={lbl}>Open to relocating to <span className="font-normal text-faint">(optional)</span></span>
+                  <SelectAllClear onAll={() => setRelocationOk(new Set(locationOptions))} onClear={() => setRelocationOk(new Set())} />
+                </div>
                 <div className="flex flex-wrap gap-1.5">
                   {locationOptions.map((loc) => (
                     <button key={loc} onClick={() => toggleReloc(loc)} className={chip(relocationOk.has(loc))}>{loc}</button>

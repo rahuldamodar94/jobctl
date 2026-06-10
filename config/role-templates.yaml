@@ -38,7 +38,7 @@
 
 templates:
 
-  # ============================ Engineering (15) ============================
+  # ============================ Engineering (20) ============================
   - id: backend_engineer
     label: Backend Engineer
     group: Engineering
@@ -926,6 +926,335 @@ templates:
       fault tolerance: 4
       "manager": -8
       "on-site only": -10
+    exclude_if_primary: []
+
+  # ---- Engineering leadership ladder (people + technical leadership) ----
+  # Distinct levels so the picker exposes each; pick one and edit. Each bucket's
+  # title_exclude keeps it level-precise (an EM search won't poach a VP/CTO post,
+  # and vice-versa) and drops the look-alike non-eng roles (PM/TPM/sales eng).
+  - id: engineering_manager
+    label: Engineering Manager
+    group: Engineering
+    description: First-line, hands-on manager of one software team (player-coach).
+    title_keywords:
+      - engineering manager
+      - software engineering manager
+      - senior engineering manager
+      - sr. engineering manager
+      - sr engineering manager
+      - software development manager
+      - development manager
+      - dev manager
+      - manager, software engineering
+      - manager of engineering
+      - backend engineering manager
+      - engineering team manager
+    title_exclude:
+      - intern
+      - graduate
+      - working student
+      - frontend
+      - front-end
+      - mobile
+      - ios
+      - android
+      - qa
+      - test engineering
+      - data engineering
+      - machine learning
+      - ml engineering
+      - security
+      - sre
+      - site reliability
+      - devops
+      - director
+      - head of
+      - vp
+      - vice president
+      - chief
+      - cto
+      - product manager
+      - program manager
+      - project manager
+      - engagement manager
+      - account manager
+      - delivery manager
+    must_have_stack:
+      - engineering
+      - software
+      - team
+      - leadership
+      - backend
+    nice_to_have:
+      hiring: 5
+      mentoring: 5
+      mentorship: 4
+      roadmap: 4
+      "1:1": 3
+      people management: 4
+      "hands-on": 5
+      "player-coach": 5
+      on-call: 4
+      incident response: 4
+      observability: 3
+      distributed systems: 4
+      event-driven: 3
+      "intern": -10
+      "on-site only": -8
+    exclude_if_primary: []
+
+  - id: director_of_engineering
+    label: Director of Engineering
+    group: Engineering
+    description: Manager of managers running a product area (multiple teams).
+    title_keywords:
+      - director of engineering
+      - engineering director
+      - director, engineering
+      - director of software engineering
+      - senior director of engineering
+      - sr. director of engineering
+      - senior director, engineering
+      - director of software development
+      - group engineering manager
+      - group manager, engineering
+      - engineering group manager
+    title_exclude:
+      - intern
+      - frontend
+      - mobile
+      - ios
+      - android
+      - qa
+      - data engineering
+      - machine learning
+      - security
+      - sre
+      - site reliability
+      - devops
+      - director of product
+      - product director
+      - director of program
+      - director of project
+      - director of operations
+      - director of sales engineering
+      - director of solutions engineering
+      - director of customer
+      - creative director
+      - art director
+      - chief
+      - cto
+    must_have_stack:
+      - engineering
+      - software
+      - leadership
+      - delivery
+      - strategy
+    nice_to_have:
+      hiring: 5
+      "org design": 5
+      roadmap: 4
+      strategy: 4
+      stakeholder: 3
+      cross-functional: 4
+      mentorship: 3
+      budget: 3
+      okrs: 3
+      distributed systems: 4
+      "intern": -10
+      "on-site only": -8
+    exclude_if_primary: []
+
+  - id: vp_engineering
+    label: VP / Head of Engineering
+    group: Engineering
+    description: Org-wide engineering leadership; owns the whole function.
+    title_keywords:
+      - vp of engineering
+      - vp engineering
+      - vp, engineering
+      - vice president of engineering
+      - vice president, engineering
+      - svp engineering
+      - svp of engineering
+      - senior vice president of engineering
+      - head of engineering
+      - head of software engineering
+      - head of platform engineering
+      - head of software development
+      - vp of software engineering
+      - vp of software development
+    title_exclude:
+      - intern
+      - vp of product
+      - vp of sales
+      - vp of marketing
+      - vp of design
+      - vp of operations
+      - head of product
+      - head of design
+      - head of program
+      - head of people
+      - head of talent
+      - head of sales
+      - head of marketing
+      - head of security
+      - head of data
+      - head of qa
+      - head of mobile
+      - head of frontend
+      - head of it
+      - solutions engineering
+      - chief
+      - cto
+    must_have_stack:
+      - engineering
+      - software
+      - leadership
+      - strategy
+      - technology
+    nice_to_have:
+      strategy: 5
+      hiring: 5
+      "org design": 5
+      roadmap: 4
+      stakeholder: 4
+      board: 3
+      okrs: 3
+      scaling: 4
+      cross-functional: 4
+      distributed systems: 3
+      "intern": -10
+      "on-site only": -8
+    exclude_if_primary: []
+
+  - id: cto
+    label: CTO / Head of Technology
+    group: Engineering
+    description: Executive owner of technical vision and strategy (founder-tier).
+    title_keywords:
+      - cto
+      - chief technology officer
+      - chief technical officer
+      - co-founder & cto
+      - cofounder and cto
+      - founder & cto
+      - founding cto
+      - cto & co-founder
+      - vp of technology
+      - vice president of technology
+      - head of technology
+      - technical director
+      - interim cto
+      - fractional cto
+    title_exclude:
+      - intern
+      - ceo
+      - coo
+      - cfo
+      - cpo
+      - cio
+      - ciso
+      - chief executive
+      - chief operating officer
+      - chief financial officer
+      - chief product officer
+      - chief revenue officer
+      - chief marketing officer
+      - chief data officer
+      - chief information officer
+      - chief information security officer
+      - chief of staff
+    must_have_stack:
+      - technology
+      - engineering
+      - software
+      - leadership
+      - strategy
+    nice_to_have:
+      strategy: 5
+      "technical vision": 5
+      architecture: 4
+      hiring: 4
+      roadmap: 4
+      scaling: 4
+      fundraising: 3
+      stakeholder: 3
+      distributed systems: 3
+      "intern": -10
+      "on-site only": -8
+    exclude_if_primary: []
+
+  - id: tech_lead
+    label: Tech Lead
+    group: Engineering
+    description: Hands-on technical leadership of a team — minimal people-mgmt.
+    title_keywords:
+      - tech lead
+      - technical lead
+      - engineering lead
+      - lead engineer
+      - lead software engineer
+      - lead developer
+      - software engineering lead
+      - development lead
+      - technical team lead
+      - tech lead manager
+      - lead software developer
+      - staff engineer
+      - senior staff engineer
+      - principal engineer
+    title_exclude:
+      - intern
+      - graduate
+      - frontend
+      - front-end
+      - mobile
+      - ios
+      - android
+      - qa
+      - test lead
+      - data lead
+      - machine learning
+      - ml lead
+      - security
+      - sre
+      - site reliability
+      - devops
+      - design lead
+      - lead designer
+      - product lead
+      - lead product
+      - project lead
+      - scrum
+      - delivery lead
+      - support lead
+      - sales
+      - solutions
+      - lead recruiter
+      - lead analyst
+      - director
+      - vp
+      - head of
+    must_have_stack:
+      - engineering
+      - software
+      - backend
+      - architecture
+      - development
+    nice_to_have:
+      architecture: 5
+      "hands-on": 5
+      mentorship: 4
+      code review: 4
+      distributed systems: 5
+      event-driven: 4
+      microservices: 4
+      observability: 3
+      on-call: 3
+      scalability: 4
+      "intern": -10
+      "on-site only": -8
     exclude_if_primary: []
 
   # ============================ Data & Science (8) ============================
@@ -2672,7 +3001,7 @@ templates:
       "on-site only": -8
     exclude_if_primary: []
 
-  # ============================ People & Ops (10) ============================
+  # ============================ People & Ops (9) ============================
   - id: technical_recruiter
     label: Technical Recruiter
     group: People & Ops
@@ -3031,55 +3360,6 @@ templates:
       executive: 3
       data-driven: 3
       planning: 3
-      "intern": -10
-      "on-site only": -8
-    exclude_if_primary: []
-
-  - id: engineering_manager
-    label: Engineering Manager
-    group: People & Ops
-    description: Leading software teams (people management).
-    title_keywords:
-      - engineering manager
-      - software engineering manager
-      - senior engineering manager
-      - director of engineering
-      - head of engineering
-      - vp of engineering
-      - vp engineering
-      - engineering lead
-      - development manager
-      - backend engineering manager
-      - platform engineering manager
-    title_exclude:
-      - intern
-      - graduate
-      - working student
-      - frontend
-      - mobile
-      - qa
-      - test engineering
-      - data engineering
-      - sre
-      - site reliability
-      - security
-      - machine learning
-    must_have_stack:
-      - engineering
-      - software
-      - team
-      - leadership
-      - backend
-    nice_to_have:
-      hiring: 4
-      roadmap: 4
-      distributed systems: 3
-      mentoring: 4
-      on-call: 3
-      incident response: 3
-      observability: 3
-      "hands-on": 4
-      "player-coach": 4
       "intern": -10
       "on-site only": -8
     exclude_if_primary: []
