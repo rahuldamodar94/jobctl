@@ -16,9 +16,11 @@ import {
   saveResume,
   testLlmConnection,
   generateAuthoring,
+  generateRolesDraft,
   type AppConfig,
   type SaveResult,
   type SettingsSnapshot,
+  type RoleDraft,
 } from '../api.js';
 import { Button, cn } from './ui.js';
 import { ResumeUpload } from './ResumeUpload.js';
@@ -90,7 +92,7 @@ export function Settings({ config, onClose, onSaved, initialTab }: { config: App
           ) : tab === 'ai' ? (
             <AiSettings key="ai" profile={snap.profile} claudeAvailable={config?.claudeAvailable ?? false} onSaved={handleSaved} />
           ) : tab === 'roles' ? (
-            <RolesForm key="roles" roles={snap.roles} config={config} onSaved={handleSaved} />
+            <RolesForm key="roles" roles={snap.roles} config={config} hasResume={Boolean((snap.profile as { resumes?: unknown[] } | null)?.resumes?.length)} onSaved={handleSaved} />
           ) : tab === 'skill' ? (
             <AuthoredDocTab key="skill" target="skill" title="Resume generation rules" hint="How the resume generator tailors your resume per job. Generate it from your resume, then refine." initial={snap.skill ?? ''} hasResume={Boolean((snap.profile as { resumes?: unknown[] } | null)?.resumes?.length)} save={saveSkill} onSaved={handleSaved} />
           ) : tab === 'rubric' ? (
@@ -328,7 +330,7 @@ function ProfileForm({ profile, config, onSaved }: { profile: Record<string, unk
 
 /** Form over the single role search (replaces the raw-YAML editor). Optionally
  *  prefill from a curated template; nice_to_have weights are editable rows. */
-function RolesForm({ roles, config, onSaved }: { roles: Record<string, unknown> | null; config: AppConfig | null; onSaved: () => void }) {
+function RolesForm({ roles, config, hasResume, onSaved }: { roles: Record<string, unknown> | null; config: AppConfig | null; hasResume: boolean; onSaved: () => void }) {
   const role = ((roles as { roles?: Record<string, any>[] } | null)?.roles?.[0] ?? {}) as Record<string, any>;
   const existingId = role.id as string | undefined;
   const [label, setLabel] = useState<string>(role.label ?? '');
@@ -342,7 +344,61 @@ function RolesForm({ roles, config, onSaved }: { roles: Record<string, unknown> 
   const [dirty, setDirty] = useState(false);
   const [result, setResult] = useState<SaveResult | null>(null);
   const [saving, setSaving] = useState(false);
+  const [tuning, setTuning] = useState(false);
+  const [tuneError, setTuneError] = useState<string | null>(null);
+  const [instruction, setInstruction] = useState('');
   const touch = () => setDirty(true);
+
+  // Populate every field from a drafted/template role (the form IS the review surface).
+  function applyDraft(r: RoleDraft) {
+    setLabel(r.label);
+    setTitleKeywords(r.title_keywords.join(', '));
+    setStack(r.must_have_stack.join(', '));
+    setTitleExclude((r.title_exclude ?? []).join(', '));
+    setExcludePrimary((r.exclude_if_primary ?? []).join(', '));
+    setNiceRows(Object.entries(r.nice_to_have ?? {}).map(([term, weight]) => ({ term, weight })));
+    touch();
+  }
+
+  // Serialize the live form state into the on-disk role shape (for a fine-tune pass).
+  function currentRoleJson(): string {
+    const nice: Record<string, number> = {};
+    for (const r of niceRows) {
+      const t = r.term.trim().toLowerCase();
+      if (t) nice[t] = r.weight;
+    }
+    return JSON.stringify(
+      {
+        id: existingId || slug(label),
+        label: label.trim(),
+        title_keywords: toList(titleKeywords),
+        must_have_stack: toList(stack),
+        title_exclude: toList(titleExclude),
+        nice_to_have: nice,
+        exclude_if_primary: toList(excludePrimary),
+      },
+      null,
+      2
+    );
+  }
+
+  // refine=false → draft from the on-disk role + resume; refine=true → revise the
+  // live (possibly edited) form per the instruction.
+  async function runTune(refine: boolean) {
+    setTuning(true);
+    setTuneError(null);
+    const r = await generateRolesDraft({
+      instruction: refine ? instruction.trim() || undefined : undefined,
+      currentDraft: refine ? currentRoleJson() : undefined,
+    });
+    setTuning(false);
+    if (r.error || !r.role) {
+      setTuneError(r.error ?? 'Tuning returned nothing — try again.');
+      return;
+    }
+    applyDraft(r.role);
+    setInstruction('');
+  }
 
   function applyTemplate(id: string) {
     const t = (config?.roleTemplates ?? []).find((x) => x.id === id);
@@ -395,11 +451,38 @@ function RolesForm({ roles, config, onSaved }: { roles: Record<string, unknown> 
   // base field WITHOUT a width (callers add w-full / flex-1 / w-20 as needed —
   // a baked-in w-full would fight flex-1/w-20 on the nice-to-have rows).
   const fld = 'rounded-lg border border-line bg-surface-2/60 px-3 py-2 text-sm text-ink placeholder-faint outline-none focus:border-accent';
+  const ctrl = 'h-8 flex-1 min-w-[14rem] rounded-lg border border-line bg-surface-2/60 px-2.5 text-xs text-ink placeholder-faint outline-none focus:border-accent disabled:opacity-50';
   const groups = [...new Set((config?.roleTemplates ?? []).map((t) => t.group))];
 
   return (
     <div className="max-w-2xl">
       <EditorHead title="Role" hint="The single role you're hunting. Title keywords gate the match; must-have stack is an OR-gate; nice-to-have weights tune the score." />
+      {hasResume ? (
+        <div className="mb-4 rounded-lg border border-line bg-surface-2/30 p-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="secondary" size="sm" onClick={() => runTune(false)} loading={tuning} disabled={tuning}>
+              {!tuning && <Sparkles className="h-3.5 w-3.5" />}
+              Tune with AI from resume
+            </Button>
+            <input
+              className={ctrl}
+              placeholder='Fine-tune: e.g. "weight fintech higher", "exclude data roles"'
+              value={instruction}
+              onChange={(e) => setInstruction(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter' && !tuning && instruction.trim()) { e.preventDefault(); runTune(true); } }}
+              disabled={tuning}
+            />
+            <Button variant="secondary" size="sm" onClick={() => runTune(true)} loading={tuning} disabled={tuning || !instruction.trim()}>
+              Fine-tune
+            </Button>
+          </div>
+          <p className="mt-1.5 text-[11px] text-faint">AI keeps your title keywords and tunes the stack, weights, and excludes from your resume. Review the fields below, then Save.</p>
+          {tuning && <p className="mt-1 text-xs text-faint">Tuning from your resume… this can take up to a minute.</p>}
+          {tuneError && <p className="mt-1 text-xs text-amber-300">{tuneError}</p>}
+        </div>
+      ) : (
+        <p className="mb-4 text-xs text-muted">Add your resume (Resume tab) to tune this role with AI — or edit the fields below by hand.</p>
+      )}
       <div className="space-y-5">
         {(config?.roleTemplates?.length ?? 0) > 0 && (
           <label className="block">
@@ -529,17 +612,20 @@ function AuthoredDocTab({
           </Button>
           <input
             className={ctrl}
-            placeholder='Refine: e.g. "stricter on location", "emphasize fintech"'
+            placeholder='Fine-tune: e.g. "be stricter on location", "emphasize fintech"'
             value={instruction}
             onChange={(e) => setInstruction(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' && !generating) {
+              if (e.key === 'Enter' && !generating && instruction.trim()) {
                 e.preventDefault();
                 onGenerate();
               }
             }}
             disabled={generating}
           />
+          <Button variant="secondary" size="sm" onClick={onGenerate} loading={generating} disabled={generating || !instruction.trim()}>
+            Fine-tune
+          </Button>
         </div>
       ) : (
         <p className="mb-2.5 text-xs text-muted">
