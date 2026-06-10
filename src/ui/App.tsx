@@ -36,6 +36,7 @@ import { RunStatusStrip } from './components/RunStatusStrip.js';
 import { ResumeDrawer } from './components/ResumeDrawer.js';
 import { Onboarding } from './components/Onboarding.js';
 import { Settings, type Tab as SettingsTab } from './components/Settings.js';
+import { AiIntroDialog } from './components/AiIntroDialog.js';
 import { Button, Skeleton } from './components/ui.js';
 import { JOB_STATUSES } from '../shared/types.js';
 import { Play, Download, FileText, Settings as SettingsIcon, Crosshair, SearchX, Sparkles, Gavel, Square } from 'lucide-react';
@@ -91,8 +92,23 @@ export default function App() {
   const [config, setConfig] = useState<AppConfig | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [settingsTab, setSettingsTab] = useState<SettingsTab | undefined>(undefined);
-  const [judgeNudgeDismissed, setJudgeNudgeDismissed] = useState(false);
+  // AI discovery: a one-time intro popup (value + cost) plus a dismissible bar,
+  // both gated to "configured, AI not yet on, and they've seen some jobs".
+  const [aiIntroSeen, setAiIntroSeen] = useState(() => localStorage.getItem('jobctl.aiIntroSeen') === '1');
+  const [aiNudgeDismissed, setAiNudgeDismissed] = useState(() => localStorage.getItem('jobctl.aiNudgeDismissed') === '1');
+  const [showAiIntro, setShowAiIntro] = useState(false);
+  const dismissAiNudge = () => { setAiNudgeDismissed(true); localStorage.setItem('jobctl.aiNudgeDismissed', '1'); };
   const openSettings = (tab?: SettingsTab) => { setSettingsTab(tab); setShowSettings(true); };
+
+  // Auto-open the intro popup once, after onboarding, when AI is off and there
+  // are jobs to act on (so it lands on a populated triage page, not setup).
+  useEffect(() => {
+    if (config?.configured && !config.judgeEnabled && jobs.length > 0 && !aiIntroSeen) {
+      setShowAiIntro(true);
+      setAiIntroSeen(true);
+      localStorage.setItem('jobctl.aiIntroSeen', '1');
+    }
+  }, [config?.configured, config?.judgeEnabled, jobs.length, aiIntroSeen]);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const judgePollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const seededRef = useRef(false); // seed default filters from ui_prefs once
@@ -463,6 +479,13 @@ export default function App() {
         />
       )}
 
+      {showAiIntro && (
+        <AiIntroDialog
+          onClose={() => setShowAiIntro(false)}
+          onSetup={() => { setShowAiIntro(false); dismissAiNudge(); openSettings('ai'); }}
+        />
+      )}
+
       {/* ── App bar ───────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-30 border-b border-line/70 bg-bg/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-[1400px] items-center gap-3 px-4 py-2.5">
@@ -537,18 +560,19 @@ export default function App() {
       </header>
 
       <main className="mx-auto max-w-[1400px] px-4 py-4">
-        {/* Contextual discovery for the optional fit-judge: a fresh user skips AI
-            in onboarding, so nudge them here (dismissible) once they have jobs. */}
-        {config?.configured && !config.judgeEnabled && !judgeNudgeDismissed && jobs.length > 0 && (
+        {/* Contextual AI discovery: a fresh user skips AI in onboarding, so nudge
+            them here (dismissible) once they have jobs. The bar re-opens the full
+            intro popup; the popup also auto-shows once (see the effect above). */}
+        {config?.configured && !config.judgeEnabled && !aiNudgeDismissed && jobs.length > 0 && (
           <div className="mb-3 flex items-center gap-2 rounded-xl border border-accent/30 bg-accent/5 px-3 py-2 text-xs">
-            <Gavel className="h-3.5 w-3.5 text-accent" />
+            <Sparkles className="h-3.5 w-3.5 text-accent" />
             <span className="text-muted">
-              Turn on the <span className="font-medium text-ink">AI fit-judge</span> to score these jobs against your resume — STRONG/DECENT/WEAK/SKIP, with reasons.
+              Add <span className="font-medium text-ink">AI</span> to sharpen your matches, judge fit, and tailor resumes — recommended for the best results.
             </span>
-            <button onClick={() => openSettings('ai')} className="ml-2 font-medium text-accent hover:underline">
-              Set it up
+            <button onClick={() => setShowAiIntro(true)} className="ml-2 font-medium text-accent hover:underline">
+              See what it adds
             </button>
-            <button onClick={() => setJudgeNudgeDismissed(true)} className="ml-auto font-medium text-faint hover:text-ink">
+            <button onClick={dismissAiNudge} className="ml-auto font-medium text-faint hover:text-ink">
               Dismiss
             </button>
           </div>
