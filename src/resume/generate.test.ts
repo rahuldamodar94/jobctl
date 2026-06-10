@@ -14,7 +14,7 @@ import { Repo } from '../db/repo.js';
  */
 
 const REAL_RESUMES = join(process.cwd(), 'profile', 'resumes');
-const hasFixtures = existsSync(join(REAL_RESUMES, 'resume_ic.md'));
+const hasFixtures = existsSync(join(REAL_RESUMES, 'main.md'));
 
 describe.skipIf(!hasFixtures)('generateResume (mocked claude)', () => {
   let dir: string;
@@ -26,7 +26,7 @@ describe.skipIf(!hasFixtures)('generateResume (mocked claude)', () => {
     process.env.PROFILE_DIR = dir;
     mkdirSync(join(dir, 'resumes'), { recursive: true });
     // the single base resume the generator reads (profile.resumes[0].file)
-    cpSync(join(REAL_RESUMES, 'resume_ic.md'), join(dir, 'resumes', 'main.md'));
+    cpSync(join(REAL_RESUMES, 'main.md'), join(dir, 'resumes', 'main.md'));
     writeFileSync(join(dir, 'RESUME_GENERATION_SKILL.md'), '# SKILL\nRules here.');
     writeFileSync(
       join(dir, 'profile.yaml'),
@@ -73,9 +73,9 @@ describe.skipIf(!hasFixtures)('generateResume (mocked claude)', () => {
 
   test('writes md + pdf + meta under profile/generated and returns paths', async () => {
     const { generateResume } = await freshGenerate();
-    const baseIc = readFileSync(join(REAL_RESUMES, 'resume_ic.md'), 'utf8');
+    const base = readFileSync(join(REAL_RESUMES, 'main.md'), 'utf8');
     // mocked model: return the base resume, em-dashes replaced per the output contract
-    const mocked = async () => baseIc.replaceAll('—', '-');
+    const mocked = async () => base.replaceAll('—', '-');
 
     const result = await generateResume(db, jobId, mocked);
     expect(result.pages).toBe(1);
@@ -83,7 +83,7 @@ describe.skipIf(!hasFixtures)('generateResume (mocked claude)', () => {
 
     const outDir = join(dir, 'generated', result.dir);
     // structural: the output keeps whatever name the base resume declares
-    const expectedName = baseIc.match(/^# (.+)$/m)?.[1];
+    const expectedName = base.match(/^# (.+)$/m)?.[1];
     expect(readFileSync(join(dir, 'generated', result.mdFile), 'utf8')).toContain(`# ${expectedName}`);
     expect(readFileSync(join(dir, 'generated', result.pdfFile)).subarray(0, 5).toString()).toBe('%PDF-');
     const meta = JSON.parse(readFileSync(join(outDir, 'meta.json'), 'utf8'));
@@ -123,8 +123,8 @@ describe.skipIf(!hasFixtures)('generateResume (mocked claude)', () => {
       matchedRoleIds: [],
       matchReasons: { matchedKeywords: [], descriptionMissing: false, roleOutcomes: {} },
     });
-    const baseIc = readFileSync(join(REAL_RESUMES, 'resume_ic.md'), 'utf8');
-    const result = await generateResume(db, messyId, async () => baseIc.replaceAll('—', '-'));
+    const base = readFileSync(join(REAL_RESUMES, 'main.md'), 'utf8');
+    const result = await generateResume(db, messyId, async () => base.replaceAll('—', '-'));
     const pdfBase = result.pdfFile.split('/').pop()!;
     expect(pdfBase).toMatch(/_Acme_Inc_Sr_Engineer_Backend_API_Payments\.pdf$/);
     expect(pdfBase).not.toMatch(/[^a-zA-Z0-9_.]/);
@@ -132,24 +132,24 @@ describe.skipIf(!hasFixtures)('generateResume (mocked claude)', () => {
 
   test('model output with em dashes succeeds: dashes normalized, never rejected', async () => {
     const { generateResume } = await freshGenerate();
-    const baseIc = readFileSync(join(REAL_RESUMES, 'resume_ic.md'), 'utf8'); // contains em dashes
-    const result = await generateResume(db, jobId, async () => baseIc);
+    const base = readFileSync(join(REAL_RESUMES, 'main.md'), 'utf8'); // contains em dashes
+    const result = await generateResume(db, jobId, async () => base);
     expect(result.markdown).not.toMatch(/[—–]/);
     expect(result.pages).toBe(1);
   });
 
   test('truly invalid model output (preamble chatter) is still rejected', async () => {
     const { generateResume } = await freshGenerate();
-    const baseIc = readFileSync(join(REAL_RESUMES, 'resume_ic.md'), 'utf8');
-    await expect(generateResume(db, jobId, async () => 'Sure! Here it is:\n\n' + baseIc)).rejects.toThrow(
+    const base = readFileSync(join(REAL_RESUMES, 'main.md'), 'utf8');
+    await expect(generateResume(db, jobId, async () => 'Sure! Here it is:\n\n' + base)).rejects.toThrow(
       /failed validation/
     );
   });
 
   test('findExistingResume locates a prior generation by jobId', async () => {
     const { generateResume, findExistingResume } = await freshGenerate();
-    const baseIc = readFileSync(join(REAL_RESUMES, 'resume_ic.md'), 'utf8');
-    await generateResume(db, jobId, async () => baseIc.replaceAll('—', '-'));
+    const base = readFileSync(join(REAL_RESUMES, 'main.md'), 'utf8');
+    await generateResume(db, jobId, async () => base.replaceAll('—', '-'));
     const found = findExistingResume(jobId);
     expect(found).not.toBe(null);
     expect(found!.meta.company).toBe('Ziina');

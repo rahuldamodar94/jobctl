@@ -70,7 +70,7 @@ templates:
       - founding engineer
       - member of technical staff
     # GENERIC backend role: accepts many languages, so language terms must NOT
-    # live here (they're in must_have_stack). Exclude only off-target lanes.
+    # live here (they're in must_have_stack). Exclude only off-target roles.
     title_exclude:
       - junior
       - intern
@@ -1470,7 +1470,6 @@ templates:
     label: Group / Director of Product
     group: Product
     description: Lead a product area + people-manage PMs.
-    lane: em
     title_keywords:
       - group product manager
       - director of product
@@ -1964,7 +1963,6 @@ templates:
     label: Design Manager / Head of Design
     group: Design
     description: Lead and people-manage a product design team.
-    lane: em
     title_keywords:
       - design manager
       - head of design
@@ -2017,7 +2015,7 @@ templates:
     description: Acquisition, lifecycle, performance marketing.
     # bare "marketing manager" removed — as a substring it swallowed the
     # product/field/content/performance marketing sub-roles (this role is the
-    # acquisition/growth lane, not a catch-all). The growth-specific titles carry
+    # acquisition/growth area, not a catch-all). The growth-specific titles carry
     # it; product/content marketing are excluded to keep them in their own roles.
     title_keywords:
       - growth manager
@@ -3041,7 +3039,6 @@ templates:
     label: Engineering Manager
     group: People & Ops
     description: Leading software teams (people management).
-    lane: em
     title_keywords:
       - engineering manager
       - software engineering manager

@@ -12,8 +12,8 @@ import { renderResumePdf } from './render-pdf.js';
  * they always run.
  */
 const RESUMES_DIR = join(process.cwd(), 'profile', 'resumes');
-const hasFixtures = existsSync(join(RESUMES_DIR, 'resume_ic.md'));
-const baseMd = hasFixtures ? readFileSync(join(RESUMES_DIR, 'resume_ic.md'), 'utf8') : '';
+const hasFixtures = existsSync(join(RESUMES_DIR, 'main.md'));
+const baseMd = hasFixtures ? readFileSync(join(RESUMES_DIR, 'main.md'), 'utf8') : '';
 
 const job = {
   company: 'Ziina',

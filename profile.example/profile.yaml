@@ -43,17 +43,6 @@ companies:
   exclude: []
   #  - Binance
 
-# Categories you never want matched, e.g. [crypto] — excluded jobs stay
-# auditable under Match=unmatched with the reason shown.
-exclude_categories: []
-
-# Resume-generation guardrails (only used by the optional Generate-resume
-# feature). forbidden_terms: words that must NEVER appear in generated
-# resumes — e.g. an employer name you can't disclose under NDA. Output
-# containing a term is rejected before rendering.
-resume_rules:
-  forbidden_terms: []
-
 # Optional LLM features: the fit-judge (advisory JD screening, needs
 # profile/judge-rubric.md) and resume generation. Each picks a backend from
 # the registry. API keys live in ENV (api_key_env), never in this file.
@@ -82,5 +71,3 @@ resumes:
   - id: main
     label: My Resume
     file: resumes/resume.md
-    # mark which resume the generator uses as the IC / EM base (optional):
-    # base: ic

@@ -6,7 +6,7 @@
 # Three templates below: senior_backend is ACTIVE; frontend and platform_sre
 # are commented — uncomment and adapt whichever fits you.
 #
-# Prefer to start from a curated role? config/role-templates.yaml ships 20+
+# Prefer to start from a curated role? config/role-templates.yaml ships 60+
 # ready-made searches across the software industry (engineering, data, product,
 # design, growth, sales, people). The onboarding wizard / Settings let you pick
 # one; it lands here as an editable role.
@@ -17,9 +17,6 @@ roles:
   # ===========================================================================
   - id: senior_backend
     label: "Senior Backend Engineer"
-    # Career lane: ic (individual contributor) or em (manager). Drives the
-    # UI's IC/EM role filter. Optional — defaults to ic.
-    lane: ic
 
     # HARD FILTER 1 — the job title must contain one of these (substring):
     # NOTE: substring means word ORDER matters — "senior backend" does NOT
