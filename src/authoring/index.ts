@@ -77,11 +77,14 @@ function loadAuthoringContext(): {
   if (!resume) return { error: 'Your resume is empty — add content in the Resume tab.' };
 
   const name = profile.llm.judge.backend || profile.llm.resume.backend || 'claude-cli';
-  const cfg = profile.llm.backends[name];
-  if (!cfg) return { error: 'No LLM backend configured — set one up in the AI/LLM tab first.' };
-  if (cfg.engine === 'claude-cli' && !claudeAvailable()) {
+  const backend = profile.llm.backends[name];
+  if (!backend) return { error: 'No LLM backend configured — set one up in the AI/LLM tab first.' };
+  if (backend.engine === 'claude-cli' && !claudeAvailable()) {
     return { error: 'claude CLI not available on this machine.' };
   }
+  // Authoring is a "writing" task → use the resume (writing) model override.
+  const writingModel = profile.llm.resume.model;
+  const cfg = writingModel ? { ...backend, model: writingModel } : backend;
   return { ctx: { resume, cfg, profile } };
 }
 

@@ -135,9 +135,14 @@ export const profileSchema = z.object({
           enabled: z.boolean().default(false),
           backend: z.string().default('claude-cli'),
           min_score: z.number().int().nonnegative().default(50),
+          // per-feature model override (blank → the backend's / CLI default). The
+          // judge is a cheap classification — a fast/small model (e.g. Haiku) is plenty.
+          model: z.string().optional(),
         })
         .default({ enabled: false, backend: 'claude-cli', min_score: 50 }),
-      resume: z.object({ backend: z.string().default('claude-cli') }).default({ backend: 'claude-cli' }),
+      // resume.model is also the "writing" model for the config authoring (rubric/
+      // skill/roles/profile drafts) — quality-oriented (e.g. Sonnet).
+      resume: z.object({ backend: z.string().default('claude-cli'), model: z.string().optional() }).default({ backend: 'claude-cli' }),
     })
     .default({
       backends: {},

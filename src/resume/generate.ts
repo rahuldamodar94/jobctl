@@ -24,12 +24,6 @@ const SKILL_FILE = 'RESUME_GENERATION_SKILL.md';
 
 export { claudeAvailable };
 
-/** Run the resume prompt through the shared CLI runner. cwd=tmpdir keeps it
- *  hermetic; plain `-p` preserves subscription auth (no API key). */
-export function runClaude(prompt: string): Promise<string> {
-  return runClaudeCli(prompt);
-}
-
 export interface GeneratedResume {
   dir: string;
   mdFile: string;
@@ -85,7 +79,7 @@ export function findExistingResume(jobId: number): { dir: string; meta: Record<s
 export async function generateResume(
   db: Database.Database,
   jobId: number,
-  claudeRunner: (prompt: string) => Promise<string> = runClaude
+  claudeRunner?: (prompt: string) => Promise<string>
 ): Promise<GeneratedResume> {
   const repo = new Repo(db);
   const job = repo.findById(jobId);
@@ -100,9 +94,12 @@ export async function generateResume(
   // The single base resume = the first registered entry in profile.resumes
   // (`file` is relative to profile/, so strip a leading resumes/ for the join).
   let resumeFile = '';
+  let resumeModel: string | undefined;
   try {
-    const entry = loadProfile().resumes[0];
+    const p = loadProfile();
+    const entry = p.resumes[0];
     if (entry) resumeFile = entry.file.replace(/^resumes\//, '');
+    resumeModel = p.llm.resume.model; // per-feature "writing" model override
   } catch {
     /* profile.yaml absent/broken — handled by the no-resume error below */
   }
@@ -128,7 +125,11 @@ export async function generateResume(
     resume
   );
 
-  const raw = await claudeRunner(prompt);
+  // Default runner = local claude CLI with the resume model override (hermetic
+  // tmpdir cwd, subscription auth). Tests inject their own runner.
+  const runner =
+    claudeRunner ?? ((p: string) => runClaudeCli(p, resumeModel ? { model: resumeModel } : {}));
+  const raw = await runner(prompt);
   const validated = validateResumeOutput(raw, extractEmail(resume));
   if (!validated.ok) throw new Error(`generated resume failed validation: ${validated.error}`);
 

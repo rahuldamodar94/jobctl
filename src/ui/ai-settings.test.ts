@@ -77,4 +77,28 @@ describe('buildLlmBlock (AI/LLM Settings tab)', () => {
     expect(llm.resume).toEqual({ backend: 'my-gemini' });
     expect(profileSchema.safeParse({ ...baseProfile, llm }).success).toBe(true);
   });
+
+  test('per-feature model overrides land on judge.model and resume.model', () => {
+    const llm = buildLlmBlock(
+      {},
+      { engine: 'claude-cli', model: '', baseUrl: '', apiKeyEnv: '', judgeEnabled: true, minScore: 50, judgeModel: 'haiku', writingModel: 'sonnet' }
+    );
+    expect(llm.judge?.model).toBe('haiku');
+    expect(llm.resume?.model).toBe('sonnet');
+    const parsed = profileSchema.safeParse({ ...baseProfile, llm });
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect(parsed.data.llm.judge.model).toBe('haiku');
+      expect(parsed.data.llm.resume.model).toBe('sonnet');
+    }
+  });
+
+  test('blank model overrides clear the field (no model key persisted)', () => {
+    const prev = { judge: { model: 'haiku' }, resume: { backend: 'claude-cli', model: 'sonnet' } };
+    const llm = buildLlmBlock(prev, {
+      engine: 'claude-cli', model: '', baseUrl: '', apiKeyEnv: '', judgeEnabled: true, minScore: 50, judgeModel: '', writingModel: '',
+    });
+    expect(llm.judge?.model).toBeUndefined();
+    expect(llm.resume?.model).toBeUndefined();
+  });
 });

@@ -750,8 +750,8 @@ export interface LlmBackend {
 }
 export interface LlmBlock {
   backends?: Record<string, LlmBackend>;
-  judge?: { enabled?: boolean; backend?: string; min_score?: number };
-  resume?: { backend?: string };
+  judge?: { enabled?: boolean; backend?: string; min_score?: number; model?: string };
+  resume?: { backend?: string; model?: string };
 }
 
 // The single backend name this form manages. A power user with several backends
@@ -764,7 +764,17 @@ const FORM_BACKEND = 'claude-cli';
  *  form's named backend + judge settings are (re)written. */
 export function buildLlmBlock(
   prev: LlmBlock,
-  input: { engine: LlmEngine; model: string; baseUrl: string; apiKeyEnv: string; judgeEnabled: boolean; minScore: number }
+  input: {
+    engine: LlmEngine;
+    model: string;
+    baseUrl: string;
+    apiKeyEnv: string;
+    judgeEnabled: boolean;
+    minScore: number;
+    /** per-feature model overrides (blank → the backend/CLI default) */
+    judgeModel?: string;
+    writingModel?: string;
+  }
 ): LlmBlock {
   const backend: LlmBackend =
     input.engine === 'openai-compatible'
@@ -775,11 +785,14 @@ export function buildLlmBlock(
           ...(input.apiKeyEnv.trim() ? { api_key_env: input.apiKeyEnv.trim() } : {}),
         }
       : { engine: input.engine };
+  const judgeModel = (input.judgeModel ?? '').trim();
+  const writingModel = (input.writingModel ?? '').trim();
   return {
     ...prev,
     backends: { ...(prev.backends ?? {}), [FORM_BACKEND]: backend },
-    judge: { ...(prev.judge ?? {}), enabled: input.judgeEnabled, backend: FORM_BACKEND, min_score: input.minScore },
-    resume: prev.resume ?? { backend: FORM_BACKEND },
+    // model: '' clears the override (undefined → dropped on the validated write).
+    judge: { ...(prev.judge ?? {}), enabled: input.judgeEnabled, backend: FORM_BACKEND, min_score: input.minScore, model: judgeModel || undefined },
+    resume: { backend: prev.resume?.backend ?? FORM_BACKEND, model: writingModel || undefined },
   };
 }
 
@@ -804,6 +817,9 @@ function AiSettings({
   const [apiKeyEnv, setApiKeyEnv] = useState(existingBackend?.api_key_env ?? '');
   const [judgeEnabled, setJudgeEnabled] = useState(judge.enabled ?? false);
   const [minScore, setMinScore] = useState(judge.min_score ?? 50);
+  // Per-feature model routing (cheap model for the judge, stronger for writing).
+  const [judgeModel, setJudgeModel] = useState(judge.model ?? '');
+  const [writingModel, setWritingModel] = useState(llm.resume?.model ?? '');
 
   const [result, setResult] = useState<SaveResult | null>(null);
   const [saving, setSaving] = useState(false);
@@ -850,7 +866,7 @@ function AiSettings({
       return;
     }
     setSaving(true);
-    const nextLlm = buildLlmBlock(llm, { engine, model, baseUrl, apiKeyEnv, judgeEnabled, minScore });
+    const nextLlm = buildLlmBlock(llm, { engine, model, baseUrl, apiKeyEnv, judgeEnabled, minScore, judgeModel, writingModel });
     // Spread the whole profile so nothing else is dropped (atomic validated write).
     const nextProfile = { ...(profile ?? {}), llm: nextLlm };
     const r = await saveProfile(nextProfile);
@@ -935,6 +951,33 @@ function AiSettings({
         )}
       </div>
 
+      {/* Model routing — per-feature model overrides (the biggest cost lever) */}
+      <div className="mb-4 rounded-lg border border-line/60 bg-surface-2/30 p-3">
+        <div className="flex items-center justify-between">
+          <span className={cn(lbl, 'mb-0')}>Model routing <span className="font-normal text-faint">(optional)</span></span>
+          {engine === 'claude-cli' && (
+            <button type="button" onClick={() => { setJudgeModel('haiku'); setWritingModel('sonnet'); touch(); }} className="text-[11px] font-medium text-accent hover:underline">
+              Use recommended
+            </button>
+          )}
+        </div>
+        <span className={sub}>
+          Blank uses the backend/CLI default. The judge is cheap classification — a fast model (e.g. Haiku) is plenty;
+          writing tasks (resume + AI config tuning) prefer a stronger one (e.g. Sonnet). Routing the judge to a small
+          model is the single biggest cost saver.
+        </span>
+        <div className="mt-2 grid grid-cols-2 gap-2">
+          <label className="block">
+            <span className="mb-1 block text-xs text-faint">Judge model</span>
+            <input className={fld} value={judgeModel} onChange={(e) => { setJudgeModel(e.target.value); touch(); }} placeholder={engine === 'claude-cli' ? 'haiku' : 'e.g. gpt-4o-mini'} />
+          </label>
+          <label className="block">
+            <span className="mb-1 block text-xs text-faint">Writing model</span>
+            <input className={fld} value={writingModel} onChange={(e) => { setWritingModel(e.target.value); touch(); }} placeholder={engine === 'claude-cli' ? 'sonnet' : 'e.g. gpt-4o'} />
+          </label>
+        </div>
+      </div>
+
       {/* Judge toggle + floor */}
       <div className="mb-4 rounded-lg border border-line/60 bg-surface-2/30 p-3">
         <label className="flex cursor-pointer items-center gap-3">
@@ -959,7 +1002,7 @@ function AiSettings({
             value={minScore}
             onChange={(e) => { setMinScore(Math.round(Math.max(0, Math.min(100, Number(e.target.value) || 0)))); touch(); }}
           />
-          <span className={sub}>Default 50. The Re-judge button bypasses this floor.</span>
+          <span className={sub}>Default 50. Higher = fewer (and costlier) LLM calls per run. The Re-judge button bypasses this floor.</span>
         </label>
       </div>
 

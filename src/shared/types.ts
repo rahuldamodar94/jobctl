@@ -174,8 +174,9 @@ export interface ProfileConfig {
   /** Optional LLM features (resume gen + fit-judge). */
   llm: {
     backends: Record<string, LlmBackendConfig>;
-    judge: { enabled: boolean; backend: string; min_score: number };
-    resume: { backend: string };
+    judge: { enabled: boolean; backend: string; min_score: number; model?: string };
+    /** resume.model doubles as the "writing" model for config authoring. */
+    resume: { backend: string; model?: string };
   };
   /** Selection over the committed company registry + personal additions. */
   companies: {
