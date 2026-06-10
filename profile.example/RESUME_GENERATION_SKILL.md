@@ -11,9 +11,6 @@ sections (see the repo README for the feature docs):
 ## Candidate profile
 Name, contact details, location, education, years of experience.
 
-## Resume selection logic
-If you keep multiple base resumes in profile/resumes/, explain when to use which.
-
 ## Canonical facts
 The numbers and claims that must always be stated exactly (metrics, team sizes,
 project names). The generator must never invent anything beyond these.

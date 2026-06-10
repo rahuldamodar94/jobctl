@@ -12,7 +12,7 @@ profiles (deterministic core, **no model required**), and serves a single
 data-dense triage page. **AI is model-flexible** (Claude `claude -p` / any
 OpenAI-compatible API / local Ollama — no coding-CLI lock-in) and sits *on top*
 to judge fit and tailor resumes; the scrape→match→triage core runs fully offline
-with no model. Ships with a committed, domain-tagged registry of 320+
+with no model. Ships with a committed, domain-tagged registry of 569
 live-verified company boards across all 12 domains. Single user, local-first
 (`npm start`; reproducibility via `.nvmrc` + `package-lock.json`).
 Tagline: "The self-hosted job copilot for the software industry. Your machine,
@@ -62,12 +62,12 @@ config/                          # COMMITTED — community value
 ├── sources.yaml                 # board definitions
 └── categories.yaml              # category taxonomy: free strings, first match
                                  # in `order` wins, `fallback` when nothing hits
-                                 # (profile can override the whole file)
+                                 # (committed-only — no profile override)
 
 profile/                         # GITIGNORED — personal
-├── profile.yaml                 # name, enabled boards, companies, ui_prefs, resumes[].base
-├── roles.yaml                   # role searches (titles/stack/weights/exclusions/geo/lane)
-├── resumes/*.md                 # shown in UI drawer; ic/em bases for generation
+├── profile.yaml                 # name, enabled boards, companies, ui_prefs, resumes[]
+├── roles.yaml                   # the single role search (titles/stack/weights/exclusions/geo)
+├── resumes/*.md                 # shown in UI drawer; the base for resume generation
 ├── RESUME_GENERATION_SKILL.md   # resume-gen rules · judge-rubric.md # JD fit rubric
 └── archive/                     # original source documents
 ```
@@ -176,9 +176,11 @@ CONFIG (yaml)                  SCRAPE PIPELINE (src/scraper/run.ts)
   constrain `status='new'` rows ONLY — triaged jobs (interested/applied/…)
   always show when their status is selected, so a curated job never silently
   disappears for being low-score or old. `match=unmatched` stays global (audit).
-- Role filter = IC/EM **lanes** (roles.yaml `lane: ic|em`); the UI sends the csv
-  of role ids in a lane, server ORs `matched_role_ids LIKE`. /api/config drops
-  excluded categories from the dropdown. /api/stats = **WYSIWYG** pipeline counts
+- **Single role** (no lanes/role filter): the profile carries ONE role search;
+  `matched_role_ids` is still stored (a job either matches it or not) but the UI
+  exposes no role/source facet. `category` is a plain equality filter; its
+  dropdown vocabulary comes from /api/config (the full taxonomy — no
+  exclude-categories carve-out). /api/stats = **WYSIWYG** pipeline counts
   by status — it reuses `buildJobsFilter(query, {omitStatus})` and GROUPs BY
   status, so each pill's number equals what clicking it shows under the current
   refinements (the `new` count obeys the score/recency floor; triaged statuses
@@ -248,14 +250,13 @@ CONFIG (yaml)                  SCRAPE PIPELINE (src/scraper/run.ts)
 
 `src/resume/`: prompt assembly + output validation (em/en dashes are
 auto-normalized to hyphens, never rejected — punctuation, not content;
-forbidden terms from profile `resume_rules.forbidden_terms` (NDA names —
-NEVER hardcoded in code), email/structure violations reject) → local `claude -p` CLI (user's subscription, stdin/stdout, tmpdir cwd,
+email/structure violations reject) → local `claude -p` CLI (user's subscription, stdin/stdout, tmpdir cwd,
 180s timeout) → markdown parsed (`parse.ts`, structure contract = base resume
 shape) → deterministic pdfkit renderer (`render-pdf.ts`, template ground truth
 = the user's real resume PDF; one-page asserted). Output:
 `profile/generated/<date>-<company>-<jobId>/{resume.md,resume.pdf,meta.json}`.
-Capability via `GET /api/config` (CLI detection) — false in Docker, UI hides
-the button. Key invariant: **LLM owns words, code owns layout** — never let
+Capability via `GET /api/config` (CLI detection) — false when the `claude` CLI
+is absent, UI hides the button. Key invariant: **LLM owns words, code owns layout** — never let
 the model emit formatting, never let code paraphrase content. The `claude -p`
 runner is shared (`src/llm/claude-cli.ts`), run from tmpdir so no project
 CLAUDE.md/scaffolding loads. **Do NOT add `--bare`** — it bypasses the
@@ -313,7 +314,7 @@ guide: `docs/model-tradeoffs.md`.
 npm run scrape [-- --source X]   # scrape (lock-guarded; UI button same path)
 npm run judge [-- --all|--id N]  # optional fit-judge over matched jobs
 npm run dev | build | start      # UI dev / production
-npm test                         # vitest — 325 tests
+npm test                         # vitest — 331 tests (9 skip without a profile resume)
 ```
 
 ## Status
@@ -357,14 +358,34 @@ rubric + resume skill), friendlier Settings forms.
 **Final hardening pass (2026-06-09, after a fresh judged run):** added the
 `llm.judge.min_score` auto-run floor (default 50) + the score↔verdict divergence
 UI cue; fixed a matcher false-positive (bare `backend` / incidental lone
-"JavaScript" was inflating Java/Spring roles to 80-100 — EM lane now requires a
-real JS-family token + JVM anti-signals); verified the backup→current
+"JavaScript" was inflating Java/Spring roles to 80-100 — the EM lane required a
+real JS-family token + JVM anti-signals; that lane-specific path was removed with
+lanes in v4); verified the backup→current
 status migration lost no source-backed triage data; comment cleanup (dropped
 dated curation/process noise, kept reasoning + navigation). Dual final review
 (code + security): zero HIGH/regressions, ship-approved. A UX review flagged 3
 deferred P0s for a future pass — judge/LLM not enableable from the UI (YAML-only),
 the custom-role path still caps score at 60 (template path was fixed in v3), and
-the multi-minute scrape gives no progress feedback.
+the multi-minute scrape gives no progress feedback. **(All three resolved in v4.)**
+
+**v4 — single-role redesign (2026-06-10, branch `single-role-redesign`,
+unpushed):** collapsed the product to ONE role — removed IC/EM lanes, the
+role/source triage filters, `exclude_categories`, the resume `base: ic|em`, and
+`resume_rules`/`forbidden_terms` (no invisible YAML hatch; existing matched rows
+re-match against the single role on the next scrape). Closed the 3 deferred P0s:
+judge + resume gen are now enableable from the UI (the AI/LLM Settings tab —
+mandatory backend + a cheap connection check), the scrape/judge phases stream
+live progress AND are user-cancellable (stop controls), and a "Judge jobs" button
+clears the un-judged backlog. Settings de-YAML'd into forms (Categories tab
+removed). Resume ingestion: upload `.docx`/`.pdf` (mammoth/pdfjs, zip-bomb +
+size-guarded) → an LLM auto-authors the judge rubric + resume-gen rules from the
+resume, refinable by prompt. Removed the import feature's last traces. Registry
+569 companies / role-templates 66. **Security:** judge-backend SSRF/exfil guard
+at BOTH write-time (profileSchema `superRefine`) and runtime
+(`checkLlmBaseUrl`/`checkApiKeyEnv` + `redirect:'manual'`), a v3 judge-column
+backfill migration (v2-stamped DBs were missing the `llm_*` columns), and a
+scrape-lock race fix (`.immediate()` txn). Tests 331; dual code+security audit,
+ship-approved.
 
 ## v2+ roadmap (architecture accommodates, zero code today)
 

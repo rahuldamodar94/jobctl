@@ -11,9 +11,9 @@ how well a job fits and to tailor your resume. The core scrape-and-match runs
 with no model at all, even fully offline.
 
 ```
-  company career pages  (Greenhouse · Lever · Ashby · Workday …)  ─┐
-                                                                    ├─▶  dedupe ─▶ score ─▶ SQLite ─▶ triage page
-  tech job boards       (remoteok · remotive · HN · …)            ─┘            (+ your AI)   (localhost:3000)
+  company career pages  (Greenhouse · Lever · Ashby · Workable …)  ─┐
+                                                                     ├─▶  dedupe ─▶ score ─▶ SQLite ─▶ triage page
+  tech job boards       (remoteok · remotive · weworkremotely · …) ─┘            (+ your AI)   (localhost:3000)
 ```
 
 *Dedup keeps each job once · scoring is keyword-based against your profile · an
@@ -35,7 +35,7 @@ you care about and go.
   even if it's reposted on another board with a slightly different title.
 - **Local-first & private.** Everything lives in one SQLite file; your personal
   config is gitignored and never leaves your laptop.
-- **Community registry.** 320+ company boards across all 12 domains, verified
+- **Community registry.** 569 company boards across all 12 domains, verified
   against their live APIs and tagged by domain.
 
 ## Quickstart
@@ -94,10 +94,10 @@ files remain the source of truth if you'd rather edit them directly:
 | File | Owner | What it holds |
 |---|---|---|
 | `profile/profile.yaml` | you *(gitignored)* | which domains/boards to scrape, max job age, resumes, UI prefs |
-| `profile/roles.yaml` | you *(gitignored)* | your role searches: titles, skills, weighted keywords, exclusions, location, IC/EM lane |
+| `profile/roles.yaml` | you *(gitignored)* | your single role search: titles, skills, weighted keywords, exclusions, location |
 | `config/companies.yaml` | committed | the community company registry, tagged by domain |
 | `config/sources.yaml` | committed | job-board definitions |
-| `config/categories.yaml` | committed | category rules (you can override per profile) |
+| `config/categories.yaml` | committed | category rules (the auto-detected Domain column) |
 
 ## Where jobs come from
 
@@ -148,8 +148,11 @@ rated and **backed by 1–2 short quotes pulled straight from the JD** so you ca
 see *why*. It's a sortable, filterable chip on each row, and it's **advisory
 only: it never hides or blocks a job.**
 
-Turn it on with `llm.judge.enabled: true` in `profile.yaml` and add a
-`profile/judge-rubric.md` (template in `profile.example/`). It runs on either:
+Turn it on from the **Settings → AI/LLM tab**: pick a backend, run the one-click
+connection check, and enable the judge. The rubric it scores against can be
+**auto-authored from your uploaded resume** (then refined by prompt) or written by
+hand as `profile/judge-rubric.md` (template in `profile.example/`). It runs on
+either:
 
 - your local **`claude` CLI** (free, on your subscription — no API key), or
 - any **OpenAI-compatible API** (OpenAI, Gemini, DeepSeek, OpenRouter, Ollama) —
@@ -158,9 +161,11 @@ Turn it on with `llm.judge.enabled: true` in `profile.yaml` and add a
 ### Resume tailoring — one-page PDF per job
 
 If you have the [Claude Code](https://claude.com/claude-code) CLI installed and
-logged in, add a `RESUME_GENERATION_SKILL.md` to `profile/` (there's a template
-in `profile.example/`) describing how you want resumes written. A **Generate
-resume** button then appears on every job. Your local `claude` writes the
+logged in, set this up in **Settings → Resumes**: upload your résumé as `.docx`
+or `.pdf` and jobctl extracts it, then an LLM drafts the resume-gen rules for you
+(refine them by prompt). Prefer to write them yourself? Drop a
+`RESUME_GENERATION_SKILL.md` into `profile/` (template in `profile.example/`). A
+**Generate resume** button then appears on every job. Your local `claude` writes the
 content — billed to your existing subscription, no API key — and jobctl renders
 a one-page PDF into `profile/generated/`.
 
