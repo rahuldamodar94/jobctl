@@ -37,6 +37,7 @@ import { ResumeDrawer } from './components/ResumeDrawer.js';
 import { Onboarding } from './components/Onboarding.js';
 import { Settings, type Tab as SettingsTab } from './components/Settings.js';
 import { AiIntroDialog } from './components/AiIntroDialog.js';
+import { estimateJudgeRun } from '../shared/llm-costs.js';
 import { Button, Skeleton } from './components/ui.js';
 import { JOB_STATUSES } from '../shared/types.js';
 import { Play, Download, FileText, Settings as SettingsIcon, Crosshair, SearchX, Sparkles, Gavel, Square } from 'lucide-react';
@@ -514,7 +515,7 @@ export default function App() {
                 onClick={onJudge}
                 loading={judge.running}
                 disabled={scraping || judge.running}
-                title="Judge un-judged matched jobs above your score floor — no re-scrape needed"
+                title={judge.running ? 'Judging…' : `Judge un-judged matches above your score floor — ${estimateJudgeRun(judge.pending).label}. No re-scrape needed.`}
               >
                 {!judge.running && <Gavel className="h-4 w-4" />}
                 {judge.running

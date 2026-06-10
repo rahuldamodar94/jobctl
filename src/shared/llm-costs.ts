@@ -1,11 +1,22 @@
 /**
  * Per-feature LLM value + cost estimates — the single source the AI intro popup
- * reads, so its numbers stay honest and live in one place.
- *
- * NOTE: these are PLACEHOLDER estimates measured at typical prompt sizes.
- * Workstream 2 (per-task model routing + rubric caching) will refine them and
- * make them model-aware — the popup imports from here so it updates for free.
+ * and the pre-run judge estimate read, so the numbers stay honest and in one
+ * place. Token counts are model-independent (measured at typical prompt sizes);
+ * the actual cost/usage depends on the model you route each task to (see the
+ * Model-routing section in Settings → AI/LLM). Caching is deliberately not
+ * assumed here (it only helps API backends, not the default claude-cli).
  */
+
+/** Typical input+output tokens for ONE judge call (rubric ~1.7K + JD ~1.4K +
+ *  instructions + the verdict out). The judge is the only per-job LLM cost. */
+export const JUDGE_TOKENS_PER_JOB = 3_500;
+
+/** Estimate a judge run over `pending` jobs: total tokens + a short label. */
+export function estimateJudgeRun(pending: number): { jobs: number; tokens: number; label: string } {
+  const tokens = Math.max(0, pending) * JUDGE_TOKENS_PER_JOB;
+  const k = Math.round(tokens / 1000);
+  return { jobs: pending, tokens, label: `~${pending} job${pending === 1 ? '' : 's'} ≈ ~${k}K tokens` };
+}
 export interface LlmFeatureCost {
   key: 'tuning' | 'judge' | 'resume';
   name: string;

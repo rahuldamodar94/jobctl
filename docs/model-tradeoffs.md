@@ -31,6 +31,23 @@ HTTP shape that covers OpenAI, Gemini, DeepSeek, OpenRouter, and local Ollama).
 | **Cloud API — free tier** (e.g. free Gemini) | `openai-compatible` | Free | **Often yes** | Judge only (job posts are semi-public) |
 | **Local model via Ollama** | `openai-compatible` (`base_url` → localhost) | Free, runs on your machine | No — never leaves your laptop | Maximum privacy; judge + resume offline |
 
+## Model routing (judge vs writing) — the cost lever
+
+You don't have to use one model for everything. Two optional per-feature
+overrides send each task to the right-sized model:
+
+| Setting | Task | Recommended |
+|---|---|---|
+| `llm.judge.model` | the fit-judge — a cheap 4-way classification | a small/fast model (**Haiku**) |
+| `llm.resume.model` | resume tailoring **and** AI config tuning (rubric/skill/roles/profile) | a stronger model (**Sonnet**) |
+
+Blank = the backend's `model` (or the CLI default). The judge is the only
+**per-job** cost, so routing it to a small model is the single biggest saver — a
+daily run drops roughly 10× versus judging on Opus/Sonnet. Set both in
+**Settings → AI/LLM → Model routing** (one-click Haiku/Sonnet preset for the
+Claude CLI). Caching the rubric would save more, but only on API backends, so
+model routing is the lever that helps everyone — including the default CLI.
+
 ## The one privacy rule
 
 > **Free LLM tiers may train on what you send.** That's fine for the **judge** —
@@ -67,8 +84,10 @@ llm:
   judge:
     enabled: true
     backend: cloud              # job posts are semi-public → a cheap tier is fine
+    model: gpt-4o-mini          # optional: cheap model for the judge classification
   resume:
     backend: local              # your resume is you → non-training backend
+    model: sonnet               # optional: stronger model for writing (also AI config tuning)
 ```
 
 Then put the key in your shell (not in any file jobctl reads):
