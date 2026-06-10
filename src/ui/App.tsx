@@ -35,7 +35,7 @@ import { JobRow } from './components/JobRow.js';
 import { RunStatusStrip } from './components/RunStatusStrip.js';
 import { ResumeDrawer } from './components/ResumeDrawer.js';
 import { Onboarding } from './components/Onboarding.js';
-import { Settings } from './components/Settings.js';
+import { Settings, type Tab as SettingsTab } from './components/Settings.js';
 import { Button, Skeleton } from './components/ui.js';
 import { JOB_STATUSES } from '../shared/types.js';
 import { Play, Download, FileText, Settings as SettingsIcon, Crosshair, SearchX, Sparkles, Gavel, Square } from 'lucide-react';
@@ -90,6 +90,9 @@ export default function App() {
   const [hasLoaded, setHasLoaded] = useState(false);
   const [config, setConfig] = useState<AppConfig | null>(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [settingsTab, setSettingsTab] = useState<SettingsTab | undefined>(undefined);
+  const [judgeNudgeDismissed, setJudgeNudgeDismissed] = useState(false);
+  const openSettings = (tab?: SettingsTab) => { setSettingsTab(tab); setShowSettings(true); };
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const judgePollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const seededRef = useRef(false); // seed default filters from ui_prefs once
@@ -436,6 +439,7 @@ export default function App() {
       {showSettings && (
         <Settings
           config={config}
+          initialTab={settingsTab}
           onClose={() => setShowSettings(false)}
           onSaved={() => { seededRef.current = false; loadConfig(); reload(); }}
         />
@@ -506,7 +510,7 @@ export default function App() {
               <button onClick={() => setShowResume(true)} title="Resume reference drawer" className={ICON_BTN}>
                 <FileText className="h-[17px] w-[17px]" />
               </button>
-              <button onClick={() => setShowSettings(true)} title="Settings" className={ICON_BTN}>
+              <button onClick={() => openSettings()} title="Settings" className={ICON_BTN}>
                 <SettingsIcon className="h-[17px] w-[17px]" />
               </button>
             </div>
@@ -515,6 +519,22 @@ export default function App() {
       </header>
 
       <main className="mx-auto max-w-[1400px] px-4 py-4">
+        {/* Contextual discovery for the optional fit-judge: a fresh user skips AI
+            in onboarding, so nudge them here (dismissible) once they have jobs. */}
+        {config?.configured && !config.judgeEnabled && !judgeNudgeDismissed && jobs.length > 0 && (
+          <div className="mb-3 flex items-center gap-2 rounded-xl border border-accent/30 bg-accent/5 px-3 py-2 text-xs">
+            <Gavel className="h-3.5 w-3.5 text-accent" />
+            <span className="text-muted">
+              Turn on the <span className="font-medium text-ink">AI fit-judge</span> to score these jobs against your resume — STRONG/DECENT/WEAK/SKIP, with reasons.
+            </span>
+            <button onClick={() => openSettings('ai')} className="ml-2 font-medium text-accent hover:underline">
+              Set it up
+            </button>
+            <button onClick={() => setJudgeNudgeDismissed(true)} className="ml-auto font-medium text-faint hover:text-ink">
+              Dismiss
+            </button>
+          </div>
+        )}
         {demoCount > 0 && (
           <div className="mb-3 flex items-center gap-2 rounded-xl border border-accent/30 bg-accent/5 px-3 py-2 text-xs">
             <Sparkles className="h-3.5 w-3.5 text-accent" />

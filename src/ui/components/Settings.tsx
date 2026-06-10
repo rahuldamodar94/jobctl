@@ -24,7 +24,7 @@ import { Button, cn } from './ui.js';
 import { ResumeUpload } from './ResumeUpload.js';
 import { slug, toList } from '../role-builder.js';
 
-type Tab = 'profile' | 'ai' | 'roles' | 'skill' | 'rubric' | 'resumes';
+export type Tab = 'profile' | 'ai' | 'roles' | 'skill' | 'rubric' | 'resumes';
 const TABS: { id: Tab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { id: 'profile', label: 'Profile', icon: User },
   { id: 'ai', label: 'AI / LLM', icon: Sparkles },
@@ -34,9 +34,9 @@ const TABS: { id: Tab; label: string; icon: React.ComponentType<{ className?: st
   { id: 'resumes', label: 'Resumes', icon: Files },
 ];
 
-export function Settings({ config, onClose, onSaved }: { config: AppConfig | null; onClose: () => void; onSaved: () => void }) {
+export function Settings({ config, onClose, onSaved, initialTab }: { config: AppConfig | null; onClose: () => void; onSaved: () => void; initialTab?: Tab }) {
   const [snap, setSnap] = useState<SettingsSnapshot | null>(null);
-  const [tab, setTab] = useState<Tab>('profile');
+  const [tab, setTab] = useState<Tab>(initialTab ?? 'profile');
 
   const loadSnap = useCallback(() => {
     getSettings().then(setSnap).catch(() => setSnap(null));
