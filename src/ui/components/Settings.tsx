@@ -94,7 +94,7 @@ export function Settings({ config, onClose, onSaved, initialTab }: { config: App
           ) : tab === 'ai' ? (
             <AiSettings key="ai" profile={snap.profile} claudeAvailable={config?.claudeAvailable ?? false} onGoToTab={setTab} onSaved={handleSaved} />
           ) : tab === 'roles' ? (
-            <RolesForm key="roles" roles={snap.roles} config={config} hasResume={Boolean((snap.profile as { resumes?: unknown[] } | null)?.resumes?.length)} onSaved={handleSaved} />
+            <RolesForm key="roles" roles={snap.roles} hasResume={Boolean((snap.profile as { resumes?: unknown[] } | null)?.resumes?.length)} onSaved={handleSaved} />
           ) : tab === 'skill' ? (
             <AuthoredDocTab key="skill" target="skill" title="Resume generation rules" hint="How the resume generator tailors your resume per job. Generate it from your resume, then refine." initial={snap.skill ?? ''} hasResume={Boolean((snap.profile as { resumes?: unknown[] } | null)?.resumes?.length)} save={saveSkill} onSaved={handleSaved} />
           ) : tab === 'rubric' ? (
@@ -386,7 +386,7 @@ function ProfileForm({ profile, config, onSaved }: { profile: Record<string, unk
 
 /** Form over the single role search (replaces the raw-YAML editor). Optionally
  *  prefill from a curated template; nice_to_have weights are editable rows. */
-function RolesForm({ roles, config, hasResume, onSaved }: { roles: Record<string, unknown> | null; config: AppConfig | null; hasResume: boolean; onSaved: () => void }) {
+function RolesForm({ roles, hasResume, onSaved }: { roles: Record<string, unknown> | null; hasResume: boolean; onSaved: () => void }) {
   const role = ((roles as { roles?: Record<string, any>[] } | null)?.roles?.[0] ?? {}) as Record<string, any>;
   const existingId = role.id as string | undefined;
   const [label, setLabel] = useState<string>(role.label ?? '');
@@ -456,17 +456,6 @@ function RolesForm({ roles, config, hasResume, onSaved }: { roles: Record<string
     setInstruction('');
   }
 
-  function applyTemplate(id: string) {
-    const t = (config?.roleTemplates ?? []).find((x) => x.id === id);
-    if (!t) return;
-    setLabel(t.label);
-    setTitleKeywords(t.titleKeywords.join(', '));
-    setStack(t.mustHaveStack.join(', '));
-    setTitleExclude(t.titleExclude.join(', '));
-    setExcludePrimary(t.excludeIfPrimary.join(', '));
-    setNiceRows(Object.entries(t.niceToHave).map(([term, weight]) => ({ term, weight })));
-    touch();
-  }
   const setRow = (i: number, patch: Partial<{ term: string; weight: number }>) => {
     setNiceRows((rows) => rows.map((r, j) => (j === i ? { ...r, ...patch } : r)));
     touch();
@@ -508,7 +497,6 @@ function RolesForm({ roles, config, hasResume, onSaved }: { roles: Record<string
   // a baked-in w-full would fight flex-1/w-20 on the nice-to-have rows).
   const fld = 'rounded-lg border border-line bg-surface-2/60 px-3 py-2 text-sm text-ink placeholder-faint outline-none focus:border-accent';
   const ctrl = 'h-8 flex-1 min-w-[14rem] rounded-lg border border-line bg-surface-2/60 px-2.5 text-xs text-ink placeholder-faint outline-none focus:border-accent disabled:opacity-50';
-  const groups = [...new Set((config?.roleTemplates ?? []).map((t) => t.group))];
 
   return (
     <div className="max-w-2xl">
@@ -540,22 +528,6 @@ function RolesForm({ roles, config, hasResume, onSaved }: { roles: Record<string
         <p className="mb-4 text-xs text-muted">Add your resume (Resume tab) to tune this role with AI — or edit the fields below by hand.</p>
       )}
       <div className="space-y-5">
-        {(config?.roleTemplates?.length ?? 0) > 0 && (
-          <label className="block">
-            <span className={lbl}>Prefill from a template <span className="font-normal text-faint">(optional — overwrites the fields below)</span></span>
-            <select className={cn(fld, 'w-full max-w-md')} value="" onChange={(e) => e.target.value && applyTemplate(e.target.value)}>
-              <option value="">— choose a template —</option>
-              {groups.map((g) => (
-                <optgroup key={g} label={g}>
-                  {(config?.roleTemplates ?? []).filter((t) => t.group === g).map((t) => (
-                    <option key={t.id} value={t.id}>{t.label}</option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
-          </label>
-        )}
-
         <label className="block">
           <span className={lbl}>Label</span>
           <input className={cn(fld, 'w-full max-w-md')} value={label} onChange={(e) => { setLabel(e.target.value); touch(); }} placeholder="Senior Backend Engineer" />
