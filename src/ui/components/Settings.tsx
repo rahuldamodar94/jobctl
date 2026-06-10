@@ -17,10 +17,12 @@ import {
   testLlmConnection,
   generateAuthoring,
   generateRolesDraft,
+  generateProfileDraft,
   type AppConfig,
   type SaveResult,
   type SettingsSnapshot,
   type RoleDraft,
+  type ProfilePatch,
 } from '../api.js';
 import { Button, cn } from './ui.js';
 import { ResumeUpload } from './ResumeUpload.js';
@@ -225,6 +227,33 @@ function ProfileForm({ profile, config, onSaved }: { profile: Record<string, unk
     touch();
   };
 
+  const [suggesting, setSuggesting] = useState(false);
+  const [suggestError, setSuggestError] = useState<string | null>(null);
+  const [aiInstruction, setAiInstruction] = useState('');
+  function applyPatch(patch: ProfilePatch) {
+    setDomains(new Set(patch.domains));
+    setGeoPriority(new Set(patch.geo_priority));
+    setRelocationOk(new Set(patch.geo_relocation_ok));
+    touch();
+  }
+  const currentPatchJson = () =>
+    JSON.stringify({ domains: [...domains], geo_priority: [...geoPriority], geo_relocation_ok: [...relocationOk] }, null, 2);
+  async function runSuggest(refine: boolean) {
+    setSuggesting(true);
+    setSuggestError(null);
+    const r = await generateProfileDraft({
+      instruction: refine ? aiInstruction.trim() || undefined : undefined,
+      currentDraft: refine ? currentPatchJson() : undefined,
+    });
+    setSuggesting(false);
+    if (r.error || !r.patch) {
+      setSuggestError(r.error ?? 'Suggestion returned nothing — try again.');
+      return;
+    }
+    applyPatch(r.patch);
+    setAiInstruction('');
+  }
+
   const sourceOpts = (config?.availableSources ?? [...sources]).map((s) => ({ id: s, label: s }));
   const domainOpts = (config?.domains ?? []).map((d) => ({ id: d.id, label: d.label }));
   const locOpts = [...new Set([...COMMON_LOCATIONS, ...geoPriority, ...relocationOk])].map((l) => ({ id: l, label: l }));
@@ -257,6 +286,7 @@ function ProfileForm({ profile, config, onSaved }: { profile: Record<string, unk
   const lbl = 'mb-1.5 block text-sm font-medium text-ink';
   const sub = 'mb-1.5 block text-xs text-faint';
   const fld = 'rounded-lg border border-line bg-surface-2/60 px-3 py-2 text-sm text-ink placeholder-faint outline-none focus:border-accent';
+  const ctrl = 'h-8 flex-1 min-w-[14rem] rounded-lg border border-line bg-surface-2/60 px-2.5 text-xs text-ink placeholder-faint outline-none focus:border-accent disabled:opacity-50';
   const num = (v: number, set: (n: number) => void, min = 1) => (
     <input type="number" min={min} className={cn(fld, 'w-24')} value={v} onChange={(e) => { set(Math.max(min, Math.round(Number(e.target.value) || min))); touch(); }} />
   );
@@ -264,6 +294,32 @@ function ProfileForm({ profile, config, onSaved }: { profile: Record<string, unk
   return (
     <div className="max-w-2xl">
       <EditorHead title="Profile" hint="Your identity, what to scrape, where you want to work, and the default triage view." />
+      {(p.resumes?.length ?? 0) > 0 ? (
+        <div className="mb-4 rounded-lg border border-line bg-surface-2/30 p-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="secondary" size="sm" onClick={() => runSuggest(false)} loading={suggesting} disabled={suggesting}>
+              {!suggesting && <Sparkles className="h-3.5 w-3.5" />}
+              Suggest domains &amp; locations with AI
+            </Button>
+            <input
+              className={ctrl}
+              placeholder='Fine-tune: e.g. "add healthtech", "remote only"'
+              value={aiInstruction}
+              onChange={(e) => setAiInstruction(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter' && !suggesting && aiInstruction.trim()) { e.preventDefault(); runSuggest(true); } }}
+              disabled={suggesting}
+            />
+            <Button variant="secondary" size="sm" onClick={() => runSuggest(true)} loading={suggesting} disabled={suggesting || !aiInstruction.trim()}>
+              Fine-tune
+            </Button>
+          </div>
+          <p className="mt-1.5 text-[11px] text-faint">AI suggests company domains and locations from your resume. Review them below, then Save.</p>
+          {suggesting && <p className="mt-1 text-xs text-faint">Reading your resume… this can take up to a minute.</p>}
+          {suggestError && <p className="mt-1 text-xs text-amber-300">{suggestError}</p>}
+        </div>
+      ) : (
+        <p className="mb-4 text-xs text-muted">Add your resume (Resume tab) to let AI suggest domains &amp; locations — or pick them by hand below.</p>
+      )}
       <div className="space-y-5">
         <label className="block">
           <span className={lbl}>Your name <span className="font-normal text-faint">(appears on generated resumes)</span></span>

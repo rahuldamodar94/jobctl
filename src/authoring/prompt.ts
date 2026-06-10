@@ -185,3 +185,56 @@ export function buildRolesPrompt(opts: RolesAuthorOpts): string {
     'strings; "nice_to_have" is an object of string -> integer.',
   ].join('\n');
 }
+
+// ---------------------------------------------------------------------------
+// Profile tuning — which company DOMAINS to scrape + LOCATION preferences,
+// inferred from the resume. Domains must come from the committed vocabulary.
+// ---------------------------------------------------------------------------
+
+export interface ProfileAuthorOpts {
+  resume: string;
+  /** the committed domain vocabulary — the LLM must pick ids only from here */
+  domains: { id: string; label: string; description: string }[];
+  currentDomains: string[];
+  currentGeoPriority: string[];
+  currentGeoRelocation: string[];
+  /** the user's stated location preference, if any */
+  location?: string;
+  currentDraft?: string;
+  instruction?: string;
+}
+
+export function buildProfilePrompt(opts: ProfileAuthorOpts): string {
+  const vocab = opts.domains
+    .map((d) => `- ${d.id}: ${d.label}${d.description ? ` — ${d.description}` : ''}`)
+    .join('\n');
+  return [
+    'You are choosing which company DOMAINS to scrape and the LOCATION preferences for a candidate,',
+    'inferred from their resume. These drive which companies are scraped and how jobs are geo-scored.',
+    '',
+    '=== RESUME (the only source of truth about the candidate) ===',
+    opts.resume,
+    '',
+    '=== VALID DOMAINS (choose ids ONLY from this list) ===',
+    vocab,
+    '',
+    '=== CURRENT SETTINGS ===',
+    `domains: ${opts.currentDomains.join(', ') || '(none)'}`,
+    `geo_priority: ${opts.currentGeoPriority.join(', ') || '(none)'}`,
+    `geo_relocation_ok: ${opts.currentGeoRelocation.join(', ') || '(none)'}`,
+    `stated location: ${opts.location?.trim() || '(infer from the resume)'}`,
+    '',
+    '=== TASK ===',
+    "Pick the domains whose companies best fit the candidate's actual experience (the industries and",
+    'technologies they have really worked in). Prefer a focused, relevant set over selecting everything.',
+    'Propose geo_priority (places they clearly want — their city/region, and "Remote" if remote-friendly)',
+    'and geo_relocation_ok (places they would relocate to). Ground every location in the resume.',
+    ...jsonRefinementBlock(opts),
+    '',
+    '=== OUTPUT (STRICT) ===',
+    'Return ONLY a JSON object (no prose, no code fences) with EXACTLY these keys:',
+    '  "domains": array of domain ids (each MUST be from the valid list above)',
+    '  "geo_priority": array of location strings',
+    '  "geo_relocation_ok": array of location strings',
+  ].join('\n');
+}

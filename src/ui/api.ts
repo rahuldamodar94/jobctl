@@ -393,6 +393,30 @@ export async function generateRolesDraft(
   }
 }
 
+/** Suggested profile patch (domains + geo) from the resume. */
+export interface ProfilePatch {
+  domains: string[];
+  geo_priority: string[];
+  geo_relocation_ok: string[];
+}
+
+/** Suggest company domains + locations from the resume (+ optional refinement).
+ *  Returns a patch to merge into the profile, or an error. */
+export async function generateProfileDraft(
+  opts: { instruction?: string; currentDraft?: string } = {}
+): Promise<{ patch?: ProfilePatch; error?: string }> {
+  try {
+    const res = await fetch('/api/settings/generate-profile', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(opts),
+    });
+    return await res.json();
+  } catch (e) {
+    return { error: (e as Error).message };
+  }
+}
+
 export const saveProfile = (obj: unknown) => putConfig('profile', obj);
 export const saveRoles = (obj: unknown) => putConfig('roles', obj);
 export const saveSkill = (text: string) => putConfig('skill', { text });

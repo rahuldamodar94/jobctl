@@ -1,11 +1,11 @@
 import { existsSync, readFileSync } from 'node:fs';
-import { loadProfile, loadRoles } from '../config/load.js';
+import { loadDomains, loadProfile, loadRoles } from '../config/load.js';
 import { safeProfileSubpath } from '../config/paths.js';
 import { claudeAvailable, runClaudeCli } from '../llm/claude-cli.js';
 import { checkApiKeyEnv, checkLlmBaseUrl } from '../llm/safety.js';
 import type { LlmBackendConfig, ProfileConfig, RoleConfig } from '../shared/types.js';
-import { buildAuthorPrompt, buildRolesPrompt, type AuthorTarget } from './prompt.js';
-import { parseRolesDraft, type DraftRole } from './parse.js';
+import { buildAuthorPrompt, buildProfilePrompt, buildRolesPrompt, type AuthorTarget } from './prompt.js';
+import { parseProfileDraft, parseRolesDraft, type DraftProfilePatch, type DraftRole } from './parse.js';
 
 /**
  * Generate the fit-judge rubric / resume-generation rules FROM the user's resume
@@ -194,4 +194,53 @@ export async function generateRolesDraft(
     }
   }
   return { error: `Could not parse a valid role after a retry: ${lastErr?.message}` };
+}
+
+// ---------------------------------------------------------------------------
+// Profile tuning — domains + geo only. Returns a patch the UI merges into the
+// rest of profile.yaml on save (never touches sources/llm/resumes/ui_prefs).
+// ---------------------------------------------------------------------------
+
+export interface ProfileDraftResult {
+  patch?: DraftProfilePatch;
+  error?: string;
+}
+
+export async function generateProfileDraft(
+  opts: { instruction?: string; currentDraft?: string } = {}
+): Promise<ProfileDraftResult> {
+  const { ctx, error } = loadAuthoringContext();
+  if (!ctx) return { error };
+
+  const domains = loadDomains();
+  if (!domains.length) return { error: 'Domain vocabulary is unavailable.' };
+  const p = ctx.profile;
+
+  const prompt = buildProfilePrompt({
+    resume: ctx.resume,
+    domains,
+    currentDomains: p.companies.domains,
+    currentGeoPriority: p.geoPriority,
+    currentGeoRelocation: p.geoRelocationOk,
+    location: p.geoPriority.join(', '),
+    instruction: opts.instruction,
+    currentDraft: opts.currentDraft,
+  });
+
+  const validIds = domains.map((d) => d.id);
+  let lastErr: Error | null = null;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    let raw: string;
+    try {
+      raw = await runPlain(ctx.cfg, prompt);
+    } catch (e) {
+      return { error: `Generation failed: ${(e as Error).message}` };
+    }
+    try {
+      return { patch: parseProfileDraft(raw, validIds) };
+    } catch (e) {
+      lastErr = e as Error;
+    }
+  }
+  return { error: `Could not parse a valid profile after a retry: ${lastErr?.message}` };
 }

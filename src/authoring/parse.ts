@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { rolesFileSchema } from '../config/load.js';
 
 /**
@@ -72,4 +73,68 @@ export function parseRolesDraft(raw: string): DraftRole {
     );
   }
   return result.data.roles[0] as DraftRole;
+}
+
+// ---------------------------------------------------------------------------
+// Profile patch (domains + geo only) — the LLM tunes which slice of the registry
+// to scrape and the location preferences; everything else in profile.yaml is
+// left untouched and merged on save.
+// ---------------------------------------------------------------------------
+
+export interface DraftProfilePatch {
+  domains: string[];
+  geo_priority: string[];
+  geo_relocation_ok: string[];
+}
+
+const profilePatchSchema = z.object({
+  domains: z.array(z.string()).default([]),
+  geo_priority: z.array(z.string()).default([]),
+  geo_relocation_ok: z.array(z.string()).default([]),
+});
+
+const cleanList = (xs: string[]): string[] => {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const x of xs) {
+    const t = x.trim();
+    if (t && !seen.has(t.toLowerCase())) {
+      seen.add(t.toLowerCase());
+      out.push(t);
+    }
+  }
+  return out;
+};
+
+/**
+ * Parse a drafted profile patch. Domain ids are filtered to the committed
+ * vocabulary (unknown ids dropped, not fatal); at least one valid domain is
+ * required. geo lists are trimmed + de-duped. Throws on unrecoverable output.
+ */
+export function parseProfileDraft(raw: string, validDomainIds: string[]): DraftProfilePatch {
+  const json = extractJson(raw);
+  if (!json) throw new Error('no JSON object found in the model output');
+  let obj: unknown;
+  try {
+    obj = JSON.parse(json);
+  } catch (e) {
+    throw new Error(`model output is not valid JSON: ${(e as Error).message}`);
+  }
+  const r = profilePatchSchema.safeParse(obj);
+  if (!r.success) {
+    throw new Error(
+      'drafted profile failed validation: ' +
+        r.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ')
+    );
+  }
+  const valid = new Set(validDomainIds.map((d) => d.toLowerCase()));
+  const domains = cleanList(r.data.domains).filter((d) => valid.has(d.toLowerCase()));
+  if (!domains.length) {
+    throw new Error('no valid domains in the draft (ids must come from the domain vocabulary)');
+  }
+  return {
+    domains,
+    geo_priority: cleanList(r.data.geo_priority),
+    geo_relocation_ok: cleanList(r.data.geo_relocation_ok),
+  };
 }
