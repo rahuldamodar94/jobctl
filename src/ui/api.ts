@@ -365,6 +365,34 @@ export async function generateAuthoring(
   }
 }
 
+/** A drafted/saved roles.yaml entry (snake_case — the on-disk shape). */
+export interface RoleDraft {
+  id: string;
+  label: string;
+  title_keywords: string[];
+  title_exclude: string[];
+  must_have_stack: string[];
+  nice_to_have: Record<string, number>;
+  exclude_if_primary: string[];
+}
+
+/** Draft a tuned role from the resume (+ optional refinement). Runs the LLM
+ *  server-side; returns a validated role to review/edit, or an error. */
+export async function generateRolesDraft(
+  opts: { instruction?: string; currentDraft?: string } = {}
+): Promise<{ role?: RoleDraft; error?: string }> {
+  try {
+    const res = await fetch('/api/settings/generate-roles', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(opts),
+    });
+    return await res.json();
+  } catch (e) {
+    return { error: (e as Error).message };
+  }
+}
+
 export const saveProfile = (obj: unknown) => putConfig('profile', obj);
 export const saveRoles = (obj: unknown) => putConfig('roles', obj);
 export const saveSkill = (text: string) => putConfig('skill', { text });

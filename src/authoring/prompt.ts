@@ -109,3 +109,79 @@ export function buildSkillPrompt(opts: AuthorOpts): string {
 export function buildAuthorPrompt(target: AuthorTarget, opts: AuthorOpts): string {
   return target === 'rubric' ? buildRubricPrompt(opts) : buildSkillPrompt(opts);
 }
+
+// ---------------------------------------------------------------------------
+// Roles tuning (structured JSON, not markdown). The title_keywords come from a
+// curated template and are PRESERVED; the LLM tunes the per-user knobs that
+// actually need the resume — must_have_stack, weighted nice_to_have, and the
+// excludes — so good-fit jobs score high and wrong-fit jobs are filtered.
+// ---------------------------------------------------------------------------
+
+export interface RolesAuthorOpts {
+  /** the user's base resume (markdown) — the source of truth for stack/domains */
+  resume: string;
+  /** the current role as pretty JSON (preserve id/title_keywords; tune the rest) */
+  currentRole: string;
+  /** profile location preference */
+  location?: string;
+  /** current draft JSON, for a refinement pass */
+  currentDraft?: string;
+  /** a natural-language refinement instruction ("weight fintech higher") */
+  instruction?: string;
+}
+
+function jsonRefinementBlock(opts: { currentDraft?: string; instruction?: string }): string[] {
+  if (!opts.currentDraft && !opts.instruction) return [];
+  return [
+    '',
+    '=== CURRENT DRAFT (revise this JSON, do not start over) ===',
+    opts.currentDraft?.trim() || '(none yet)',
+    '',
+    '=== REVISION INSTRUCTION ===',
+    opts.instruction?.trim() || '(no specific instruction — produce a tighter, better-grounded version)',
+    'Make the SMALLEST change that satisfies the instruction; keep every other field intact.',
+  ];
+}
+
+export function buildRolesPrompt(opts: RolesAuthorOpts): string {
+  return [
+    'You are tuning ONE job-search role configuration for a candidate, from their resume.',
+    'A keyword matcher uses this config: a job must contain a title_keyword (and no title_exclude),',
+    'must mention a must_have_stack term, and is then SCORED by the nice_to_have weights.',
+    '',
+    '=== RESUME (the only source of truth about the candidate) ===',
+    opts.resume,
+    '',
+    '=== CURRENT ROLE (JSON) ===',
+    opts.currentRole,
+    '',
+    '=== KNOWN PREFERENCES ===',
+    `Location / remote: ${opts.location?.trim() || '(infer from the resume)'}`,
+    '',
+    '=== TASK ===',
+    'The title_keywords are already curated from a template — PRESERVE them (you MAY add real-world',
+    'variants the resume justifies, but never remove one). Your real job is to tune the OTHER fields',
+    'from the resume so good-fit jobs score highly and wrong-fit jobs are filtered:',
+    '',
+    "- \"must_have_stack\": the few CORE technologies a relevant JD must mention (the candidate's",
+    '  primary, recurring stack). Keep it SMALL — each term is an OR gate that lets a job through.',
+    '- "nice_to_have": an object mapping keyword -> integer weight. POSITIVE (1-10) boosts the score',
+    "  when the JD mentions it; give higher weights to the candidate's strongest/most distinctive",
+    '  signals (key domains, tools, specialties) and lower to generic-but-relevant ones. NEGATIVE',
+    '  weights (-1 to -15) deprioritize mismatches (domains/stacks the candidate wants to avoid).',
+    '- "title_exclude": title words that signal a WRONG role for this candidate (specializations they',
+    '  do not do — e.g. frontend / mobile / qa for a backend candidate).',
+    "- \"exclude_if_primary\": languages/frameworks that, when they are the JD's PRIMARY requirement,",
+    '  mean skip (the candidate does not lead in them).',
+    '',
+    'Ground EVERY entry in the resume — never invent skills, domains, or tools it does not show.',
+    'Weights must reflect how strongly each term signals a genuinely good fit for THIS candidate.',
+    ...jsonRefinementBlock(opts),
+    '',
+    '=== OUTPUT (STRICT) ===',
+    'Return ONLY a JSON object (no prose, no code fences) with EXACTLY these keys:',
+    '  "id", "label", "title_keywords", "must_have_stack", "nice_to_have", "title_exclude", "exclude_if_primary"',
+    'Keep "id" exactly as the current role. The four *_keywords/stack/exclude fields are arrays of',
+    'strings; "nice_to_have" is an object of string -> integer.',
+  ].join('\n');
+}
