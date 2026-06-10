@@ -29,6 +29,10 @@ const RUBRIC_FILE = 'judge-rubric.md';
 // requests would fork-bomb the box. Single-user, in-process — a boolean suffices.
 let llmBusy = false;
 
+/** Read a request-body field only if it's actually a string (a non-string —
+ *  array/object — would otherwise throw on `.trim()` deeper in the prompt code). */
+const asStr = (v: unknown): string | undefined => (typeof v === 'string' ? v : undefined);
+
 /** Resolve a path under profile/resumes/ (the only user-file write zone).
  *  Built on the shared safeProfilePath boundary guard (src/config/paths.ts). */
 function safeResumePath(rel: string): string | null {
@@ -175,14 +179,12 @@ export function settingsRouter(): Router {
   // the user's resume (+ optional refinement). Returns markdown for the editor;
   // the user reviews and saves via PUT /skill|/rubric. Blocks while the LLM runs.
   r.post('/generate', async (req, res) => {
-    const { target, instruction, currentDraft } = req.body as {
-      target?: string;
-      instruction?: string;
-      currentDraft?: string;
-    };
+    const target = (req.body as { target?: unknown })?.target;
     if (target !== 'rubric' && target !== 'skill') {
       return res.status(400).json({ error: 'target must be "rubric" or "skill"' });
     }
+    const instruction = asStr(req.body?.instruction);
+    const currentDraft = asStr(req.body?.currentDraft);
     if (llmBusy) return res.status(409).json({ error: 'another LLM request is in progress — try again in a moment.' });
     llmBusy = true;
     try {
@@ -196,7 +198,8 @@ export function settingsRouter(): Router {
   // resume (+ optional refinement). Returns a validated role for the editor; the
   // user reviews and saves via PUT /roles. Shares the single-LLM-request lock.
   r.post('/generate-roles', async (req, res) => {
-    const { instruction, currentDraft } = req.body as { instruction?: string; currentDraft?: string };
+    const instruction = asStr(req.body?.instruction);
+    const currentDraft = asStr(req.body?.currentDraft);
     if (llmBusy) return res.status(409).json({ error: 'another LLM request is in progress — try again in a moment.' });
     llmBusy = true;
     try {
@@ -210,7 +213,8 @@ export function settingsRouter(): Router {
   // preferences FROM the resume. Returns a {domains, geo_*} patch the UI merges
   // into the rest of profile.yaml on save. Shares the single-LLM-request lock.
   r.post('/generate-profile', async (req, res) => {
-    const { instruction, currentDraft } = req.body as { instruction?: string; currentDraft?: string };
+    const instruction = asStr(req.body?.instruction);
+    const currentDraft = asStr(req.body?.currentDraft);
     if (llmBusy) return res.status(409).json({ error: 'another LLM request is in progress — try again in a moment.' });
     llmBusy = true;
     try {

@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from 'node:fs';
-import { loadDomains, loadProfile, loadRoles } from '../config/load.js';
+import { loadDomains, loadProfile, loadRoles, type DomainConfig } from '../config/load.js';
 import { safeProfileSubpath } from '../config/paths.js';
 import { claudeAvailable, runClaudeCli } from '../llm/claude-cli.js';
 import { checkApiKeyEnv, checkLlmBaseUrl } from '../llm/safety.js';
@@ -215,8 +215,15 @@ export async function generateProfileDraft(
   const { ctx, error } = loadAuthoringContext();
   if (!ctx) return { error };
 
-  const domains = loadDomains();
-  if (!domains.length) return { error: 'Domain vocabulary is unavailable.' };
+  let domains: DomainConfig[];
+  try {
+    domains = loadDomains();
+  } catch {
+    // never throw out of the route (Express 4 won't catch an async reject) —
+    // mirror generateRolesDraft's loadRoles guard.
+    return { error: 'Domain vocabulary is unavailable — check config/domains.yaml.' };
+  }
+  if (!domains.length) return { error: 'Domain vocabulary is empty.' };
   const p = ctx.profile;
 
   const prompt = buildProfilePrompt({

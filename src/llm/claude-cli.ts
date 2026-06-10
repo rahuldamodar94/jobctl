@@ -51,7 +51,13 @@ export function runClaudeCli(prompt: string, opts: ClaudeCliOpts = {}): Promise<
       settled = true;
       fn();
     };
-    child.stdout.on('data', (d) => (out += d));
+    // Cap accumulated stdout — these tasks emit a few KB; a runaway/adversarial
+    // backend can't balloon memory before the timeout fires. 4 MB is far above
+    // any real output (resume ≤8KB, rubric/skill ≤~20KB).
+    const MAX_OUT = 4 * 1024 * 1024;
+    child.stdout.on('data', (d) => {
+      if (out.length < MAX_OUT) out += d;
+    });
     child.stderr.on('data', (d) => (err += d));
     child.on('error', (e) => done(() => reject(new Error(`claude CLI failed to start: ${e.message}`))));
     // A claude that exits early makes our (large resume) write fail with EPIPE on

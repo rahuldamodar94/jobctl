@@ -314,7 +314,7 @@ guide: `docs/model-tradeoffs.md`.
 npm run scrape [-- --source X]   # scrape (lock-guarded; UI button same path)
 npm run judge [-- --all|--id N]  # optional fit-judge over matched jobs
 npm run dev | build | start      # UI dev / production
-npm test                         # vitest — 331 tests (9 skip without a profile resume)
+npm test                         # vitest — 351 tests (9 skip without a profile resume)
 ```
 
 ## Status
@@ -386,6 +386,27 @@ at BOTH write-time (profileSchema `superRefine`) and runtime
 backfill migration (v2-stamped DBs were missing the `llm_*` columns), and a
 scrape-lock race fix (`.immediate()` txn). Tests 331; dual code+security audit,
 ship-approved.
+
+**v5 — AI config-tuning + cost optimization (2026-06-11, branch
+`w2-cost-optimization`, unpushed):** extended the v4 resume→rubric/skill authoring
+(`src/authoring/`) to also draft **`roles.yaml` and `profile.yaml`** from the
+resume — structured JSON validated against the SAME `rolesFileSchema`/`profileSchema`
+the loaders use (bad drafts rejected, never saved), one repair retry, with the
+template's `title_keywords` preserved and the role `id` locked. New routes
+`/api/settings/generate-roles` + `/generate-profile` (share the `llmBusy` lock);
+Settings Roles/Profile tabs get **Generate / Fine-tune** buttons (guided
+placeholders) + a confirm-before-overwrite guard; the existing rubric/skill tabs
+get the same explicit Fine-tune button. A one-time **AI intro popup**
+(`AiIntroDialog` + `src/shared/llm-costs.ts`) introduces the AI features with
+per-feature token estimates; a guided "Tune your matching with AI" hub appears in
+the AI tab once a backend is set. **Cost (W2):** per-feature **model routing** —
+`llm.judge.model` (cheap, e.g. Haiku) + `llm.resume.model` (stronger, e.g. Sonnet;
+also the "writing" model for authoring), blank → backend/CLI default — threaded
+through the judge runner, resume generator, and authoring; Settings AI tab gains a
+Model-routing section + a pre-run "~N jobs ≈ ~XK tokens" estimate. Rubric
+prompt-caching deliberately deferred (API-only). Removed the redundant Settings
+template picker; `.env` now loads via `--env-file-if-exists` (Node ≥20.12). Tests
+351; dual code+security review (no HIGH/MEDIUM; 2 LOW + 1 MEDIUM robustness fixed).
 
 ## v2+ roadmap (architecture accommodates, zero code today)
 

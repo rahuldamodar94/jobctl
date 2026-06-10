@@ -239,6 +239,10 @@ function ProfileForm({ profile, config, onSaved }: { profile: Record<string, unk
   const currentPatchJson = () =>
     JSON.stringify({ domains: [...domains], geo_priority: [...geoPriority], geo_relocation_ok: [...relocationOk] }, null, 2);
   async function runSuggest(refine: boolean) {
+    // A fresh suggestion replaces domains/locations; guard unsaved edits against a misclick.
+    if (!refine && dirty && !window.confirm('Replace the current domains & locations with fresh AI suggestions from your resume? Unsaved edits will be lost.')) {
+      return;
+    }
     setSuggesting(true);
     setSuggestError(null);
     const r = await generateProfileDraft({
@@ -441,6 +445,10 @@ function RolesForm({ roles, hasResume, onSaved }: { roles: Record<string, unknow
   // refine=false → draft from the on-disk role + resume; refine=true → revise the
   // live (possibly edited) form per the instruction.
   async function runTune(refine: boolean) {
+    // A fresh draft replaces the fields; guard unsaved hand-edits against a misclick.
+    if (!refine && dirty && !window.confirm('Replace the current role fields with a fresh AI draft from your resume? Unsaved edits will be lost.')) {
+      return;
+    }
     setTuning(true);
     setTuneError(null);
     const r = await generateRolesDraft({
@@ -900,7 +908,16 @@ function AiSettings({
           {(['claude-cli', 'openai-compatible'] as LlmEngine[]).map((e) => (
             <button
               key={e}
-              onClick={() => { setEngine(e); touchBackend(); }}
+              onClick={() => {
+                setEngine(e);
+                touchBackend();
+                // the haiku/sonnet presets are Claude-CLI-only — drop them when
+                // switching to an OpenAI-compatible backend (which needs real model ids).
+                if (e !== 'claude-cli') {
+                  if (judgeModel === 'haiku') setJudgeModel('');
+                  if (writingModel === 'sonnet') setWritingModel('');
+                }
+              }}
               className={cn(
                 'flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-all',
                 engine === e ? 'border-accent bg-accent/10 text-accent' : 'border-line bg-surface-2/40 text-muted hover:border-line-strong'
