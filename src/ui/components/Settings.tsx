@@ -32,11 +32,11 @@ import { COMMON_LOCATIONS } from '../locations.js';
 export type Tab = 'profile' | 'ai' | 'roles' | 'skill' | 'rubric' | 'resumes';
 const TABS: { id: Tab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { id: 'profile', label: 'Profile', icon: User },
-  { id: 'ai', label: 'AI / LLM', icon: Sparkles },
-  { id: 'roles', label: 'Roles', icon: Briefcase },
-  { id: 'skill', label: 'Resume rules', icon: FileText },
+  { id: 'ai', label: 'AI setup', icon: Sparkles },
+  { id: 'roles', label: 'Role', icon: Briefcase },
+  { id: 'skill', label: 'Resume tailoring', icon: FileText },
   { id: 'rubric', label: 'Judge rubric', icon: Scale },
-  { id: 'resumes', label: 'Resumes', icon: Files },
+  { id: 'resumes', label: 'My resume', icon: Files },
 ];
 
 export function Settings({ config, onClose, onSaved, initialTab }: { config: AppConfig | null; onClose: () => void; onSaved: () => void; initialTab?: Tab }) {
@@ -96,7 +96,7 @@ export function Settings({ config, onClose, onSaved, initialTab }: { config: App
           ) : tab === 'roles' ? (
             <RolesForm key="roles" roles={snap.roles} hasResume={Boolean((snap.profile as { resumes?: unknown[] } | null)?.resumes?.length)} onSaved={handleSaved} />
           ) : tab === 'skill' ? (
-            <AuthoredDocTab key="skill" target="skill" title="Resume generation rules" hint="How the resume generator tailors your resume per job. Generate it from your resume, then refine." initial={snap.skill ?? ''} hasResume={Boolean((snap.profile as { resumes?: unknown[] } | null)?.resumes?.length)} save={saveSkill} onSaved={handleSaved} />
+            <AuthoredDocTab key="skill" target="skill" title="Resume tailoring rules" hint="How the resume generator tailors your resume per job. Generate it from your resume, then refine." initial={snap.skill ?? ''} hasResume={Boolean((snap.profile as { resumes?: unknown[] } | null)?.resumes?.length)} save={saveSkill} onSaved={handleSaved} />
           ) : tab === 'rubric' ? (
             <AuthoredDocTab key="rubric" target="rubric" title="Judge rubric" hint="How the fit-judge scores a JD against you. Generate it from your resume, then refine." initial={snap.rubric ?? ''} hasResume={Boolean((snap.profile as { resumes?: unknown[] } | null)?.resumes?.length)} save={saveRubric} onSaved={handleSaved} />
           ) : (
@@ -370,15 +370,22 @@ function ProfileForm({ profile, config, onSaved }: { profile: Record<string, unk
           </label>
         </div>
 
-        <div className="flex flex-wrap gap-6">
-          <label className="block">
-            <span className={lbl}>Default triage: min score</span>
-            <span className="flex items-center gap-2">{num(minScore, setMinScore, 0)}</span>
-          </label>
-          <label className="block">
-            <span className={lbl}>Default triage: posted within</span>
-            <span className="flex items-center gap-2">{num(postedWithin, setPostedWithin)}<span className="text-xs text-faint">days</span></span>
-          </label>
+        {/* Triage-VIEW defaults — distinct from the scraping/profile settings above:
+            these only seed the triage screen's starting filters. Grouped + labeled
+            so they don't read as profile facts. */}
+        <div className="rounded-lg border border-line/60 bg-surface-2/30 p-3">
+          <span className={lbl}>Triage view defaults</span>
+          <span className={sub}>The starting filters on the triage screen — you can change score &amp; recency anytime there; this just sets the default view.</span>
+          <div className="mt-2 flex flex-wrap gap-6">
+            <label className="block">
+              <span className="mb-1 block text-xs text-faint">Min score</span>
+              <span className="flex items-center gap-2">{num(minScore, setMinScore, 0)}</span>
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-xs text-faint">Posted within</span>
+              <span className="flex items-center gap-2">{num(postedWithin, setPostedWithin)}<span className="text-xs text-faint">days</span></span>
+            </label>
+          </div>
         </div>
       </div>
       <div className="mt-5">
@@ -892,7 +899,40 @@ function AiSettings({
 
   return (
     <div className="max-w-lg">
-      <EditorHead title="AI / LLM" hint="Set up the optional fit-judge (and the backend it uses). Writes the profile.yaml llm block — validated and atomic, same as every other tab." />
+      <EditorHead title="AI setup" hint="Set up the optional fit-judge (and the backend it uses). Writes the profile.yaml llm block — validated and atomic, same as every other tab." />
+
+      {/* Guided tuning hub — the primary call-to-action once a backend is set.
+          Each step opens its tuning surface (draft from resume → review → save). */}
+      {existingBackend && (
+        <div className="mb-5 rounded-xl border border-accent/30 bg-accent/5 p-4">
+          <h3 className="flex items-center gap-1.5 text-sm font-semibold text-ink">
+            <Sparkles className="h-4 w-4 text-accent" /> Tune your matching with AI
+          </h3>
+          <p className="mt-0.5 text-xs text-muted">
+            A backend is set — let AI draft each piece from your resume. You review and edit every step before it saves.
+          </p>
+          <div className="mt-3 grid gap-1.5">
+            {([
+              { tab: 'roles', label: 'Role keywords & weights', desc: 'Tune stack, weights, and excludes from your resume' },
+              { tab: 'profile', label: 'Domains & locations', desc: 'Suggest which companies to scrape and where' },
+              { tab: 'rubric', label: 'Judge rubric', desc: 'How the fit-judge scores a JD against you' },
+              { tab: 'skill', label: 'Resume tailoring', desc: 'How tailored resumes are generated' },
+            ] as { tab: Tab; label: string; desc: string }[]).map((s) => (
+              <button
+                key={s.tab}
+                onClick={() => onGoToTab(s.tab)}
+                className="flex items-center justify-between rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-left transition-all hover:border-accent/50"
+              >
+                <span>
+                  <span className="text-sm font-medium text-ink">{s.label}</span>
+                  <span className="block text-[11px] text-faint">{s.desc}</span>
+                </span>
+                <ArrowRight className="h-4 w-4 shrink-0 text-faint" />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* CLI detection */}
       <div className={cn('mb-4 flex items-center gap-2 rounded-lg border px-3 py-2 text-xs', claudeAvailable ? 'border-accent/40 bg-accent/10 text-accent' : 'border-amber-500/30 bg-amber-500/10 text-amber-200')}>
@@ -969,31 +1009,36 @@ function AiSettings({
       </div>
 
       {/* Model routing — per-feature model overrides (the biggest cost lever) */}
-      <div className="mb-4 rounded-lg border border-line/60 bg-surface-2/30 p-3">
-        <div className="flex items-center justify-between">
-          <span className={cn(lbl, 'mb-0')}>Model routing <span className="font-normal text-faint">(optional)</span></span>
+      {/* Collapsed by default — an optional advanced control, kept out of the way. */}
+      <details className="mb-4 rounded-lg border border-line/60 bg-surface-2/30 px-3 py-2.5">
+        <summary className="cursor-pointer text-sm font-medium text-ink">
+          Advanced: model routing <span className="font-normal text-faint">(optional — cheaper judge, stronger writer)</span>
+        </summary>
+        <div className="mt-2.5">
           {engine === 'claude-cli' && (
-            <button type="button" onClick={() => { setJudgeModel('haiku'); setWritingModel('sonnet'); touch(); }} className="text-[11px] font-medium text-accent hover:underline">
-              Use recommended
-            </button>
+            <div className="mb-1 flex justify-end">
+              <button type="button" onClick={() => { setJudgeModel('haiku'); setWritingModel('sonnet'); touch(); }} className="text-[11px] font-medium text-accent hover:underline">
+                Use recommended (Haiku / Sonnet)
+              </button>
+            </div>
           )}
+          <span className={sub}>
+            Blank uses the backend/CLI default. The judge is cheap classification — a fast model (e.g. Haiku) is plenty;
+            writing tasks (resume + AI config tuning) prefer a stronger one (e.g. Sonnet). Routing the judge to a small
+            model is the single biggest cost saver.
+          </span>
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            <label className="block">
+              <span className="mb-1 block text-xs text-faint">Judge model</span>
+              <input className={fld} value={judgeModel} onChange={(e) => { setJudgeModel(e.target.value); touch(); }} placeholder={engine === 'claude-cli' ? 'haiku' : 'e.g. gpt-4o-mini'} />
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-xs text-faint">Writing model</span>
+              <input className={fld} value={writingModel} onChange={(e) => { setWritingModel(e.target.value); touch(); }} placeholder={engine === 'claude-cli' ? 'sonnet' : 'e.g. gpt-4o'} />
+            </label>
+          </div>
         </div>
-        <span className={sub}>
-          Blank uses the backend/CLI default. The judge is cheap classification — a fast model (e.g. Haiku) is plenty;
-          writing tasks (resume + AI config tuning) prefer a stronger one (e.g. Sonnet). Routing the judge to a small
-          model is the single biggest cost saver.
-        </span>
-        <div className="mt-2 grid grid-cols-2 gap-2">
-          <label className="block">
-            <span className="mb-1 block text-xs text-faint">Judge model</span>
-            <input className={fld} value={judgeModel} onChange={(e) => { setJudgeModel(e.target.value); touch(); }} placeholder={engine === 'claude-cli' ? 'haiku' : 'e.g. gpt-4o-mini'} />
-          </label>
-          <label className="block">
-            <span className="mb-1 block text-xs text-faint">Writing model</span>
-            <input className={fld} value={writingModel} onChange={(e) => { setWritingModel(e.target.value); touch(); }} placeholder={engine === 'claude-cli' ? 'sonnet' : 'e.g. gpt-4o'} />
-          </label>
-        </div>
-      </div>
+      </details>
 
       {/* Judge toggle + floor */}
       <div className="mb-4 rounded-lg border border-line/60 bg-surface-2/30 p-3">
@@ -1030,39 +1075,6 @@ function AiSettings({
       )}
 
       <SaveBar result={result} dirty={dirty} onSave={onSave} saving={saving} />
-
-      {/* Guided tuning journey — appears once a backend is saved. Each step opens
-          the matching AI-tuning surface (draft from resume → review/edit → save). */}
-      {existingBackend && (
-        <div className="mt-6 rounded-xl border border-accent/30 bg-accent/5 p-4">
-          <h3 className="flex items-center gap-1.5 text-sm font-semibold text-ink">
-            <Sparkles className="h-4 w-4 text-accent" /> Tune your matching with AI
-          </h3>
-          <p className="mt-0.5 text-xs text-muted">
-            Now that a backend is set, let AI draft each piece from your resume. You review and edit every step before it saves.
-          </p>
-          <div className="mt-3 grid gap-1.5">
-            {([
-              { tab: 'roles', label: 'Role keywords & weights', desc: 'Tune stack, weights, and excludes from your resume' },
-              { tab: 'profile', label: 'Domains & locations', desc: 'Suggest which companies to scrape and where' },
-              { tab: 'rubric', label: 'Judge rubric', desc: 'How the fit-judge scores a JD against you' },
-              { tab: 'skill', label: 'Resume rules', desc: 'How tailored resumes are generated' },
-            ] as { tab: Tab; label: string; desc: string }[]).map((s) => (
-              <button
-                key={s.tab}
-                onClick={() => onGoToTab(s.tab)}
-                className="flex items-center justify-between rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-left transition-all hover:border-accent/50"
-              >
-                <span>
-                  <span className="text-sm font-medium text-ink">{s.label}</span>
-                  <span className="block text-[11px] text-faint">{s.desc}</span>
-                </span>
-                <ArrowRight className="h-4 w-4 shrink-0 text-faint" />
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
