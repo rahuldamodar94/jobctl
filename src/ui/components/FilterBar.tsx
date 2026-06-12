@@ -12,14 +12,14 @@ import { cn } from './ui.js';
 
 /** Status pills: value sent to the server ↔ display label. "Active" = the
  *  untriaged queue plus things you're actively tracking. */
-const STATUS_PILLS: { value: string; label: string; statKey?: keyof Stats }[] = [
-  { value: 'new,interested', label: 'Active' },
-  { value: 'new', label: 'New', statKey: 'new' },
-  { value: 'interested', label: 'Interested', statKey: 'interested' },
-  { value: 'applied', label: 'Applied', statKey: 'applied' },
-  { value: 'rejected', label: 'Rejected', statKey: 'rejected' },
-  { value: 'dismissed', label: 'Dismissed', statKey: 'dismissed' },
-  { value: 'all', label: 'All', statKey: 'total' },
+const STATUS_PILLS: { value: string; label: string; count: (s: Stats) => number }[] = [
+  { value: 'new,interested', label: 'Active', count: (s) => s.new + s.interested },
+  { value: 'new', label: 'New', count: (s) => s.new },
+  { value: 'interested', label: 'Interested', count: (s) => s.interested },
+  { value: 'applied', label: 'Applied', count: (s) => s.applied },
+  { value: 'rejected', label: 'Rejected', count: (s) => s.rejected },
+  { value: 'dismissed', label: 'Dismissed', count: (s) => s.dismissed },
+  { value: 'all', label: 'All', count: (s) => s.total },
 ];
 
 const CTRL =
@@ -61,7 +61,7 @@ export function FilterBar({
       <div className="flex flex-wrap items-center gap-1.5">
         {STATUS_PILLS.map((p) => {
           const active = filters.status === p.value;
-          const count = p.statKey && stats ? stats[p.statKey] : undefined;
+          const count = stats ? p.count(stats) : undefined;
           return (
             <button
               key={p.value}
