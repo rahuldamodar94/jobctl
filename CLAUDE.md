@@ -39,7 +39,8 @@ Daily workflow: open UI → Run scrape → triage `new, score≥30` list → don
 - Deliberate cuts: no LLM, no caching layer, no queue, no Playwright, no auth,
   no migrations framework — additive ALTERs guarded inline in the v1 baseline,
   plus a tiny PRAGMA-user_version runner (`migrate()`) for changes a long-lived
-  DB needs after v1 was stamped (v2 = scrape-progress columns).
+  DB needs after v1 was stamped (v2 = scrape-progress columns; v3 = judge columns;
+  v4 = the list-route covering index `idx_jobs_active_score`).
 - Polite scraping: fixed UA, sequential sources, per-host delays (ATS APIs get
   faster 0.5-1.5s pacing), 10s timeout, retries w/ backoff, 30/60/120s on
   429/503 (fail-fast on last attempt), host allowlist for ATS fetchers AND
@@ -471,6 +472,30 @@ was removed from the row in this same v7). The diagnostic slow-query console log
 was removed once fixed; the silent `Server-Timing: db` header stays.
 Tests 344 (profile-authoring tests removed with the feature; +1 All-pill, +2
 dedupe regression tests).
+
+**v8 — docs overhaul + toolchain modernization (2026-06-12, pushed to main):**
+**Docs:** the README was rewritten as a clean *user-facing* doc (cut dev/internal
+jargon — "gitignored", the no-Docker/nvm note, the "Design decisions" rationale —
+and added a hero + screenshots + badges + GitHub alert callouts + tasteful section
+emoji). New **`docs/architecture.md`** is the readable architecture overview
+(Mermaid diagram, component map, data model, project structure, design choices) —
+the README's Architecture section points there, NOT here (CLAUDE.md stays the
+exhaustive internal reference). New deep-dives `docs/matching-and-keywords.md` +
+`docs/ai-features.md`. `companies-unsupported.md` relocated `config/` → `docs/`,
+stripped of curation-log noise ("pass 1/2", dated annotations), and surfaced from
+the README. **Legal scrub:** removed competitor/litigation/ban/"anti-bot/ToS"
+framing from committed docs in favor of neutral "public, programmatically-
+accessible" language. **Sources:** a data-driven audit removed 3 low-value board
+adapters (remotive, cryptocurrencyjobs, blockchainheadhunter — thin + redundant
+with jobstash/web3career/remoteok/wwr); **5 board adapters** remain (himalayas
+kept — broadest company reach by the data). **Toolchain:** Node floor `>=20.12` →
+`>=22`, `.nvmrc` → `24`; every dependency upgraded to its latest major (express 5,
+react 19, tailwind 4 via `@config` compat, zod 4, typescript 6, better-sqlite3 12,
+vite 8, vitest 4, concurrently 10). `npm audit` 7 vulns → **0** (all were
+dev-tooling, none in the runtime). Breaking fixes: express-5 named wildcard
+(`/generated/*splat`), TS-6 ambient decls for the UI's CSS/font side-effect
+imports, tailwind-4 postcss plugin + `@import`/`@config` migration (autoprefixer
+dropped). Tests 333 (the 3 removed adapters took their parser tests).
 
 ## v2+ roadmap (architecture accommodates, zero code today)
 
