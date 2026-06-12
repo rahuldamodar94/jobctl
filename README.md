@@ -32,10 +32,6 @@ job fits and to tailor your resume. That part is optional, and it's yours.
   tech job boards       (remoteok · weworkremotely · himalayas · …) ─┘            (+ your AI)   (localhost:3000)
 ```
 
-*De-dupe keeps each job once · scoring is keyword-based against your profile · an
-optional AI pass judges fit and tailors resumes · everything lands in one local
-SQLite file you triage in the browser.*
-
 ### 📊 By the numbers
 
 - **569 company career boards** in the committed registry, each verified against
@@ -279,11 +275,6 @@ A few deliberate choices, so they don't read as gaps:
 
 For the full picture — data model, de-dupe and scoring rules, reliability
 guarantees, and ATS endpoint patterns — see [CLAUDE.md](CLAUDE.md).
-
-## The name
-
-`jobctl` = "job control" — a `kubectl` / `systemctl`-style tool for running your
-own job search, locally. Lowercase, self-hosted, yours.
 
 ## License
 
