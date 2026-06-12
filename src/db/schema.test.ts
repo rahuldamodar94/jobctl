@@ -27,8 +27,10 @@ describe('migrate (versioned schema runner)', () => {
     db.exec(
       "CREATE TABLE scrape_runs (id INTEGER PRIMARY KEY AUTOINCREMENT, started_at TEXT NOT NULL, completed_at TEXT, status TEXT NOT NULL DEFAULT 'running', sources TEXT NOT NULL DEFAULT '[]', total_new INTEGER NOT NULL DEFAULT 0)"
     );
+    // a real v1 DB also has the jobs table (later migrations index/ALTER it)
+    db.exec('CREATE TABLE jobs (id INTEGER PRIMARY KEY, is_active INTEGER, match_score INTEGER, status TEXT, is_match INTEGER)');
     db.pragma('user_version = 1');
-    migrate(db); // should run v2 only
+    migrate(db); // should run v2 (+ later idempotent migrations)
     const runCols = (db.prepare('PRAGMA table_info(scrape_runs)').all() as { name: string }[]).map((c) => c.name);
     expect(runCols).toContain('sources_done');
     expect(runCols).toContain('sources_total');
@@ -38,7 +40,7 @@ describe('migrate (versioned schema runner)', () => {
   test('v3 backfills judge columns onto a DB stamped at user_version=2 WITHOUT them (regression)', () => {
     const db = new Database(':memory:');
     // simulate an old build: a v2-era DB whose jobs table never got the llm columns
-    db.exec('CREATE TABLE jobs (id INTEGER PRIMARY KEY, dedupe_key TEXT, match_score INTEGER, is_active INTEGER, is_match INTEGER)');
+    db.exec('CREATE TABLE jobs (id INTEGER PRIMARY KEY, dedupe_key TEXT, match_score INTEGER, is_active INTEGER, is_match INTEGER, status TEXT)');
     db.exec("CREATE TABLE scrape_runs (id INTEGER PRIMARY KEY, status TEXT, sources_done INTEGER, sources_total INTEGER, current_source TEXT)");
     db.pragma('user_version = 2');
     const before = (db.prepare('PRAGMA table_info(jobs)').all() as { name: string }[]).map((c) => c.name);
@@ -49,7 +51,8 @@ describe('migrate (versioned schema runner)', () => {
     const after = (db.prepare('PRAGMA table_info(jobs)').all() as { name: string }[]).map((c) => c.name);
     expect(after).toContain('llm_verdict');
     expect(after).toContain('llm_judged_hash');
-    expect(db.pragma('user_version', { simple: true })).toBe(3);
+    // migrate stamps the latest version (v3 ran here; v4 index is idempotent)
+    expect(db.pragma('user_version', { simple: true })).toBe(4);
   });
 
   test('re-running migrate is idempotent (no version drift, no error)', () => {

@@ -187,6 +187,17 @@ describe('GET /api/jobs WHERE builder', () => {
     expect(r.body.jobs.map((j: any) => j.company)).toContain('LowCo'); // triaged bypasses the floor
   });
 
+  test('status=all applies the score floor globally — even to triaged jobs', async () => {
+    // Same low-score Interested job: under an EXPLICIT "all" view, score/recency
+    // are a deliberate global filter, so it must be hidden (no new-only carve-out).
+    db.prepare(`UPDATE jobs SET status='interested' WHERE company='LowCo'`).run();
+    const all = await get(app, '/api/jobs?status=all&minScore=30');
+    expect(all.body.jobs.map((j: any) => j.company)).not.toContain('LowCo');
+    // and without the floor it reappears (proves it's the floor hiding it, not status)
+    const noFloor = await get(app, '/api/jobs?status=all');
+    expect(noFloor.body.jobs.map((j: any) => j.company)).toContain('LowCo');
+  });
+
   test('refinements apply to New only: low-score NEW job is hidden, triaged-unmatched shows', async () => {
     const repo = new Repo(db);
     repo.insert(makeInput({ company: 'NewLow', matchScore: 5, dedupeKey: 'newlow' }));

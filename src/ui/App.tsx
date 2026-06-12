@@ -487,7 +487,14 @@ export default function App() {
           config={config}
           initialTab={settingsTab}
           onClose={() => setShowSettings(false)}
-          onSaved={() => { seededRef.current = false; loadConfig(); reload(); }}
+          onSaved={() => {
+            seededRef.current = false;
+            loadConfig();
+            reload();
+            // a settings save can change the judge floor / enable the judge — refresh
+            // the backlog count so the "Judge jobs" button reflects the new min_score
+            getJudgeStatus().then(setJudge).catch(() => {});
+          }}
         />
       )}
 

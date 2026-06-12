@@ -75,17 +75,23 @@ export function buildJobsFilter(
     // applying them would wrongly drop rows (a deep-linked/exported URL can carry
     // both match=unmatched AND a leftover minScore) — skip them there.
     const refine = match !== 'unmatched';
+    // Picking "all" is a deliberate "show me everything that clears the bar"
+    // investigation, so score/recency apply to EVERY row (no new-only carve-out).
+    // Any other selection keeps the carve-out so a curated/triaged job never
+    // vanishes for being low-score or old. Both the list route and /api/stats
+    // read `status` from the same query here, so the All-pill total stays
+    // consistent with what the All list actually shows (WYSIWYG).
+    const scoreCarve = status === 'all' ? '' : ` OR status <> 'new'`;
     if (minScore && refine) {
-      where.push(`(match_score >= ? OR status <> 'new')`);
+      where.push(`(match_score >= ?${scoreCarve})`);
       params.push(Number(minScore));
     }
     if (postedWithin && refine) {
       // "Recent" = recently posted OR recently discovered by us. The OR matters:
       // an old-but-still-open ATS posting first seen today must show up today
-      // (then age out), and undated board jobs must never vanish. Triaged rows
-      // bypass the recency window entirely (refinement-on-new-only).
+      // (then age out), and undated board jobs must never vanish.
       const cutoff = localDateISO(new Date(Date.now() - Number(postedWithin) * 86_400_000));
-      where.push(`((posted_date >= ? OR first_seen >= ?) OR status <> 'new')`);
+      where.push(`((posted_date >= ? OR first_seen >= ?)${scoreCarve})`);
       params.push(cutoff, cutoff);
     }
     if (location) {
@@ -130,13 +136,15 @@ export function jobsRouter(db: Database.Database, repo: Repo): Router {
         ? `${verdictRank} ASC, match_score DESC`
         : 'match_score DESC, COALESCE(posted_date, first_seen) DESC';
 
+    // NOTE: the JD body is intentionally NOT selected — the triage list shows no
+    // excerpt (use "Open JD"); skipping the 600-char column keeps the 200-row
+    // payload lean (smaller fetch + JSON parse).
     const sql = `
       SELECT id, company, title, location, work_mode, salary_text, url, tags,
              category, posted_date, first_seen, source_id, is_match,
              matched_role_ids, match_score, match_reasons, status, user_notes,
              status_updated_at, llm_verdict, llm_summary, llm_reasons, llm_blockers,
-             llm_dimensions,
-             substr(COALESCE(description, ''), 1, 600) AS description_excerpt
+             llm_dimensions
       FROM jobs
       WHERE ${where.join(' AND ')}
       ORDER BY ${orderBy}
@@ -146,6 +154,11 @@ export function jobsRouter(db: Database.Database, repo: Repo): Router {
     const countParams = [...params];
     params.push(Math.min(Number(limit) || 200, 500), Number(offset) || 0);
 
+    // Measure the DB time so filter-switch lag can be located: a Server-Timing
+    // header surfaces it per-request in the browser Network tab (db time vs total
+    // round-trip → server query vs network/client render), and anything slow gets
+    // logged. (Cheap; no behavior change.)
+    const t0 = performance.now();
     // Degrade a corrupt JSON cell to its default rather than 500-ing the whole
     // list (mirrors repo.safeJsonParse — the documented "never throws" invariant).
     const rows = (db.prepare(sql).all(...params) as Record<string, unknown>[]).map((row) => {
@@ -163,6 +176,11 @@ export function jobsRouter(db: Database.Database, repo: Repo): Router {
 
     const countSql = `SELECT COUNT(*) AS n FROM jobs WHERE ${where.join(' AND ')}`;
     const { n } = db.prepare(countSql).get(...countParams) as { n: number };
+
+    // Surface DB time per-request in the browser Network tab (silent, useful for
+    // spotting a future regression); the noisy slow-query console log was removed
+    // once the covering index (schema v4) brought the hot queries to ~3ms.
+    res.setHeader('Server-Timing', `db;desc="jobs+count";dur=${(performance.now() - t0).toFixed(1)}`);
 
     res.json({ jobs: rows, total: n });
   });

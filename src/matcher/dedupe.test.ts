@@ -54,6 +54,39 @@ describe('findFuzzyMatch', () => {
     expect(match).toBeNull();
   });
 
+  test('a regional suffix must not merge DIFFERENT roles (Trigger.dev Backend vs SRE, both "(Europe)")', () => {
+    // Regression: "europe" was missing from the geo stopwords, so the shared
+    // location token pushed overlap to 2 ([engineer, europe]) and these two
+    // genuinely-different roles merged into one row — hiding the Backend role.
+    const sreRow: DedupeCandidate = {
+      id: 20,
+      normCompany: 'triggerdev',
+      title: 'Senior Site Reliability Engineer (Europe)',
+      geoBucket: 'europe',
+      status: 'new',
+    };
+    const match = findFuzzyMatch(
+      { normCompany: 'triggerdev', title: 'Senior Backend Engineer (Europe)', geoBucket: 'europe' },
+      [sreRow]
+    );
+    expect(match).toBeNull();
+  });
+
+  test('but the SAME role with a regional suffix still merges across boards', () => {
+    const row: DedupeCandidate = {
+      id: 21,
+      normCompany: 'triggerdev',
+      title: 'Senior Backend Engineer - Europe',
+      geoBucket: 'europe',
+      status: 'new',
+    };
+    const match = findFuzzyMatch(
+      { normCompany: 'triggerdev', title: 'Backend Engineer (Europe)', geoBucket: 'europe' },
+      [row]
+    );
+    expect(match?.id).toBe(21);
+  });
+
   test('new-vs-new requires geo compatibility: Dubai vs London stay distinct', () => {
     const dubaiRow: DedupeCandidate = {
       id: 2,

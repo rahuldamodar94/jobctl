@@ -28,7 +28,6 @@ export interface UiJob {
   user_notes: string | null;
   /** ISO timestamp of the last status change; null = never touched (show first_seen). */
   status_updated_at: string | null;
-  description_excerpt: string;
   // advisory LLM fit-judge (null until judged)
   llm_verdict: 'STRONG' | 'DECENT' | 'WEAK' | 'SKIP' | null;
   llm_summary: string | null;
@@ -383,30 +382,6 @@ export async function generateRolesDraft(
 ): Promise<{ role?: RoleDraft; error?: string }> {
   try {
     const res = await fetch('/api/settings/generate-roles', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(opts),
-    });
-    return await res.json();
-  } catch (e) {
-    return { error: (e as Error).message };
-  }
-}
-
-/** Suggested profile patch (domains + geo) from the resume. */
-export interface ProfilePatch {
-  domains: string[];
-  geo_priority: string[];
-  geo_relocation_ok: string[];
-}
-
-/** Suggest company domains + locations from the resume (+ optional refinement).
- *  Returns a patch to merge into the profile, or an error. */
-export async function generateProfileDraft(
-  opts: { instruction?: string; currentDraft?: string } = {}
-): Promise<{ patch?: ProfilePatch; error?: string }> {
-  try {
-    const res = await fetch('/api/settings/generate-profile', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(opts),

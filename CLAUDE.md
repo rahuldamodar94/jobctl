@@ -238,9 +238,16 @@ CONFIG (yaml)                  SCRAPE PIPELINE (src/scraper/run.ts)
 - Docker — removed (v3): the resume-gen + judge features need the host `claude`
   CLI and can't run in a container; reproducibility comes from `.nvmrc` +
   `package-lock.json`. May return for a NAS/headless-only build later.
-- index tuning / composite list indexes — SQLite scans 50k rows in ms; single user
-  (incl. the new `OR status <> 'new'` refinement clauses + `/api/stats` GROUP BY
-  + role-csv LIKE ORs — all unindexed, all sub-10ms at 50k, accepted)
+- index tuning / composite list indexes — MOSTLY still true (the `OR status <>
+  'new'` refinement clauses, `/api/stats` GROUP BY, role-csv LIKE ORs stay
+  unindexed, all sub-10ms — accepted). EXCEPTION (v7, evidence-based): the list
+  route's default `ORDER BY match_score DESC` was temp-b-tree-sorting the whole
+  filtered set AND its COUNT was table-looking-up ~16k rows to evaluate the
+  status/is_match residuals (`new` is ~99% of active rows) — measured 58-107ms,
+  NOT "ms". One COVERING index — `idx_jobs_active_score (is_active, match_score
+  DESC, status, is_match)` (schema v4) — index-orders the sort (early LIMIT
+  termination) AND makes the COUNT index-only → ~2-4ms end-to-end. Don't add MORE
+  without the same kind of measured win.
 - streaming/paginating the rescore loop — rescore-all is the design
 - making DEFAULT_FILTERS (score≥30/14d/new) configurable — product defaults,
   changeable in the UI with reset
@@ -315,7 +322,7 @@ guide: `docs/model-tradeoffs.md`.
 npm run scrape [-- --source X]   # scrape (lock-guarded; UI button same path)
 npm run judge [-- --all|--id N]  # optional fit-judge over matched jobs
 npm run dev | build | start      # UI dev / production
-npm test                         # vitest — 348 tests (9 skip without a profile resume)
+npm test                         # vitest — 344 tests (9 skip without a profile resume)
 ```
 
 ## Status
@@ -418,6 +425,52 @@ in-scrape judge phase + its progress sentinel (`judgeProgressLabel`/
 `parseJudgeProgress` and the RunStatusStrip "Judging fit…" branch) were removed;
 scrape stays fully isolated, and the button's pending count refreshes when a
 scrape completes. Tests 348 (the judge-progress unit test went with the helpers).
+
+**v7 — triage-UX + matching fixes (2026-06-11, unpushed):** a batch of
+user-reported fixes. **Triage:** the note-on-status-change popover was removed —
+status changes apply immediately and the row settles (auto-leaves a view it no
+longer matches) at once; a note can still be added from the expanded row. The JD
+excerpt was dropped from the expanded row (use "Open JD" — a truncated excerpt
+helped no one). The expanded row's "age" now shows "discovered Nd ago" off
+first_seen when an ATS stamps an implausibly-old posted_date (an evergreen 2021
+repost rendered as "1870d ago"). **Filters:** picking the **All** status pill now
+applies the score/recency floor **globally** (no new-only carve-out) — both the
+list and `/api/stats` read `status` in `buildJobsFilter`, so the All-pill total
+stays WYSIWYG (other statuses keep the carve-out so curated jobs never vanish).
+`/api/jobs` emits a `Server-Timing: db` header + logs slow (>25ms) queries to
+locate filter-switch lag. A Settings save now also refreshes the judge backlog
+count (changing the judge floor updates the "Judge jobs" pending number). **AI:**
+the **Profile fine-tune** feature was removed entirely (route `/generate-profile`,
+`generateProfileDraft`/`buildProfilePrompt`/`parseProfileDraft`, UI bar — it only
+authored domains+geo, trivial checkbox work); the **Roles** fine-tune now stages
+its draft as a reviewable **diff** (added/removed keywords + weight changes) the
+user explicitly Applies, instead of silently overwriting the form. **Settings UX:**
+"Close" → "Back to triage"; number inputs use a string-state `NumField` (the old
+coerce-every-keystroke input forced "050" and couldn't be emptied). **Config (this
+profile, gitignored):** Himalayas dropped from `enabled_sources` (294 active jobs,
+3 matched, 0 ≥50 — its adapter stays committed for others); the active
+`roles.yaml` gained leadership `title_exclude`s (manager/director/head of/vp) and
+dropped bare `engineer`/`backend` catch-alls that were leaking 51 Engineering-
+Manager jobs into the IC search. Verified live: judge→`haiku`, resume→`sonnet`
+aliases resolve through `claude -p --model`; the roles fine-tune preserves all
+title_keywords and adds value via nice_to_have weights + excludes.
+**Dedupe false-merge fix:** the fuzzy-dedupe geo stopword list was missing
+`europe` (+ many regions/countries/cities), so a shared location token in a title
+suffix inflated overlap and merged DIFFERENT roles — "Backend Engineer (Europe)"
+was merging into "Site Reliability Engineer (Europe)" at Trigger.dev and getting
+hidden (the SRE title then title-excluded the row). `TITLE_STOPWORDS`
+(`normalize.ts`) was expanded; +2 dedupe regression tests. Surfaces on the next
+scrape (dedupe is insert-time). **List-route perf:** the default `match_score
+DESC` sort was temp-b-tree-sorting the filtered set, and its COUNT was
+table-looking-up ~16k rows for the status/is_match residuals (`new` ≈ 99% of
+active) — 58-107ms in the `Server-Timing`/slow-query logs. Added a COVERING index
+`idx_jobs_active_score (is_active, match_score DESC, status, is_match)` (schema v4)
+→ ~2-4ms end-to-end (sort index-ordered + count index-only); dropped the
+now-unused 600-char `description_excerpt` from the list payload (the JD excerpt
+was removed from the row in this same v7). The diagnostic slow-query console log
+was removed once fixed; the silent `Server-Timing: db` header stays.
+Tests 344 (profile-authoring tests removed with the feature; +1 All-pill, +2
+dedupe regression tests).
 
 ## v2+ roadmap (architecture accommodates, zero code today)
 

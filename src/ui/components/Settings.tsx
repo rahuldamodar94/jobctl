@@ -6,7 +6,7 @@
  * are plain markdown.
  */
 import React, { useCallback, useEffect, useState } from 'react';
-import { User, Briefcase, FileText, Scale, Files, Sparkles, X, Check, AlertCircle, ArrowRight } from 'lucide-react';
+import { User, Briefcase, FileText, Scale, Files, Sparkles, ArrowLeft, Check, AlertCircle, ArrowRight } from 'lucide-react';
 import {
   getSettings,
   saveProfile,
@@ -17,12 +17,10 @@ import {
   testLlmConnection,
   generateAuthoring,
   generateRolesDraft,
-  generateProfileDraft,
   type AppConfig,
   type SaveResult,
   type SettingsSnapshot,
   type RoleDraft,
-  type ProfilePatch,
 } from '../api.js';
 import { Button, cn } from './ui.js';
 import { ResumeUpload } from './ResumeUpload.js';
@@ -62,8 +60,8 @@ export function Settings({ config, onClose, onSaved, initialTab }: { config: App
       <div className="flex items-center gap-3 border-b border-line px-5 py-3">
         <h2 className="text-base font-bold text-ink">Settings</h2>
         <span className="text-xs text-faint">Edit in-app — changes apply on the next scrape/refresh.</span>
-        <Button variant="secondary" size="sm" onClick={onClose} className="ml-auto">
-          <X className="h-3.5 w-3.5" /> Close
+        <Button variant="primary" size="sm" onClick={onClose} className="ml-auto">
+          <ArrowLeft className="h-3.5 w-3.5" /> Back to triage
         </Button>
       </div>
       <div className="flex min-h-0 flex-1">
@@ -141,6 +139,134 @@ function EditorHead({ title, hint }: { title: string; hint: string }) {
       <h3 className="font-mono text-sm font-semibold text-ink">{title}</h3>
       <p className="mb-2.5 mt-0.5 text-xs text-muted">{hint}</p>
     </>
+  );
+}
+
+/** Number input that holds its raw text while editing, so the field can be
+ *  emptied and retyped without a forced leading zero ("050") or snapping to min
+ *  mid-keystroke. The numeric value is pushed up live when valid; an empty or
+ *  out-of-range field settles to a valid number on blur. (Fixes the "can't clear
+ *  the field / type 50 over 70" bug from the old coerce-on-every-keystroke input.) */
+function NumField({
+  value,
+  onChange,
+  min = 1,
+  max,
+  emptyFallback,
+  className,
+}: {
+  value: number;
+  onChange: (n: number) => void;
+  min?: number;
+  /** allow negatives by passing a negative min (e.g. nice-to-have weights) */
+  max?: number;
+  /** value an empty/invalid field settles to on blur (defaults to min — but
+   *  weights want 0, not their negative floor) */
+  emptyFallback?: number;
+  className?: string;
+}) {
+  const [text, setText] = useState(String(value));
+  // re-sync when the value changes from outside (AI draft, reset, tab switch)
+  useEffect(() => {
+    setText(String(value));
+  }, [value]);
+  return (
+    <input
+      type="number"
+      inputMode="numeric"
+      min={min}
+      max={max}
+      className={className}
+      value={text}
+      onChange={(e) => {
+        const raw = e.target.value;
+        setText(raw); // allow '', '-' and partial input while typing — don't force min
+        if (raw === '' || raw === '-') return; // hold until a real number exists
+        const n = Number(raw);
+        if (Number.isFinite(n)) onChange(max != null ? Math.min(max, Math.round(n)) : Math.round(n));
+      }}
+      onBlur={() => {
+        const n = Number(text);
+        const valid = text !== '' && text !== '-' && Number.isFinite(n);
+        const v = valid ? Math.max(min, max != null ? Math.min(max, Math.round(n)) : Math.round(n)) : (emptyFallback ?? min);
+        setText(String(v));
+        onChange(v);
+      }}
+    />
+  );
+}
+
+/** before→after set diff for the role fine-tune preview (case-insensitive). */
+function listDiff(before: string[], after: string[]): { added: string[]; removed: string[] } {
+  const b = new Set(before.map((x) => x.toLowerCase()));
+  const a = new Set(after.map((x) => x.toLowerCase()));
+  return { added: after.filter((x) => !b.has(x.toLowerCase())), removed: before.filter((x) => !a.has(x.toLowerCase())) };
+}
+
+/** Diff panel shown after an AI role fine-tune so the user SEES what changed
+ *  (added/removed keywords, weight changes) before applying it to the form —
+ *  the old flow silently overwrote the fields with no visible diff. */
+function RoleDiff({ before, after, onApply, onDiscard }: { before: RoleDraft; after: RoleDraft; onApply: () => void; onDiscard: () => void }) {
+  const lists = [
+    { label: 'Title keywords', ...listDiff(before.title_keywords, after.title_keywords) },
+    { label: 'Must-have stack', ...listDiff(before.must_have_stack, after.must_have_stack) },
+    { label: 'Title excludes', ...listDiff(before.title_exclude ?? [], after.title_exclude ?? []) },
+    { label: 'Exclude if primary', ...listDiff(before.exclude_if_primary ?? [], after.exclude_if_primary ?? []) },
+  ];
+  const bw = before.nice_to_have ?? {};
+  const aw = after.nice_to_have ?? {};
+  const wAdded = Object.entries(aw).filter(([k]) => !(k in bw));
+  const wChanged = Object.entries(aw)
+    .filter(([k, v]) => k in bw && bw[k] !== v)
+    .map(([k, v]) => [k, bw[k], v] as [string, number, number]);
+  const wRemoved = Object.keys(bw).filter((k) => !(k in aw));
+  const hasChanges =
+    before.label !== after.label ||
+    lists.some((d) => d.added.length || d.removed.length) ||
+    wAdded.length > 0 ||
+    wChanged.length > 0 ||
+    wRemoved.length > 0;
+
+  const chip = 'mr-1 mb-1 inline-block rounded px-1.5 py-0.5';
+  return (
+    <div className="mb-4 rounded-lg border border-accent/40 bg-accent/[0.04] p-3">
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <span className="text-sm font-semibold text-ink">AI draft — review the changes</span>
+        <div className="flex gap-2">
+          <Button variant="ghost" size="sm" onClick={onDiscard}>Discard</Button>
+          <Button variant="primary" size="sm" onClick={onApply} disabled={!hasChanges}>Apply to form</Button>
+        </div>
+      </div>
+      {!hasChanges ? (
+        <p className="text-xs text-muted">No changes — the draft matches your current role.</p>
+      ) : (
+        <div className="space-y-1.5 text-xs">
+          {before.label !== after.label && (
+            <div>
+              <span className="text-faint">Label: </span>
+              <span className="text-rose-300 line-through">{before.label}</span> → <span className="text-accent">{after.label}</span>
+            </div>
+          )}
+          {lists.map((d) =>
+            d.added.length || d.removed.length ? (
+              <div key={d.label}>
+                <span className="text-faint">{d.label}: </span>
+                {d.added.map((t) => <span key={'a' + t} className={cn(chip, 'bg-accent/15 text-accent')}>+{t}</span>)}
+                {d.removed.map((t) => <span key={'r' + t} className={cn(chip, 'bg-rose-500/15 text-rose-300 line-through')}>{t}</span>)}
+              </div>
+            ) : null
+          )}
+          {wAdded.length || wChanged.length || wRemoved.length ? (
+            <div>
+              <span className="text-faint">Nice-to-have weights: </span>
+              {wAdded.map(([k, v]) => <span key={'wa' + k} className={cn(chip, 'bg-accent/15 text-accent')}>+{k}:{v}</span>)}
+              {wChanged.map(([k, o, n]) => <span key={'wc' + k} className={cn(chip, 'bg-amber-500/15 text-amber-200')}>{k}:{o}→{n}</span>)}
+              {wRemoved.map((k) => <span key={'wr' + k} className={cn(chip, 'bg-rose-500/15 text-rose-300 line-through')}>{k}</span>)}
+            </div>
+          ) : null}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -227,37 +353,6 @@ function ProfileForm({ profile, config, onSaved }: { profile: Record<string, unk
     touch();
   };
 
-  const [suggesting, setSuggesting] = useState(false);
-  const [suggestError, setSuggestError] = useState<string | null>(null);
-  const [aiInstruction, setAiInstruction] = useState('');
-  function applyPatch(patch: ProfilePatch) {
-    setDomains(new Set(patch.domains));
-    setGeoPriority(new Set(patch.geo_priority));
-    setRelocationOk(new Set(patch.geo_relocation_ok));
-    touch();
-  }
-  const currentPatchJson = () =>
-    JSON.stringify({ domains: [...domains], geo_priority: [...geoPriority], geo_relocation_ok: [...relocationOk] }, null, 2);
-  async function runSuggest(refine: boolean) {
-    // A fresh suggestion replaces domains/locations; guard unsaved edits against a misclick.
-    if (!refine && dirty && !window.confirm('Replace the current domains & locations with fresh AI suggestions from your resume? Unsaved edits will be lost.')) {
-      return;
-    }
-    setSuggesting(true);
-    setSuggestError(null);
-    const r = await generateProfileDraft({
-      instruction: refine ? aiInstruction.trim() || undefined : undefined,
-      currentDraft: refine ? currentPatchJson() : undefined,
-    });
-    setSuggesting(false);
-    if (r.error || !r.patch) {
-      setSuggestError(r.error ?? 'Suggestion returned nothing — try again.');
-      return;
-    }
-    applyPatch(r.patch);
-    setAiInstruction('');
-  }
-
   const sourceOpts = (config?.availableSources ?? [...sources]).map((s) => ({ id: s, label: s }));
   const domainOpts = (config?.domains ?? []).map((d) => ({ id: d.id, label: d.label }));
   const locOpts = [...new Set([...COMMON_LOCATIONS, ...geoPriority, ...relocationOk])].map((l) => ({ id: l, label: l }));
@@ -290,40 +385,13 @@ function ProfileForm({ profile, config, onSaved }: { profile: Record<string, unk
   const lbl = 'mb-1.5 block text-sm font-medium text-ink';
   const sub = 'mb-1.5 block text-xs text-faint';
   const fld = 'rounded-lg border border-line bg-surface-2/60 px-3 py-2 text-sm text-ink placeholder-faint outline-none focus:border-accent';
-  const ctrl = 'h-8 flex-1 min-w-[14rem] rounded-lg border border-line bg-surface-2/60 px-2.5 text-xs text-ink placeholder-faint outline-none focus:border-accent disabled:opacity-50';
   const num = (v: number, set: (n: number) => void, min = 1) => (
-    <input type="number" min={min} className={cn(fld, 'w-24')} value={v} onChange={(e) => { set(Math.max(min, Math.round(Number(e.target.value) || min))); touch(); }} />
+    <NumField value={v} onChange={(n) => { set(n); touch(); }} min={min} className={cn(fld, 'w-24')} />
   );
 
   return (
     <div className="max-w-2xl">
       <EditorHead title="Profile" hint="Your identity, what to scrape, where you want to work, and the default triage view." />
-      {(p.resumes?.length ?? 0) > 0 ? (
-        <div className="mb-4 rounded-lg border border-line bg-surface-2/30 p-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <Button variant="secondary" size="sm" onClick={() => runSuggest(false)} loading={suggesting} disabled={suggesting}>
-              {!suggesting && <Sparkles className="h-3.5 w-3.5" />}
-              Suggest domains &amp; locations with AI
-            </Button>
-            <input
-              className={ctrl}
-              placeholder='Fine-tune: e.g. "add healthtech", "remote only"'
-              value={aiInstruction}
-              onChange={(e) => setAiInstruction(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter' && !suggesting && aiInstruction.trim()) { e.preventDefault(); runSuggest(true); } }}
-              disabled={suggesting}
-            />
-            <Button variant="secondary" size="sm" onClick={() => runSuggest(true)} loading={suggesting} disabled={suggesting || !aiInstruction.trim()}>
-              Fine-tune
-            </Button>
-          </div>
-          <p className="mt-1.5 text-[11px] text-faint">AI suggests company domains and locations from your resume. Review them below, then Save.</p>
-          {suggesting && <p className="mt-1 text-xs text-faint">Reading your resume… this can take up to a minute.</p>}
-          {suggestError && <p className="mt-1 text-xs text-amber-300">{suggestError}</p>}
-        </div>
-      ) : (
-        <p className="mb-4 text-xs text-muted">Add your resume (Resume tab) to let AI suggest domains &amp; locations — or pick them by hand below.</p>
-      )}
       <div className="space-y-5">
         <label className="block">
           <span className={lbl}>Your name <span className="font-normal text-faint">(appears on generated resumes)</span></span>
@@ -414,6 +482,9 @@ function RolesForm({ roles, hasResume, onSaved }: { roles: Record<string, unknow
   const [tuning, setTuning] = useState(false);
   const [tuneError, setTuneError] = useState<string | null>(null);
   const [instruction, setInstruction] = useState('');
+  // An AI draft awaiting review — shown as a diff (added/removed/changed) the
+  // user explicitly Applies, instead of silently overwriting the form.
+  const [pendingDraft, setPendingDraft] = useState<RoleDraft | null>(null);
   const touch = () => setDirty(true);
 
   // Populate every field from a drafted/template role (the form IS the review surface).
@@ -427,35 +498,29 @@ function RolesForm({ roles, hasResume, onSaved }: { roles: Record<string, unknow
     touch();
   }
 
-  // Serialize the live form state into the on-disk role shape (for a fine-tune pass).
-  function currentRoleJson(): string {
+  // The live form state as a role object — used for the fine-tune "before" and
+  // the diff baseline.
+  function currentRoleObj(): RoleDraft {
     const nice: Record<string, number> = {};
     for (const r of niceRows) {
       const t = r.term.trim().toLowerCase();
       if (t) nice[t] = r.weight;
     }
-    return JSON.stringify(
-      {
-        id: existingId || slug(label),
-        label: label.trim(),
-        title_keywords: toList(titleKeywords),
-        must_have_stack: toList(stack),
-        title_exclude: toList(titleExclude),
-        nice_to_have: nice,
-        exclude_if_primary: toList(excludePrimary),
-      },
-      null,
-      2
-    );
+    return {
+      id: existingId || slug(label),
+      label: label.trim(),
+      title_keywords: toList(titleKeywords),
+      must_have_stack: toList(stack),
+      title_exclude: toList(titleExclude),
+      nice_to_have: nice,
+      exclude_if_primary: toList(excludePrimary),
+    };
   }
+  const currentRoleJson = (): string => JSON.stringify(currentRoleObj(), null, 2);
 
   // refine=false → draft from the on-disk role + resume; refine=true → revise the
   // live (possibly edited) form per the instruction.
   async function runTune(refine: boolean) {
-    // A fresh draft replaces the fields; guard unsaved hand-edits against a misclick.
-    if (!refine && dirty && !window.confirm('Replace the current role fields with a fresh AI draft from your resume? Unsaved edits will be lost.')) {
-      return;
-    }
     setTuning(true);
     setTuneError(null);
     const r = await generateRolesDraft({
@@ -467,7 +532,9 @@ function RolesForm({ roles, hasResume, onSaved }: { roles: Record<string, unknow
       setTuneError(r.error ?? 'Tuning returned nothing — try again.');
       return;
     }
-    applyDraft(r.role);
+    // Stage the draft as a diff to review — applying is now an explicit step, so
+    // no hand-edits are silently clobbered (the old confirm() guard is unneeded).
+    setPendingDraft(r.role);
     setInstruction('');
   }
 
@@ -535,12 +602,20 @@ function RolesForm({ roles, hasResume, onSaved }: { roles: Record<string, unknow
               Fine-tune
             </Button>
           </div>
-          <p className="mt-1.5 text-[11px] text-faint">AI keeps your title keywords and tunes the stack, weights, and excludes from your resume. Review the fields below, then Save.</p>
+          <p className="mt-1.5 text-[11px] text-faint">AI keeps your title keywords and tunes the stack, weights, and excludes from your resume. Review the diff, Apply, then Save.</p>
           {tuning && <p className="mt-1 text-xs text-faint">Tuning from your resume… this can take up to a minute.</p>}
           {tuneError && <p className="mt-1 text-xs text-amber-300">{tuneError}</p>}
         </div>
       ) : (
         <p className="mb-4 text-xs text-muted">Add your resume (Resume tab) to tune this role with AI — or edit the fields below by hand.</p>
+      )}
+      {pendingDraft && (
+        <RoleDiff
+          before={currentRoleObj()}
+          after={pendingDraft}
+          onApply={() => { applyDraft(pendingDraft); setPendingDraft(null); }}
+          onDiscard={() => setPendingDraft(null)}
+        />
       )}
       <div className="space-y-5">
         <label className="block">
@@ -562,7 +637,7 @@ function RolesForm({ roles, hasResume, onSaved }: { roles: Record<string, unknow
             {niceRows.map((r, i) => (
               <div key={i} className="flex items-center gap-2">
                 <input className={cn(fld, 'flex-1')} value={r.term} onChange={(e) => setRow(i, { term: e.target.value })} placeholder="keyword" />
-                <input type="number" className={cn(fld, 'w-20')} value={r.weight} onChange={(e) => setRow(i, { weight: Math.round(Number(e.target.value) || 0) })} />
+                <NumField value={r.weight} onChange={(n) => setRow(i, { weight: n })} min={-99} max={99} emptyFallback={0} className={cn(fld, 'w-20')} />
                 <button onClick={() => { setNiceRows((rows) => rows.filter((_, j) => j !== i)); touch(); }} className="px-2 text-faint hover:text-amber-300" title="remove">✕</button>
               </div>
             ))}
@@ -1056,13 +1131,13 @@ function AiSettings({
         </label>
         <label className="mt-3 block">
           <span className={lbl}>Judge floor (min score) <span className="font-normal text-faint">— only judge jobs scoring at least this</span></span>
-          <input
-            type="number"
+          <NumField
+            value={minScore}
+            onChange={(n) => { setMinScore(n); touch(); }}
             min={0}
             max={100}
+            emptyFallback={0}
             className={cn(fld, 'w-28')}
-            value={minScore}
-            onChange={(e) => { setMinScore(Math.round(Math.max(0, Math.min(100, Number(e.target.value) || 0)))); touch(); }}
           />
           <span className={sub}>Default 50. Higher = fewer (and costlier) LLM calls per run. The Re-judge button bypasses this floor.</span>
         </label>

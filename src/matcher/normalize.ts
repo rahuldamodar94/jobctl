@@ -21,9 +21,25 @@ const TITLE_STOPWORDS = new Set([
   'senior', 'staff', 'principal', 'lead', 'junior', 'mid', 'sr', 'jr',
   'remote', 'hybrid', 'onsite', 'fulltime', 'parttime', 'contract',
   'a', 'an', 'the', 'of', 'and', 'or', 'for', 'in', 'at', 'to', 'team',
-  // common geo fragments that leak into titles
-  'dubai', 'uae', 'london', 'usa', 'us', 'eu', 'emea', 'apac', 'india',
-  'new', 'york', 'nyc', 'singapore', 'berlin', 'amsterdam', 'madrid',
+  // Common geo fragments that leak into titles — these must NOT count as
+  // role-defining tokens, or a location suffix inflates fuzzy-dedupe overlap
+  // and merges DIFFERENT roles (e.g. "Backend Engineer (Europe)" was merging
+  // with "Site Reliability Engineer (Europe)" because the shared "europe"
+  // pushed the overlap to 2 tokens). Geo is already its own dedupe dimension.
+  // regions / continents
+  'eu', 'emea', 'apac', 'latam', 'anz', 'europe', 'americas', 'america',
+  'asia', 'africa', 'global', 'worldwide', 'anywhere', 'international', 'based',
+  // countries
+  'usa', 'us', 'uk', 'india', 'uae', 'germany', 'france', 'ireland',
+  'netherlands', 'spain', 'italy', 'poland', 'portugal', 'canada', 'australia',
+  'brazil', 'mexico', 'japan', 'israel', 'switzerland', 'sweden', 'romania',
+  'philippines', 'indonesia', 'malaysia', 'singapore', 'argentina', 'colombia',
+  // cities
+  'dubai', 'london', 'york', 'nyc', 'new', 'berlin', 'amsterdam', 'madrid',
+  'paris', 'munich', 'dublin', 'lisbon', 'barcelona', 'toronto', 'vancouver',
+  'sydney', 'melbourne', 'tokyo', 'bangalore', 'bengaluru', 'mumbai', 'delhi',
+  'hyderabad', 'pune', 'chennai', 'warsaw', 'krakow', 'zurich', 'stockholm',
+  'lagos', 'nairobi', 'riyadh', 'doha',
 ]);
 
 function stripPunctuation(s: string): string {

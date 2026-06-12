@@ -4,12 +4,12 @@
  * The status dropdown and checkbox stopPropagation so triage clicks don't
  * toggle the expansion. A colored left rail + subtle tint encode status.
  *
- * Status changes apply IMMEDIATELY (triage speed first), then a small popover
- * offers an optional note — Save attaches it, Skip/Esc dismisses, Enter saves.
- * The Updated column shows when the status last changed, falling back to
- * first_seen for untouched rows.
+ * Status changes apply IMMEDIATELY (triage speed first) with no prompt; a note
+ * can still be added from the expanded row's note field. The Updated column
+ * shows when the status last changed, falling back to first_seen for untouched
+ * rows.
  */
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ExternalLink, FileText, Scale, Clock, Database, BadgeDollarSign, Loader2,
 } from 'lucide-react';
@@ -51,12 +51,23 @@ const STATUS_ROW: Record<string, { tint: string; rail: string }> = {
   dismissed: { tint: 'text-faint/70', rail: 'border-l-line-strong' },
 };
 
+// bare yyyy-mm-dd parses as UTC midnight → pin to local midnight (like shortDate)
+const parseDay = (d: string) => new Date(d.length === 10 ? `${d}T00:00:00` : d).getTime();
+
 function age(job: UiJob): string {
-  const d = job.posted_date ?? job.first_seen;
+  const posted = job.posted_date;
+  const seen = job.first_seen;
+  // Some ATS boards stamp an ancient posted_date on evergreen/pipeline reposts
+  // (e.g. a 2021 date on a role we first saw today) — that rendered as an absurd
+  // "1870d ago". When the posted date is implausibly older than when we first
+  // saw the job, fall back to first_seen and label it "discovered" instead.
+  if (posted && seen && parseDay(seen) - parseDay(posted) > 180 * 86_400_000) {
+    const days = Math.floor((Date.now() - parseDay(seen)) / 86_400_000);
+    return days <= 0 ? 'discovered today' : `discovered ${days}d ago`;
+  }
+  const d = posted ?? seen;
   if (!d) return '';
-  // bare yyyy-mm-dd parses as UTC midnight → pin to local midnight (like shortDate)
-  const t = new Date(d.length === 10 ? `${d}T00:00:00` : d).getTime();
-  const days = Math.floor((Date.now() - t) / 86_400_000);
+  const days = Math.floor((Date.now() - parseDay(d)) / 86_400_000);
   return days <= 0 ? 'today' : `${days}d ago`;
 }
 
@@ -69,9 +80,6 @@ function shortDate(d: string): string {
     month: 'short',
   });
 }
-
-/** Statuses that don't deserve a note prompt — mechanical transitions. */
-const NO_NOTE_STATUSES = new Set(['applied', 'new']);
 
 // Status dropdown values come from the shared vocab (display label == value here).
 const STATUS_OPTIONS = JOB_STATUSES;
@@ -155,45 +163,12 @@ function JobRowImpl({
   };
 
   const [notesDraft, setNotesDraft] = useState<string | null>(null);
-  const [notePromptFor, setNotePromptFor] = useState<string | null>(null); // status just set
-  const noteInputRef = useRef<HTMLTextAreaElement | null>(null);
-  const popoverRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    if (!notePromptFor) return;
-    noteInputRef.current?.focus();
-    // Outside-click dismisses (and implicitly enforces one-open-popover-at-a-
-    // time: opening another row's popover is itself an outside click here).
-    const onDown = (e: MouseEvent) => {
-      if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) closePromptRef.current();
-    };
-    document.addEventListener('mousedown', onDown);
-    return () => document.removeEventListener('mousedown', onDown);
-  }, [notePromptFor]);
-
+  // Status changes apply immediately with no note prompt — the row settles at
+  // once, so it leaves the view right away if it no longer matches the filter.
   const handleStatusChange = (status: string) => {
-    onStatus(status); // apply immediately — the note is optional decoration
-    if (NO_NOTE_STATUSES.has(status)) {
-      onSettled(status); // no popover — the row may leave the view right away
-    } else {
-      setNotePromptFor(status); // popover first; the row leaves after it closes
-    }
-  };
-
-  // outside-click handler lives in an effect — keep a stable ref to the
-  // latest closePrompt so it always settles the right status
-  const closePromptRef = useRef<() => void>(() => {});
-  const closePrompt = () => {
-    const status = notePromptFor;
-    setNotePromptFor(null);
-    if (status) onSettled(status);
-  };
-  closePromptRef.current = closePrompt;
-
-  const saveNote = () => {
-    const value = noteInputRef.current?.value ?? '';
-    if (value !== (job.user_notes ?? '')) onNotes(value);
-    closePrompt();
+    onStatus(status);
+    onSettled(status);
   };
 
   // Manually-added jobs (no source) are user-curated: a keyword score of 0 is
@@ -279,37 +254,6 @@ function JobRowImpl({
               <option key={s} value={s}>{s}</option>
             ))}
           </select>
-
-          {/* optional-note popover, anchored to the status cell */}
-          {notePromptFor && (
-            <div
-              ref={popoverRef}
-              className="absolute right-0 top-full z-30 mt-1.5 w-72 rounded-xl border border-line-strong bg-surface-3 p-2.5 text-ink no-underline shadow-pop [text-decoration:none] animate-scale-in"
-            >
-              <div className="mb-1.5 text-xs text-muted">
-                Note for <span className="font-semibold text-ink">{notePromptFor}</span> (optional)
-              </div>
-              <textarea
-                ref={noteInputRef}
-                key={job.user_notes ?? ''}
-                defaultValue={job.user_notes ?? ''}
-                rows={2}
-                placeholder="e.g. referred by X / failed system design / salary too low…"
-                className="mb-2 w-full rounded-lg border border-line bg-bg px-2 py-1.5 text-sm text-ink placeholder-faint outline-none focus:border-accent [text-decoration:none]"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    saveNote();
-                  }
-                  if (e.key === 'Escape') closePrompt();
-                }}
-              />
-              <div className="flex justify-end gap-2">
-                <Button size="sm" variant="ghost" onClick={closePrompt}>Skip (Esc)</Button>
-                <Button size="sm" variant="primary" onClick={saveNote}>Save (Enter)</Button>
-              </div>
-            </div>
-          )}
         </td>
         <td className={cn(TD, 'tnum font-mono text-[11px] text-faint')} title={updatedTitle}>
           {shortDate(updated)}
@@ -441,12 +385,8 @@ function JobRowImpl({
                 </div>
               )}
 
-              {job.description_excerpt && (
-                <p className="mb-3 whitespace-pre-line text-xs leading-relaxed text-muted">
-                  {job.description_excerpt}
-                  {job.description_excerpt.length >= 600 ? '…' : ''}
-                </p>
-              )}
+              {/* JD body intentionally not shown — use "Open JD" to read the
+                  full description at the source instead of a truncated excerpt. */}
 
               <div onClick={(e) => e.stopPropagation()}>
                 <input

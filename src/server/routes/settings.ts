@@ -8,7 +8,7 @@ import { safeProfilePath } from '../../config/paths.js';
 import { extractResume } from '../../upload/extract.js';
 import { MAX_RESUME_BYTES } from '../../upload/guards.js';
 import { testLlmConnection } from '../../llm/test-connection.js';
-import { generateAuthoring, generateProfileDraft, generateRolesDraft } from '../../authoring/index.js';
+import { generateAuthoring, generateRolesDraft } from '../../authoring/index.js';
 import type { LlmBackendConfig } from '../../shared/types.js';
 
 /**
@@ -204,21 +204,6 @@ export function settingsRouter(): Router {
     llmBusy = true;
     try {
       res.json(await generateRolesDraft({ instruction, currentDraft }));
-    } finally {
-      llmBusy = false;
-    }
-  });
-
-  // POST /api/settings/generate-profile — suggest company domains + location
-  // preferences FROM the resume. Returns a {domains, geo_*} patch the UI merges
-  // into the rest of profile.yaml on save. Shares the single-LLM-request lock.
-  r.post('/generate-profile', async (req, res) => {
-    const instruction = asStr(req.body?.instruction);
-    const currentDraft = asStr(req.body?.currentDraft);
-    if (llmBusy) return res.status(409).json({ error: 'another LLM request is in progress — try again in a moment.' });
-    llmBusy = true;
-    try {
-      res.json(await generateProfileDraft({ instruction, currentDraft }));
     } finally {
       llmBusy = false;
     }
