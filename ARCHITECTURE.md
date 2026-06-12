@@ -4,7 +4,23 @@ jobctl is **one process, one SQLite file**. A scrape pipeline pulls jobs and wri
 them to the database, an Express server reads from it, and a React page is your
 triage inbox. Optional AI sits on top. The whole thing runs on your machine.
 
-## How it fits together
+## 🧰 Stack
+
+| Layer | What we use |
+|---|---|
+| Language | TypeScript (ESM), Node 22+ — the server + CLI run straight from source via `tsx` (no build step) |
+| Server | Express |
+| Database | SQLite via better-sqlite3 (WAL) — one file, synchronous, prepared statements |
+| UI | React + Vite + Tailwind |
+| Config validation | zod (the loaders reject bad YAML before it's written) |
+| Scraping | native `fetch` + cheerio for HTML boards |
+| Resume / uploads | pdfkit (PDF render) · mammoth + pdfjs (`.docx`/`.pdf` extraction) |
+| AI (optional) | your local Claude CLI, any OpenAI-compatible API, or Ollama |
+| Tests | vitest |
+
+*(Exact versions live in `package.json` — kept here name-only so it can't go stale.)*
+
+## 🗺️ How it fits together
 
 ```mermaid
 flowchart LR
@@ -40,7 +56,7 @@ flowchart LR
 7. **AI (optional)** — your chosen model judges fit and tailors resumes, layered on
    top of the data — never blocking the core.
 
-## The pieces
+## 🧩 The pieces
 
 | Area | Path | What it does |
 |---|---|---|
@@ -53,7 +69,7 @@ flowchart LR
 | UI | `src/ui` | The React / Vite / Tailwind triage page and settings |
 | AI (optional) | `src/judge`, `src/resume`, `src/authoring`, `src/llm` | Fit-judge, resume generation, config authoring, and the model backends |
 
-## Data model
+## 🗄️ Data model
 
 One SQLite file holds three tables:
 
@@ -64,7 +80,7 @@ One SQLite file holds three tables:
 - **`source_state`** — per-source health (last success, recent empties) so a
   silently-broken source gets flagged instead of quietly dropping jobs.
 
-## Project structure
+## 📁 Project structure
 
 ```
 jobctl/
@@ -96,7 +112,7 @@ jobctl/
 └── CLAUDE.md                # exhaustive internal reference
 ```
 
-## A few deliberate choices
+## 🧭 A few deliberate choices
 
 - **Local-first, single user.** There's no login — it's meant to run on your own
   machine. If you put it on a network, add your own auth first (see

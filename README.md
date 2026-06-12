@@ -13,18 +13,20 @@
 
 <br>
 
-<img src="docs/assets/triage.png" alt="The jobctl triage page — every listing scored against your profile, duplicates collapsed, with optional AI fit-verdicts inline" width="880">
+<img src="docs/assets/triage.png" alt="The jobctl triage page — every listing scored against your profile, duplicates collapsed, with optional AI fit-verdicts inline" width="820">
+
+<br><br>
 
 </div>
 
 It scrapes company career pages and tech job boards, scores every listing against
-*your* profile, and gives you one fast page to review them — so you check **one
-place instead of ten**, and **never see the same job twice**.
+*your* profile, and hands you **one fast page** to triage — so you check one place
+instead of ten, and never see the same job twice. 🎯
 
-The core — scrape, de-dupe, score, triage — needs **no AI at all** and works fully
-offline. When you want a hand with the reading-heavy part, bring your own model
-(Claude, any OpenAI-compatible API, or a local one via Ollama) to judge how well a
-job fits and to tailor your resume. That part is optional, and it's yours.
+The whole core — scrape, de-dupe, score, triage — runs with **no AI at all**, even
+offline. Want help with the reading-heavy part? Bring your own model (Claude, any
+OpenAI-compatible API, or local Ollama) to judge fit and tailor your resume. 🤖
+Totally optional, and it's yours.
 
 ```
   company career pages  (Greenhouse · Lever · Ashby · Workable …)  ─┐
@@ -32,51 +34,32 @@ job fits and to tailor your resume. That part is optional, and it's yours.
   tech job boards       (remoteok · weworkremotely · himalayas · …) ─┘            (+ your AI)   (localhost:3000)
 ```
 
-### 📊 By the numbers
+### ⚡ At a glance
 
-- **569 company career boards** in the committed registry, each verified against
-  its live API and tagged by domain.
-- **12 domains** covered — AI/ML, fintech & payments, crypto/web3, cloud & infra,
-  dev tools, security, data, SaaS, gaming, consumer, e-commerce, health tech.
-- **10 ATS integrations** (Greenhouse, Lever, Ashby, Recruitee, Workable,
-  Teamtailor, Personio, Breezy, Pinpoint, SmartRecruiters) **+ 5 job-board
-  adapters**.
-- **70 ready-made role templates** across engineering, design, product, data,
-  marketing, and more — pick one and the wizard fills in sensible keywords.
-- In a single real run, jobctl pulled **17,000+ live postings from 1,100+
-  companies** into one local database — then scored and de-duped them down to a
-  focused shortlist.
+- 🏢 **569 company career boards** — committed, live-verified, tagged by domain.
+- 🗂️ **12 domains** — AI/ML, fintech, crypto/web3, cloud, dev tools, security, data, SaaS, gaming, consumer, e-commerce, health tech.
+- 🔌 **10 ATS integrations** (Greenhouse, Lever, Ashby, Workable, …) **+ 5 job boards**.
+- 🎛️ **70 role templates** across eng, design, product, data, marketing — pick one and the wizard fills in the keywords.
+- 📈 One real run pulled **17,000+ live postings from 1,100+ companies** into a single local DB.
 
-## What it is, and who it's for
+## 👤 Who it's for
 
-jobctl is for one person running their own job search who's tired of refreshing a
-dozen boards, re-reading the same reposted listing, and losing track of what
-they've already seen. You tell it the roles, skills, and places you care about; it
-pulls listings from hundreds of company career pages and job boards on demand,
-scores each one against your profile, collapses duplicates, and shows you a single
-data-dense page to triage. Mark a job `applied` or `dismissed` once and it never
-comes back — even if it's reposted elsewhere with a slightly different title.
+One person running their own job search, who's tired of:
 
-The matching engine is **plain keyword rules you can read and edit**, not a black
-box — so you always know *why* a job scored the way it did, and you can tune it.
-And everything stays on your machine — your resume and search profile never leave
-your laptop.
+- 🔁 refreshing a dozen boards every morning,
+- 👻 re-reading the same listing reposted under a slightly different title,
+- 🤷 losing track of what they've already seen.
 
-## Why you'll like it
+You set the roles, skills, and places you care about — jobctl does the fetching,
+scoring, and de-duping, and hands you one page to work through.
 
-- **One inbox.** Stop checking ten job boards every morning — they all land in one
-  place.
-- **No repeats.** Once you triage a job, it's gone for good, even when reposted on
-  another board under a different title.
-- **Your rules, instantly applied.** Title keywords, must-have skills, weighted
-  boosts, hard exclusions, location tiers — all in plain config. Every scrape
-  re-scores everything, so a tweak takes effect on the very next run.
-- **Private by default.** Everything is one local SQLite file; your resume and
-  search profile never leave your laptop.
-- **AI when you want it, not when you don't.** The core runs with no model. Turn
-  on the AI features for a sharper read and tailored resumes whenever you like.
-- **A big head start.** A curated, live-verified registry of 569 company boards
-  across 12 software-industry domains — pick what you care about and go.
+## ✨ Why you'll like it
+
+- **🗳️ One inbox.** Ten boards, one page. Mark a job `applied` or `dismissed` once and it's gone for good — even when it's reposted elsewhere.
+- **🔍 No black box.** Matching is plain keyword rules you can read and tune, so you always know *why* a job scored what it did — and a tweak re-scores everything on the next run.
+- **🔒 Private by default.** It's all one local SQLite file; your resume and search profile never leave your laptop.
+- **🤖 AI only if you want it.** The core needs no model. Flip on the AI for sharper fit-verdicts and tailored resumes whenever you like.
+- **🚀 A big head start.** 569 live-verified company boards across 12 domains — pick what you care about and go.
 
 ## ⚡ Quickstart
 
@@ -119,13 +102,10 @@ in one click.
 
 ## 🎯 Getting your keywords right (the part that matters most)
 
-This is the single highest-leverage thing you do, so it's worth two minutes.
-**The quality of your matches is only as good as your keywords.** The scorer is
-deterministic and literal — it does exactly what your config says — so a thin or
-sloppy role definition produces thin or noisy results, and a well-tuned one
-produces a shortlist that's genuinely yours.
-
-In short, your role (`roles.yaml`, edited via **Settings → Role**) has a few knobs:
+Worth two minutes, because **your matches are only as good as your keywords.** The
+scorer is deterministic and literal — it does exactly what your config says — so a
+sloppy role gives you noise, and a tuned one gives you a shortlist that's genuinely
+yours. Your role (`roles.yaml`, edited in **Settings → Role**) has a few knobs:
 
 - **Title keywords** — the gate. A job's title must contain one of these or it's
   skipped entirely. Too narrow and you miss real roles; too broad (a bare
@@ -146,9 +126,8 @@ works end to end, and how to tune it — is in
 
 ## 🤖 AI: optional, but it makes triage a lot better
 
-The keyword core gets you a clean, de-duped shortlist with **no model at all**.
-The AI features sit *on top* and do the reading-intensive work you'd otherwise do
-by hand — and that's exactly why they're worth turning on:
+The keyword core gives you a clean shortlist with **no model at all**. The AI sits
+*on top* and does the reading you'd otherwise do by hand:
 
 - **Fit-judge** reads each matched JD against a rubric *you* define and returns a
   **STRONG / DECENT / WEAK / SKIP** verdict, plus a per-dimension breakdown
@@ -162,23 +141,22 @@ by hand — and that's exactly why they're worth turning on:
 
 <div align="center">
 
-<img src="docs/assets/judge.png" alt="An expanded job row showing the fit-judge breakdown — an overall verdict plus per-dimension scores (skills, seniority, domain, location, red flags), each backed by quotes pulled from the job description" width="880">
+<img src="docs/assets/judge.png" alt="An expanded job row showing the fit-judge breakdown — an overall verdict plus per-dimension scores (skills, seniority, domain, location, red flags), each backed by quotes pulled from the job description" width="820">
 
-<sub><i>Expand any job to see the fit-judge's verdict and per-dimension reasoning, each backed by quotes from the JD.</i></sub>
+<br>
+
+<sub><i>Expand any job for the verdict + per-dimension reasoning, each backed by quotes from the JD.</i></sub>
 
 </div>
 
-You bring the model (your local **`claude` CLI** on your existing subscription, any
-**OpenAI-compatible API**, or a local **Ollama** model); jobctl owns the prompts,
-parsing, and layout. Both features are off by default — turn them on in
-**Settings → AI/LLM**, run the one-click connection check, and go.
+Bring your own model — local **`claude` CLI** (your subscription, no key), any
+**OpenAI-compatible API**, or local **Ollama**. Both features are off by default;
+turn them on in **Settings → AI/LLM** with a one-click connection check.
 
-Two concepts worth understanding before you lean on them — the **judge rubric**
-(how the judge decides what's a good fit for *you*) and the **resume-gen skill**
-(the rules that shape your tailored resume) — are explained, with tips on writing
-good ones, in **[docs/ai-features.md](docs/ai-features.md)**. Both can be
-**auto-authored from your uploaded resume** and then refined by prompt, so you're
-never staring at a blank file.
+Two things shape the output: the **judge rubric** (what counts as a good fit for
+*you*) and the **resume-gen skill** (how your resume gets tailored). Both can be
+**auto-authored from your resume** and refined by prompt — details in
+**[docs/ai-features.md](docs/ai-features.md)**. 🙌
 
 > [!IMPORTANT]
 > **One privacy rule that matters:** free LLM tiers may train on what you send.
@@ -189,9 +167,9 @@ never staring at a blank file.
 
 ## ⚙️ Configure
 
-The easiest way is the in-app **Settings** page (and the first-run wizard) — it
-edits every file below, validates your input, and never touches a terminal. The
-files remain the source of truth if you'd rather edit them directly:
+**Settings** in the app (and the first-run wizard) edits every file below with
+validation — no terminal needed. The files stay the source of truth if you'd
+rather edit them by hand:
 
 | File | Owner | What it holds |
 |---|---|---|
@@ -211,11 +189,9 @@ files remain the source of truth if you'd rather edit them directly:
 | web3.career | static HTML |
 | remoteok.com, weworkremotely.com, himalayas.app | public JSON/RSS feeds (general remote boards) |
 
-jobctl reads **public, programmatically-accessible** career APIs and job-board
-feeds. Sources that require a logged-in session or a real browser aren't fetched
-server-side; you could bring those in via your own session if you ever wanted to.
-Scraping is polite by design: an identifiable user-agent, sources fetched one at a
-time, per-host delays, and retries with backoff — a few hundred requests per run.
+Everything is a **public, programmatically-accessible** API or feed — nothing that
+needs a login or a real browser. And it scrapes politely: a real user-agent, one
+source at a time, per-host delays, backoff retries — a few hundred requests a run.
 
 > [!NOTE]
 > **Wondering why a big-name company isn't covered?** Most global giants run on
@@ -242,10 +218,10 @@ npm run build && npm start     # production build + serve
 npm test                       # run the test suite
 ```
 
-## Architecture
+## 🏗️ Architecture
 
-How the scrape → match → triage pipeline fits together — the components, the data
-model, the project structure, and the design choices behind it — is in
+How the scrape → match → triage pipeline fits together — components, data model,
+project structure, and the design choices behind it — is in
 **[ARCHITECTURE.md](ARCHITECTURE.md)**.
 
 > [!IMPORTANT]

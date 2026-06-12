@@ -55,8 +55,9 @@ Daily workflow: open UI → Run scrape → triage `new, score≥30` list → don
 ```
 config/                          # COMMITTED — community value
 ├── companies.yaml               # registry: name + careers_url + domains tags
-│                                # (researched-but-unreachable companies + the
-│                                #  false-positive blocklist live in docs/companies-unsupported.md)
+│                                # (researched-but-unreachable companies live in
+│                                #  docs/companies-unsupported.md; the same-name
+│                                #  slug gotcha is in CONTRIBUTING.md)
 ├── domains.yaml                 # canonical software-industry domain vocabulary
                                  # (picker source; validates registry/profile tags)
 ├── role-templates.yaml          # curated role searches (all roles) the picker
@@ -344,7 +345,7 @@ session import was built then removed in v3 as incomplete — deferred to a
 future version.)
 
 **v3 — post-fresh-run remediation (2026-06-09), per-phase review + checks, local
-commits (unpushed):** fixed the headline scoring bug (the onboarding wizard
+commits (unpushed):** fixed a score-calibration issue (the onboarding wizard
 dropped the role template's `nice_to_have`/excludes → every job capped at 60/100;
 now carried via a unit-tested `buildRoleEntry`, browser-validated — and the SAME
 cap on the **custom-role** path (no template → no nice_to_have) is fixed too:
@@ -360,9 +361,9 @@ domain/function with clean comments; onboarding reworked (two-level role picker,
 location chips, AI step dropped — judge/resume OFF by default); removed the v2
 import feature; snappier filters (debounce only search typing). **Validation
 scrape (13.6k jobs):** max match score now **85** (was capped at 60); matched
-jobs **diverse** (crypto 12%, ai-ml 23%, devtools 16%, data 14% … all 12 domains
-— was 57% crypto). REMAINING (deferred): opt-in LLM-assisted AI setup (judge
-rubric + resume skill), friendlier Settings forms.
+jobs now spread across **all 12 domains** (previously skewed heavily to one).
+REMAINING (deferred): opt-in LLM-assisted AI setup (judge rubric + resume skill),
+friendlier Settings forms.
 
 **Final hardening pass (2026-06-09, after a fresh judged run):** added the
 `llm.judge.min_score` auto-run floor (default 50) + the score↔verdict divergence

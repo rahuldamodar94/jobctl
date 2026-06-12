@@ -30,14 +30,21 @@ surrounding code style (TypeScript strict, 2-space indent — see `.editorconfig
 `config/companies.yaml` is a community-maintained list of company ATS boards.
 To add one:
 
-1. Confirm the board is one of the supported providers (Greenhouse, Lever,
-   Ashby, Recruitee) and that its public API returns real jobs — see the
-   endpoint patterns in [CLAUDE.md](CLAUDE.md) ("Current ATS endpoints").
+1. Confirm the board is one of the 10 supported providers (Greenhouse, Lever,
+   Ashby, Recruitee, Workable, Teamtailor, Personio, Breezy, Pinpoint,
+   SmartRecruiters) and that its public API returns real jobs — see the endpoint
+   patterns in [CLAUDE.md](CLAUDE.md) ("Current ATS endpoints").
 2. Add an entry with `name`, `careers_url`, and `domains` tags (vocabulary: the
    12 ids in `config/domains.yaml` — `ai-ml fintech crypto cloud-infra devtools
    security data saas gaming consumer ecommerce healthtech`).
 3. If a company *can't* be supported yet (custom portal, other ATS), note it in
    `docs/companies-unsupported.md` instead.
+
+> [!WARNING]
+> **Watch for same-name slugs** — many ATS slugs belong to a *different* company:
+> `ashby/Maple` is a restaurant-AI startup (not Maple Finance), `ashby/Beam` is
+> construction software (not web3 Beam), `lever/safe` is Safe Software (not Gnosis
+> Safe). Confirm the board's jobs actually match the company before adding.
 
 ### 2. Add a board adapter (code)
 
@@ -53,10 +60,11 @@ For a new **ATS provider**, see `src/sources/ats/` and the `detect()` +
 
 ## Architecture
 
-[CLAUDE.md](CLAUDE.md) is the source of truth for architecture, the scrape
-pipeline, dedup/matching invariants, and the data model. Read it before larger
-changes — many design choices (no LLM in core matching, no auth, SQLite single
-file) are deliberate and documented there with rationale.
+[ARCHITECTURE.md](ARCHITECTURE.md) is the readable overview — pipeline, components,
+data model, and the design choices. [CLAUDE.md](CLAUDE.md) is the exhaustive
+internal reference (exact scoring weights, dedup invariants, ATS endpoint
+patterns). Read at least the former before larger changes — the design choices
+(no LLM in core matching, no auth, one SQLite file) are deliberate.
 
 ## Reporting bugs / requesting features
 
