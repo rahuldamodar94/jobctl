@@ -22,7 +22,7 @@ Daily workflow: open UI → Run scrape → triage `new, score≥30` list → don
 
 ## Stack & principles
 
-- TypeScript, Node 20+, ESM. One package.json (no workspaces).
+- TypeScript, Node 22+, ESM. One package.json (no workspaces).
 - **Express** + **better-sqlite3** (WAL) + static **Vite/React/Tailwind** build.
 - One process, one container, one SQLite file (`data/jobs.db`).
 - **Config in YAML, state in DB.** Community data committed under `config/`;

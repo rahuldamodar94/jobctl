@@ -6,7 +6,7 @@ that keep it simple and local-first are very welcome.
 ## Dev setup
 
 ```bash
-nvm use            # Node 20 (see .nvmrc)
+nvm use            # Node 24 (see .nvmrc)
 npm install
 npm run dev        # server (tsx watch) + Vite UI with hot reload → http://localhost:5173
 ```
