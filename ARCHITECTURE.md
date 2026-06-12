@@ -91,8 +91,8 @@ jobctl/
 │   ├── authoring/           # optional: draft config from your resume
 │   ├── llm/                 # model backends
 │   └── shared/              # shared types
-├── docs/                    # these guides
-├── README.md · CONTRIBUTING.md · SECURITY.md
+├── docs/                    # user guides (matching, AI features, model tradeoffs)
+├── README.md · ARCHITECTURE.md · CONTRIBUTING.md · SECURITY.md
 └── CLAUDE.md                # exhaustive internal reference
 ```
 
@@ -100,7 +100,7 @@ jobctl/
 
 - **Local-first, single user.** There's no login — it's meant to run on your own
   machine. If you put it on a network, add your own auth first (see
-  [SECURITY.md](../SECURITY.md)).
+  [SECURITY.md](SECURITY.md)).
 - **No AI required, no vendor lock-in.** The scrape→match→triage core is plain
   keyword logic you can read and run fully offline. AI is strictly additive, and
   you choose the model — your local Claude CLI, any OpenAI-compatible API, or a
@@ -116,5 +116,5 @@ jobctl/
 > [!NOTE]
 > Want the exhaustive detail — exact scoring weights, de-dupe invariants,
 > reliability rules, and ATS endpoint patterns? That lives in
-> [CLAUDE.md](../CLAUDE.md), the project's internal source of truth. This page is
+> [CLAUDE.md](CLAUDE.md), the project's internal source of truth. This page is
 > the readable overview.

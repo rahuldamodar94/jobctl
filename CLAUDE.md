@@ -477,7 +477,7 @@ dedupe regression tests).
 **Docs:** the README was rewritten as a clean *user-facing* doc (cut dev/internal
 jargon — "gitignored", the no-Docker/nvm note, the "Design decisions" rationale —
 and added a hero + screenshots + badges + GitHub alert callouts + tasteful section
-emoji). New **`docs/architecture.md`** is the readable architecture overview
+emoji). New root **`ARCHITECTURE.md`** is the readable architecture overview
 (Mermaid diagram, component map, data model, project structure, design choices) —
 the README's Architecture section points there, NOT here (CLAUDE.md stays the
 exhaustive internal reference). New deep-dives `docs/matching-and-keywords.md` +

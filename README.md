@@ -246,7 +246,7 @@ npm test                       # run the test suite
 
 How the scrape → match → triage pipeline fits together — the components, the data
 model, the project structure, and the design choices behind it — is in
-**[docs/architecture.md](docs/architecture.md)**.
+**[ARCHITECTURE.md](ARCHITECTURE.md)**.
 
 > [!IMPORTANT]
 > jobctl runs on **localhost with no login** — it's a single-user tool. Don't
