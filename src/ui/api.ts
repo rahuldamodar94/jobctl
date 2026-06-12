@@ -92,7 +92,12 @@ export async function getStats(filters?: Filters): Promise<Stats> {
   return res.json();
 }
 
-export const PAGE_SIZE = 200;
+// First-page size. The triage table isn't virtualized, so every filter/pill
+// switch re-paints this many dense rows (each with an SVG score-ring) AND parses
+// a payload this big — 200 was ~100-200ms of main-thread jank per switch. 40
+// fills a screen, switches instantly, and infinite-scroll/Load-more fetches the
+// rest on demand (a switch always resets to one page, so it never grows).
+export const PAGE_SIZE = 40;
 
 /** Serialize the filter object — shared by the list fetch and the CSV export
  *  link so "export" always means exactly the current view. */
