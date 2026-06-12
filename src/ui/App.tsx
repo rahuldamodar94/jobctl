@@ -37,6 +37,7 @@ import { ResumeDrawer } from './components/ResumeDrawer.js';
 import { Onboarding } from './components/Onboarding.js';
 import { Settings, type Tab as SettingsTab } from './components/Settings.js';
 import { AiIntroDialog } from './components/AiIntroDialog.js';
+import { ConfirmDialog } from './components/ConfirmDialog.js';
 import { estimateJudgeRun } from '../shared/llm-costs.js';
 import { Button, Skeleton } from './components/ui.js';
 import { JOB_STATUSES } from '../shared/types.js';
@@ -98,6 +99,10 @@ export default function App() {
   const [aiIntroSeen, setAiIntroSeen] = useState(() => localStorage.getItem('jobctl.aiIntroSeen') === '1');
   const [aiNudgeDismissed, setAiNudgeDismissed] = useState(() => localStorage.getItem('jobctl.aiNudgeDismissed') === '1');
   const [showAiIntro, setShowAiIntro] = useState(false);
+  // styled in-app confirm (replaces window.confirm); null = hidden
+  const [confirm, setConfirm] = useState<
+    null | { title: string; message: React.ReactNode; confirmLabel: string; icon?: React.ReactNode; onConfirm: () => void }
+  >(null);
   const dismissAiNudge = () => { setAiNudgeDismissed(true); localStorage.setItem('jobctl.aiNudgeDismissed', '1'); };
   const openSettings = (tab?: SettingsTab) => { setSettingsTab(tab); setShowSettings(true); };
 
@@ -242,25 +247,37 @@ export default function App() {
 
   /** Judge the whole un-judged backlog ≥ floor (recovers a scrape that died
    *  before/during its judge phase). Background run — poll status for progress. */
-  const onJudge = async () => {
-    setNotice(null);
-    // Judging is user-initiated and costs LLM tokens — show the estimate and let
-    // the user opt in before spending (not everyone wants to judge every batch).
-    const pending = judge?.pending ?? 0;
-    if (pending > 0) {
-      const k = Math.round(estimateJudgeRun(pending).tokens / 1000);
-      if (!window.confirm(
-        `Judge ${pending} matched job${pending === 1 ? '' : 's'} now? Estimated ~${k}K tokens on your configured judge model. Advisory only — verdicts never hide a job.`
-      )) {
-        return;
-      }
-    }
+  const startJudgeRun = async () => {
     setJudgeStopping(false); // clear any stale "Stopping…" from a prior run
     const { ok, error } = await startJudge();
     if (ok) {
       getJudgeStatus().then(setJudge).catch(() => {}); // flip to running → starts the poll
     } else {
       setNotice(error ?? 'Could not start judging.');
+    }
+  };
+
+  const onJudge = () => {
+    setNotice(null);
+    // Judging is user-initiated and costs LLM tokens — show the estimate and let
+    // the user opt in before spending (not everyone wants to judge every batch).
+    const pending = judge?.pending ?? 0;
+    if (pending > 0) {
+      const k = Math.round(estimateJudgeRun(pending).tokens / 1000);
+      setConfirm({
+        title: `Judge ${pending} matched job${pending === 1 ? '' : 's'}?`,
+        message: (
+          <>
+            Estimated <span className="font-semibold text-ink">~{k}K tokens</span> on your configured judge
+            model. Advisory only — verdicts never hide a job.
+          </>
+        ),
+        confirmLabel: 'Judge jobs',
+        icon: <Gavel className="h-[18px] w-[18px]" />,
+        onConfirm: startJudgeRun,
+      });
+    } else {
+      startJudgeRun();
     }
   };
 
@@ -502,6 +519,17 @@ export default function App() {
         <AiIntroDialog
           onClose={() => setShowAiIntro(false)}
           onSetup={() => { setShowAiIntro(false); dismissAiNudge(); openSettings('ai'); }}
+        />
+      )}
+
+      {confirm && (
+        <ConfirmDialog
+          title={confirm.title}
+          message={confirm.message}
+          confirmLabel={confirm.confirmLabel}
+          icon={confirm.icon}
+          onConfirm={() => { const run = confirm.onConfirm; setConfirm(null); run(); }}
+          onCancel={() => setConfirm(null)}
         />
       )}
 
