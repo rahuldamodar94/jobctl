@@ -7,7 +7,7 @@
 **Your machine · your model · your data** — free, private, and 100% local.
 
 ![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)
-&nbsp;![Node 20+](https://img.shields.io/badge/node-20+-339933.svg?logo=node.js&logoColor=white)
+&nbsp;![Node 22+](https://img.shields.io/badge/node-22+-339933.svg?logo=node.js&logoColor=white)
 &nbsp;![AI optional](https://img.shields.io/badge/AI-optional-8957e5.svg)
 &nbsp;![100% local](https://img.shields.io/badge/100%25-local--first-2da44e.svg)
 
@@ -59,8 +59,8 @@ comes back — even if it's reposted elsewhere with a slightly different title.
 
 The matching engine is **plain keyword rules you can read and edit**, not a black
 box — so you always know *why* a job scored the way it did, and you can tune it.
-Everything lives on your laptop: your resume and search profile are gitignored and
-never leave the machine.
+And everything stays on your machine — your resume and search profile never leave
+your laptop.
 
 ## Why you'll like it
 
@@ -71,8 +71,8 @@ never leave the machine.
 - **Your rules, instantly applied.** Title keywords, must-have skills, weighted
   boosts, hard exclusions, location tiers — all in plain config. Every scrape
   re-scores everything, so a tweak takes effect on the very next run.
-- **Local-first & private.** Everything is one SQLite file; your personal config
-  is gitignored and never leaves your laptop.
+- **Private by default.** Everything is one local SQLite file; your resume and
+  search profile never leave your laptop.
 - **AI when you want it, not when you don't.** The core runs with no model. Turn
   on the AI features for a sharper read and tailored resumes whenever you like.
 - **A big head start.** A curated, live-verified registry of 569 company boards
@@ -80,7 +80,7 @@ never leave the machine.
 
 ## ⚡ Quickstart
 
-**You'll need:** Node 20+, npm, and git.
+**You'll need:** Node 22+, npm, and git.
 
 ```bash
 git clone https://github.com/rahuldamodar94/jobctl.git && cd jobctl
@@ -103,16 +103,6 @@ in one click.
 
 **Prefer editing files?** Copy the templates instead of using the wizard:
 `cp -r profile.example profile`, then edit `profile.yaml` and `roles.yaml`.
-
-**Developing?** `npm run dev` runs the UI with hot reload (port 5173, proxying the
-API on 3000).
-
-> [!NOTE]
-> **Reproducible setup, no Docker:** `.nvmrc` pins the Node version and
-> `package-lock.json` pins exact dependency versions, so `nvm use && npm ci` gives
-> everyone the same environment. (Docker was intentionally dropped — the resume-gen
-> and fit-judge features need the host's `claude` CLI and can't run in a container;
-> it may return for a NAS/headless-only setup later.)
 
 ## 🔄 How a day looks
 
@@ -252,29 +242,16 @@ npm run build && npm start     # production build + serve
 npm test                       # run the test suite
 ```
 
-## Design decisions
-
-A few deliberate choices, so they don't read as gaps:
-
-- **No login, runs on localhost.** It's a single-user tool. Don't expose it to the
-  internet without putting your own authentication in front — see
-  [SECURITY.md](SECURITY.md).
-- **AI your way, not locked in.** The scrape-and-match core is plain keyword
-  matching you can read, debug, and run with *no model at all* (even fully
-  offline). AI sits *on top* — to judge fit and tailor resumes — and you choose the
-  model: Claude, any OpenAI-compatible API, or a local Ollama model. No coding-CLI
-  dependency, no single-vendor lock-in.
-- **No headless browser.** Every supported source is plain HTTP. Sources that need
-  a real browser are listed in [docs/companies-unsupported.md](docs/companies-unsupported.md).
-- **One SQLite file.** De-dupe is a unique index, updates are transactions, and
-  backup is a file copy.
-- **Open ATS jobs are kept.** A job still returned by a company's own board is open
-  by definition, so only aggregator listings are filtered by age.
-
 ## Architecture
 
-For the full picture — data model, de-dupe and scoring rules, reliability
-guarantees, and ATS endpoint patterns — see [CLAUDE.md](CLAUDE.md).
+How the scrape → match → triage pipeline fits together — the components, the data
+model, the project structure, and the design choices behind it — is in
+**[docs/architecture.md](docs/architecture.md)**.
+
+> [!IMPORTANT]
+> jobctl runs on **localhost with no login** — it's a single-user tool. Don't
+> expose it to the internet without putting your own authentication in front. See
+> [SECURITY.md](SECURITY.md).
 
 ## License
 
