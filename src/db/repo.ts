@@ -219,6 +219,19 @@ export class Repo {
     return row.n;
   }
 
+  /** Ids of matched jobs still in the `new` queue the judge marked WEAK/SKIP —
+   *  the "Dismiss skipped" backlog. Only `new`: a job the user already triaged
+   *  (e.g. marked interested despite a SKIP) is their explicit choice, untouched. */
+  skippableIds(): number[] {
+    return (
+      this.db
+        .prepare(
+          "SELECT id FROM jobs WHERE is_active = 1 AND is_match = 1 AND status = 'new' AND llm_verdict IN ('WEAK','SKIP')"
+        )
+        .all() as { id: number }[]
+    ).map((r) => r.id);
+  }
+
   /** Insert a brand-new job row (caller has already dedup-checked). */
   insert(j: NewJobInput): number {
     const today = todayISO();

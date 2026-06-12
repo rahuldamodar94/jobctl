@@ -23,6 +23,7 @@ import {
   startScrape,
   stopJudge,
   stopScrape,
+  dismissSkipped,
   type AppConfig,
   type Filters,
   type JudgeStatus,
@@ -279,6 +280,33 @@ export default function App() {
     } else {
       startJudgeRun();
     }
+  };
+
+  /** One-click cleanup: dismiss every matched `new` job the judge flagged WEAK/SKIP. */
+  const onDismissSkipped = () => {
+    const n = judge?.skipped ?? 0;
+    if (n === 0) return;
+    setConfirm({
+      title: `Dismiss ${n} skipped job${n === 1 ? '' : 's'}?`,
+      message: (
+        <>
+          Moves the {n} matched job{n === 1 ? '' : 's'} the judge marked{' '}
+          <span className="font-semibold text-ink">WEAK / SKIP</span> to dismissed. You can still find
+          {n === 1 ? ' it' : ' them'} under the <span className="font-semibold text-ink">Dismissed</span> pill.
+        </>
+      ),
+      confirmLabel: 'Dismiss them',
+      icon: <Gavel className="h-[18px] w-[18px]" />,
+      onConfirm: async () => {
+        try {
+          await dismissSkipped();
+          reload();
+          getJudgeStatus().then(setJudge).catch(() => {});
+        } catch (e) {
+          onMutationError(e);
+        }
+      },
+    });
   };
 
   const onLoadDemo = async () => {
@@ -575,6 +603,17 @@ export default function App() {
               <Button variant="ghost" onClick={onStopJudge} disabled={judgeStopping} title="Stop judging — verdicts already written are kept">
                 <Square className="h-3.5 w-3.5" />
                 {judgeStopping ? 'Stopping…' : 'Stop'}
+              </Button>
+            )}
+            {judge?.enabled && !judge.running && (judge.skipped ?? 0) > 0 && (
+              <Button
+                variant="ghost"
+                onClick={onDismissSkipped}
+                disabled={scraping}
+                title="Dismiss the matched jobs the judge marked WEAK/SKIP (still in the New queue)"
+              >
+                <Gavel className="h-3.5 w-3.5" />
+                Dismiss {judge.skipped} skipped
               </Button>
             )}
             <Button variant="primary" onClick={onScrape} loading={scraping}>

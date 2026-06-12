@@ -227,4 +227,28 @@ describe('Repo', () => {
       expect(repo.getSourceState('web3career').suspectCount).toBe(0);
     });
   });
+
+  describe('skippableIds (Dismiss skipped backlog)', () => {
+    const setVerdict = (id: number, v: string) =>
+      db.prepare('UPDATE jobs SET llm_verdict = ? WHERE id = ?').run(v, id);
+
+    test('returns only matched NEW jobs marked WEAK/SKIP', () => {
+      const skip = repo.insert(makeInput({ dedupeKey: 'a' }));
+      const weak = repo.insert(makeInput({ dedupeKey: 'b' }));
+      const strong = repo.insert(makeInput({ dedupeKey: 'c' }));
+      repo.insert(makeInput({ dedupeKey: 'd' })); // unjudged, no verdict
+      const skipTriaged = repo.insert(makeInput({ dedupeKey: 'e' }));
+      const skipUnmatched = repo.insert(makeInput({ dedupeKey: 'f', isMatch: false }));
+      setVerdict(skip, 'SKIP');
+      setVerdict(weak, 'WEAK');
+      setVerdict(strong, 'STRONG');
+      setVerdict(skipTriaged, 'SKIP');
+      setVerdict(skipUnmatched, 'SKIP');
+      repo.setStatus(skipTriaged, 'interested'); // user kept it despite SKIP → untouched
+
+      // only the matched, still-new, WEAK/SKIP jobs — strong, unjudged,
+      // interested-SKIP, and unmatched-SKIP are all excluded
+      expect(repo.skippableIds().sort((x, y) => x - y)).toEqual([skip, weak].sort((x, y) => x - y));
+    });
+  });
 });

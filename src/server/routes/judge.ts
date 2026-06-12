@@ -37,8 +37,21 @@ export function judgeRouter(repo: Repo): Router {
     const { ctx, error } = getJudgeContext();
     const enabled = !!ctx;
     const pending = ctx ? repo.countJudgePending(ctx.minScore) : 0;
+    // WEAK/SKIP matches still in the `new` queue — drives the "Dismiss skipped" button.
+    const skipped = enabled ? repo.skippableIds().length : 0;
     const { running, done, total, failed } = judgeRun; // cancelRequested stays internal
-    res.json({ enabled, pending, running, done, total, failed, ...(enabled ? {} : { error }) });
+    res.json({ enabled, pending, skipped, running, done, total, failed, ...(enabled ? {} : { error }) });
+  });
+
+  // One-click cleanup: dismiss every matched `new` job the judge marked WEAK/SKIP.
+  // Server-authoritative (no client id round-trip); one transaction.
+  r.post('/judge/dismiss-skipped', (_req, res) => {
+    const ids = repo.skippableIds();
+    let dismissed = 0;
+    repo.transaction(() => {
+      for (const id of ids) dismissed += repo.setStatus(id, 'dismissed');
+    });
+    res.json({ dismissed });
   });
 
   // Judge the un-judged backlog ≥ floor in the background; the UI polls

@@ -212,6 +212,8 @@ export interface JudgeStatus {
   enabled: boolean;
   /** un-judged matched jobs ≥ the score floor — the button's backlog count */
   pending: number;
+  /** matched WEAK/SKIP jobs still in the `new` queue — the "Dismiss skipped" count */
+  skipped: number;
   /** live background-run progress (running=false when idle/done) */
   running: boolean;
   done: number;
@@ -237,6 +239,14 @@ export async function startJudge(): Promise<{ ok: boolean; error?: string }> {
   if (res.status === 202) return { ok: true };
   const body = await res.json().catch(() => ({} as { error?: string }));
   return { ok: false, error: body.error };
+}
+
+/** Dismiss every matched `new` job the judge marked WEAK/SKIP. Returns the count. */
+export async function dismissSkipped(): Promise<number> {
+  const res = await fetch('/api/judge/dismiss-skipped', { method: 'POST' });
+  await ensureOk(res, 'dismiss skipped');
+  const body = (await res.json()) as { dismissed: number };
+  return body.dismissed;
 }
 
 /** Request a cooperative stop of the running manual judge (best-effort). */
