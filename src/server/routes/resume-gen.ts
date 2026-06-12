@@ -46,8 +46,10 @@ export function resumeGenRouter(db: Database.Database): Router {
     });
   });
 
-  r.get('/generated/*', (req, res) => {
-    const rel = decodeURIComponent((req.params as Record<string, string>)[0] ?? '');
+  // Express 5 requires named wildcards (`*splat`), captured as a segment array.
+  r.get('/generated/*splat', (req, res) => {
+    const splat = (req.params as { splat?: string[] }).splat ?? [];
+    const rel = decodeURIComponent(splat.join('/'));
     // boundary-aware guard (shared): confined strictly to profile/generated/.
     const path = safeProfileSubpath('generated', rel);
     if (!path || !existsSync(path)) {

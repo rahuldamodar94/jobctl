@@ -1,6 +1,7 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Tailwind v4: load the engine, and keep the existing JS config (custom colors,
+   fonts, shadows, animations, the typography plugin) via the @config directive. */
+@import 'tailwindcss';
+@config '../../tailwind.config.js';
 
 /* ── Design tokens (refined-dark "developer console") ───────────────────────
    Colors are space-separated RGB channels so Tailwind's /opacity modifiers
