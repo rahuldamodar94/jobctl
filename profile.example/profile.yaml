@@ -14,10 +14,9 @@ inactive_after_days: 14
 
 # Job boards to scrape (ids from config/sources.yaml) + `ats` to enable the
 # company registry below (Greenhouse/Lever/Ashby/… across the software industry).
-#   General boards: remotive, remoteok
-#   Domain-specific (opt-in): jobstash, web3career, cryptocurrencyjobs, blockchainheadhunter (web3)
+#   General boards: remoteok, weworkremotely, himalayas
+#   Domain-specific (opt-in): jobstash, web3career (web3)
 enabled_sources:
-  - remotive
   - remoteok
   - ats
 

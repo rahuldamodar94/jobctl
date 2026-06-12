@@ -19,27 +19,8 @@ sources:
     options:
       pages: 3
 
-  - id: cryptocurrencyjobs
-    label: Cryptocurrency Jobs
-    kind: html
-    base_url: https://cryptocurrencyjobs.co
-    # (the adapter fetches the site root — no configurable paths)
-
   # remote3.co removed: job list is client-side rendered (only sponsored ads in
   # static HTML) — needs a browser, which v1 deliberately avoids.
-
-  - id: blockchainheadhunter
-    label: Blockchain Headhunter
-    kind: html
-    base_url: https://blockchainheadhunter.com
-    # (the adapter fetches /jobs — no configurable paths)
-
-  - id: remotive
-    label: Remotive (general remote jobs)
-    kind: api
-    base_url: https://remotive.com
-    options:
-      category: software-dev
 
   - id: remoteok
     label: RemoteOK (general remote jobs)
@@ -71,6 +52,6 @@ sources:
       pages: 5
 
   # ATS sources (greenhouse/lever/ashby/recruitee/workable/teamtailor/personio/
-  # breezy/pinpoint — 9 providers) are NOT listed here. They are driven by the
+  # breezy/pinpoint/smartrecruiters — 10 providers) are NOT listed here. They are driven by the
   # committed company registry (config/companies.yaml): each company's careers_url
   # auto-detects to a provider+slug. Enable them via enabled_sources: [ats, ...].

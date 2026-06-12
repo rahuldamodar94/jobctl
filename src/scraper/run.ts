@@ -20,9 +20,6 @@ import { categorize } from '../matcher/categorizer.js';
 import { fetchAtsCompanies } from '../sources/ats/index.js';
 import { jobstash } from '../sources/boards/jobstash.js';
 import { web3career } from '../sources/boards/web3career.js';
-import { cryptocurrencyjobs } from '../sources/boards/cryptocurrencyjobs.js';
-import { blockchainheadhunter } from '../sources/boards/blockchainheadhunter.js';
-import { remotive } from '../sources/boards/remotive.js';
 import { remoteok } from '../sources/boards/remoteok.js';
 import { weworkremotely } from '../sources/boards/weworkremotely.js';
 import { himalayas } from '../sources/boards/himalayas.js';
@@ -31,9 +28,6 @@ import { himalayas } from '../sources/boards/himalayas.js';
 const BOARD_ADAPTERS: Record<string, BoardAdapter> = {
   [jobstash.id]: jobstash,
   [web3career.id]: web3career,
-  [cryptocurrencyjobs.id]: cryptocurrencyjobs,
-  [blockchainheadhunter.id]: blockchainheadhunter,
-  [remotive.id]: remotive,
   [remoteok.id]: remoteok,
   [weworkremotely.id]: weworkremotely,
   [himalayas.id]: himalayas,
