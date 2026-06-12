@@ -6,6 +6,7 @@ Both are **off by default** and entirely optional. This guide explains what they
 are, how to set them up, and — most importantly — how to write the two small
 config files that make them genuinely useful to *you*.
 
+> [!TIP]
 > **Setup in one place:** everything below is configured under **Settings →
 > AI/LLM** in the app. Pick a backend, run the one-click connection check, and turn
 > on what you want. For *which* model to use and the privacy rule that matters, see
@@ -13,7 +14,7 @@ config files that make them genuinely useful to *you*.
 
 ---
 
-## 1. The fit-judge — a structured second opinion
+## ⚖️ 1. The fit-judge — a structured second opinion
 
 The keyword matcher is great at *recall* (finding everything that could fit) but
 it can't read. The fit-judge adds *precision*: for each matched job, it reads the
@@ -69,7 +70,7 @@ signal"). Edit it any time; the next judge run uses the new version.
 
 ---
 
-## 2. Resume tailoring — a one-page PDF per job
+## 📄 2. Resume tailoring — a one-page PDF per job
 
 With your local **`claude` CLI** installed and logged in, a **Generate resume**
 button appears on every job. It drafts a one-page resume tuned to *that* posting
@@ -80,6 +81,7 @@ controls the layout.** The LLM never emits formatting and the renderer never
 paraphrases content, so the same inputs always produce the same one-page PDF — no
 surprises, no two-page overflow.
 
+> [!NOTE]
 > This feature is **host-only** — it uses your local `claude` CLI (billed to your
 > existing subscription, no API key). The button hides itself when the CLI isn't
 > installed.
@@ -130,6 +132,7 @@ Leave either blank to use the backend's default. The **Settings → AI/LLM** tab
 shows a pre-run token estimate so you can see roughly what a judge run will cost
 before you start it.
 
+> [!IMPORTANT]
 > **The one privacy rule:** free LLM tiers may train on what you send. That's fine
 > for semi-public job descriptions (the judge), but **resume generation should use a
 > paid or local backend that doesn't train on your data** — your resume is *you*.

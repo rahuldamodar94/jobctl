@@ -1,15 +1,30 @@
+<div align="center">
+
 # jobctl
 
-**A self-hosted job copilot for the software industry.** It scrapes company
-career pages and tech job boards, scores every listing against *your* profile,
-and gives you one fast page to review them — so you check **one place instead of
-ten**, and **never see the same job twice**.
+### The self-hosted job copilot for the software industry
 
-**Your machine, your model, your data.** It's free, private, and runs locally.
-The core — scrape, de-dupe, score, triage — needs **no AI at all** and works
-fully offline. When you want a hand with the reading-heavy part, bring your own
-model (Claude, any OpenAI-compatible API, or a local one via Ollama) to judge how
-well a job fits and to tailor your resume. That part is optional, and it's yours.
+**Your machine · your model · your data** — free, private, and 100% local.
+
+![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)
+&nbsp;![Node 20+](https://img.shields.io/badge/node-20+-339933.svg?logo=node.js&logoColor=white)
+&nbsp;![AI optional](https://img.shields.io/badge/AI-optional-8957e5.svg)
+&nbsp;![100% local](https://img.shields.io/badge/100%25-local--first-2da44e.svg)
+
+<br>
+
+<img src="docs/assets/triage.png" alt="The jobctl triage page — every listing scored against your profile, duplicates collapsed, with optional AI fit-verdicts inline" width="880">
+
+</div>
+
+It scrapes company career pages and tech job boards, scores every listing against
+*your* profile, and gives you one fast page to review them — so you check **one
+place instead of ten**, and **never see the same job twice**.
+
+The core — scrape, de-dupe, score, triage — needs **no AI at all** and works fully
+offline. When you want a hand with the reading-heavy part, bring your own model
+(Claude, any OpenAI-compatible API, or a local one via Ollama) to judge how well a
+job fits and to tailor your resume. That part is optional, and it's yours.
 
 ```
   company career pages  (Greenhouse · Lever · Ashby · Workable …)  ─┐
@@ -21,7 +36,7 @@ well a job fits and to tailor your resume. That part is optional, and it's yours
 optional AI pass judges fit and tailors resumes · everything lands in one local
 SQLite file you triage in the browser.*
 
-### By the numbers
+### 📊 By the numbers
 
 - **569 company career boards** in the committed registry, each verified against
   its live API and tagged by domain.
@@ -67,7 +82,7 @@ never leave the machine.
 - **A big head start.** A curated, live-verified registry of 569 company boards
   across 12 software-industry domains — pick what you care about and go.
 
-## Quickstart
+## ⚡ Quickstart
 
 **You'll need:** Node 20+, npm, and git.
 
@@ -85,6 +100,7 @@ Then click **Run scrape** and start triaging. Just want to see the UI first? Hit
 **Load sample jobs** on the empty state for a populated triage page you can clear
 in one click.
 
+> [!TIP]
 > **Already job-hunting?** Jobs you've already applied to will show up as `new` on
 > the first scrape. Mark them `applied` or `dismissed` once, and they're hidden
 > for good — even when reposted elsewhere.
@@ -95,13 +111,14 @@ in one click.
 **Developing?** `npm run dev` runs the UI with hot reload (port 5173, proxying the
 API on 3000).
 
+> [!NOTE]
 > **Reproducible setup, no Docker:** `.nvmrc` pins the Node version and
 > `package-lock.json` pins exact dependency versions, so `nvm use && npm ci` gives
 > everyone the same environment. (Docker was intentionally dropped — the resume-gen
 > and fit-judge features need the host's `claude` CLI and can't run in a container;
 > it may return for a NAS/headless-only setup later.)
 
-## How a day looks
+## 🔄 How a day looks
 
 ```
   run scrape ─▶ new matches ─▶ you triage ─▶ interested · applied · rejected · dismissed ─▶ hidden next run
@@ -114,7 +131,7 @@ API on 3000).
    the JD, set a status.
 4. You're done. Tomorrow, only genuinely new jobs show up.
 
-## Getting your keywords right (the part that matters most)
+## 🎯 Getting your keywords right (the part that matters most)
 
 This is the single highest-leverage thing you do, so it's worth two minutes.
 **The quality of your matches is only as good as your keywords.** The scorer is
@@ -141,7 +158,7 @@ keywords and tunes the weights and exclusions). A full walkthrough — how scori
 works end to end, and how to tune it — is in
 **[docs/matching-and-keywords.md](docs/matching-and-keywords.md)**.
 
-## AI: optional, but it makes triage a lot better
+## 🤖 AI: optional, but it makes triage a lot better
 
 The keyword core gets you a clean, de-duped shortlist with **no model at all**.
 The AI features sit *on top* and do the reading-intensive work you'd otherwise do
@@ -157,6 +174,14 @@ by hand — and that's exactly why they're worth turning on:
   base resume, and renders it to a clean PDF — the model writes the words, the code
   controls the layout.
 
+<div align="center">
+
+<img src="docs/assets/judge.png" alt="An expanded job row showing the fit-judge breakdown — an overall verdict plus per-dimension scores (skills, seniority, domain, location, red flags), each backed by quotes pulled from the job description" width="880">
+
+<sub><i>Expand any job to see the fit-judge's verdict and per-dimension reasoning, each backed by quotes from the JD.</i></sub>
+
+</div>
+
 You bring the model (your local **`claude` CLI** on your existing subscription, any
 **OpenAI-compatible API**, or a local **Ollama** model); jobctl owns the prompts,
 parsing, and layout. Both features are off by default — turn them on in
@@ -169,13 +194,14 @@ good ones, in **[docs/ai-features.md](docs/ai-features.md)**. Both can be
 **auto-authored from your uploaded resume** and then refined by prompt, so you're
 never staring at a blank file.
 
+> [!IMPORTANT]
 > **One privacy rule that matters:** free LLM tiers may train on what you send.
 > That's fine for semi-public job descriptions (the judge), but **resume
 > generation should use a paid or local backend that doesn't train on your data** —
 > your resume is *you*. Which backend for which job is laid out in
 > **[docs/model-tradeoffs.md](docs/model-tradeoffs.md)**.
 
-## Configure
+## ⚙️ Configure
 
 The easiest way is the in-app **Settings** page (and the first-run wizard) — it
 edits every file below, validates your input, and never touches a terminal. The
@@ -189,7 +215,7 @@ files remain the source of truth if you'd rather edit them directly:
 | `config/sources.yaml` | committed | job-board definitions |
 | `config/categories.yaml` | committed | category rules (the auto-detected Domain column) |
 
-## Where jobs come from
+## 🌐 Where jobs come from
 
 | Source | How it's fetched |
 |---|---|
@@ -205,6 +231,7 @@ server-side; you could bring those in via your own session if you ever wanted to
 Scraping is polite by design: an identifiable user-agent, sources fetched one at a
 time, per-host delays, and retries with backoff — a few hundred requests per run.
 
+> [!NOTE]
 > **Wondering why a big-name company isn't covered?** Most global giants run on
 > Workday, iCIMS, or custom portals with no public API, so they can't be
 > aggregated yet. Hundreds of researched companies — and *why* each isn't
@@ -218,7 +245,7 @@ time, per-host delays, and retries with backoff — a few hundred requests per r
   `{ id, fetch(ctx) }` and add an entry to `config/sources.yaml`. See
   [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## Commands
+## ⌨️ Commands
 
 ```bash
 npm run scrape                 # scrape all enabled sources

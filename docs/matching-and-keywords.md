@@ -65,7 +65,7 @@ score just ranks it.
 
 ---
 
-## The knobs, and how to tune each
+## 🎛️ The knobs, and how to tune each
 
 ### `title_keywords` — the gate, so get it right first
 
@@ -110,6 +110,7 @@ well they actually match *your* interests.
 - `exclude_if_primary` rejects when a **language you don't work in** is the JD's
   main language — without rejecting a JD that merely name-drops it once.
 
+> [!TIP]
 > **A real example:** a generic backend role with a bare `engineer` title keyword
 > and no `manager` exclusion will happily match "Engineering Manager" jobs (the
 > word "Engineering" contains "engineer"). Add `manager` / `director` / `head of`
