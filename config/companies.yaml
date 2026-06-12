@@ -7,7 +7,7 @@
 # Every entry is live-verified — the ATS API returned real job JSON. Re-verify
 # when adding; URL patterns are in CLAUDE.md. Companies on other ATSes
 # (Workday/iCIMS/custom portals) and known same-name false positives live in
-# config/companies-unsupported.md.
+# docs/companies-unsupported.md.
 #
 # Which slices YOU scrape is chosen in profile/profile.yaml:
 #   companies:

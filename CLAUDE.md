@@ -54,7 +54,8 @@ Daily workflow: open UI → Run scrape → triage `new, score≥30` list → don
 ```
 config/                          # COMMITTED — community value
 ├── companies.yaml               # registry: name + careers_url + domains tags
-├── companies-unsupported.md     # researched-but-unreachable + false-positive blocklist
+│                                # (researched-but-unreachable companies + the
+│                                #  false-positive blocklist live in docs/companies-unsupported.md)
 ├── domains.yaml                 # canonical software-industry domain vocabulary
                                  # (picker source; validates registry/profile tags)
 ├── role-templates.yaml          # curated role searches (all roles) the picker
@@ -212,20 +213,19 @@ CONFIG (yaml)                  SCRAPE PIPELINE (src/scraper/run.ts)
 
 ### Reviewed-and-REJECTED ideas (don't re-propose without new evidence)
 
-- **hosted SaaS / serving non-technical users** — breaks all four wedges at once
-  (free · keyless · private · un-bannable distributed scraping); the local-first
+- **hosted SaaS / serving non-technical users** — breaks the core wedges at once
+  (free · keyless · private · runs on the user's own machine); the local-first
   delivery model IS the value. Deep PM research 2026-06-08; a different product.
-- **scraping LinkedIn / Indeed / Naukri / X** — account bans, active LinkedIn
-  litigation, killed/paid APIs, anti-bot maintenance treadmill; breaks the
-  no-headless-browser design. A user-driven import (a `/api/import` endpoint +
-  paste UI + a Claude-for-Chrome harvest prompt) was BUILT and then fully
-  REMOVED on 2026-06-09. Research verdict: the browser extension can't reliably
-  extract full JDs at volume (context/output-budget drops the description field;
-  long-task instability stalls it), the clean alternative (parsing LinkedIn
-  alert emails) adds ongoing upkeep for thin marginal coverage now that the ATS
-  registry is 560+ companies plus the boards, and a generic JSON importer just
-  pushes a hard formatting burden onto the user. Net: not worth the surface area.
-  **Don't re-propose without materially new evidence** (e.g. an official API).
+- **sources that require a logged-in session or a real browser** — out of scope by
+  design (the no-headless-browser, public-API-only architecture). A user-driven
+  import (a `/api/import` endpoint + paste UI + a browser-extension harvest prompt)
+  was BUILT and then fully REMOVED on 2026-06-09. Verdict: the extension couldn't
+  reliably extract full JDs at volume (context/output-budget drops the description
+  field; long-task instability stalls it), the email-parsing alternative adds
+  ongoing upkeep for thin marginal coverage now that the registry is 560+ companies
+  plus the boards, and a generic JSON importer pushes a hard formatting burden onto
+  the user. Net: not worth the surface area. **Don't re-propose without materially
+  new evidence** (e.g. an official public API).
 - **going generic across ALL industries** — scope is the *software industry*
   (any role). Non-tech industries need different boards + non-self-host-capable
   users; out of scope.
@@ -322,7 +322,7 @@ guide: `docs/model-tradeoffs.md`.
 npm run scrape [-- --source X]   # scrape (lock-guarded; UI button same path)
 npm run judge [-- --all|--id N]  # optional fit-judge over matched jobs
 npm run dev | build | start      # UI dev / production
-npm test                         # vitest — 344 tests (9 skip without a profile resume)
+npm test                         # vitest — 333 tests (9 skip without a profile resume)
 ```
 
 ## Status
@@ -330,7 +330,7 @@ npm test                         # vitest — 344 tests (9 skip without a profil
 v1 complete + post-review hardening (2026-06-06): 7 build phases, dual
 line-by-line review (50 findings triaged), community-registry restructure.
 Live (v1 snapshot): ~2,900 active jobs. Current registry: 569 company boards
-across 12 domains + 8 job-board adapters + 10 ATS providers (see the v3 note below).
+across 12 domains + 5 job-board adapters + 10 ATS providers (see the v3 note below).
 
 **v2 — software-industry pivot (2026-06-08), 7 phases, per-phase review +
 security-review, all pushed:** repositioned to the software industry / all roles
@@ -339,7 +339,7 @@ new sources Recruitee (ATS), We Work Remotely (RSS) + Himalayas (JSON);
 multi-dimension fit-judge with JD evidence citations; AI-first reframe +
 `docs/model-tradeoffs.md`; onboarding redesign (domain multiselect, role-template
 picker, location, model setup); in-app sample data (`/api/demo`). (A user-driven
-LinkedIn/Indeed import was built then removed in v3 as incomplete — deferred to a
+session import was built then removed in v3 as incomplete — deferred to a
 future version.)
 
 **v3 — post-fresh-run remediation (2026-06-09), per-phase review + checks, local
@@ -352,7 +352,7 @@ optional comma-separated "nice to have" field in the onboarding custom block), s
 a custom role scores 0-100, not 0-60); expanded the
 registry **113 → 328 companies** across all 12 domains (was 7 empty), global +
 India/MENA, incl. famous names (OpenAI, Anthropic, Snowflake, Coinbase, …) with
-unscrapeable giants documented in `companies-unsupported.md`; **role templates
+unscrapeable giants documented in `docs/companies-unsupported.md`; **role templates
 21 → 40** grouped by function (with deepened keyword coverage); registry +
 role-templates restructured by
 domain/function with clean comments; onboarding reworked (two-level role picker,
@@ -477,7 +477,7 @@ dedupe regression tests).
 Telegram channels, liveness/expiry classifier, cover-letter tooling, the Workday
 adapter (per-company {shard,site} discovery + N+1 JD) and SmartRecruiters
 title-gated JD enrichment (the SmartRecruiters/Workable list adapters now ship), a
-**user-driven LinkedIn/Indeed import** (paste/extract from your own session +
+**user-driven session import** (paste/extract from your own session +
 optional browser-extension capture — design-gated; the v2 attempt was removed).
 (LLM fit-judge, multi-source expansion — shipped above.)
 

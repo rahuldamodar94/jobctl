@@ -37,7 +37,7 @@ To add one:
    12 ids in `config/domains.yaml` — `ai-ml fintech crypto cloud-infra devtools
    security data saas gaming consumer ecommerce healthtech`).
 3. If a company *can't* be supported yet (custom portal, other ATS), note it in
-   `config/companies-unsupported.md` instead.
+   `docs/companies-unsupported.md` instead.
 
 ### 2. Add a board adapter (code)
 
